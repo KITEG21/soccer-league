@@ -1,0 +1,9 @@
+version: "1"
+packages:
+  - name: "store"
+    path: "internal/store"
+    engine: "postgresql"
+    schema: "sql/schema.sql"
+    queries: "sql/queries.sql"
+    emit_exact_table_names: false
+    emit_interface: false
