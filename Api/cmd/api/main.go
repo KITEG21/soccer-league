@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,7 +19,7 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// Init DB
+	// Init DB (reads from environment variables)
 	dbConn := db.NewDB(ctx)
 	defer dbConn.Close()
 
@@ -88,11 +89,17 @@ func main() {
 		r.Delete("/{id}", playerHandler.DeleteCoach)
 	})
 
-	// Start server
+	// Get port from environment variable or default
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081"
+		port = "8080"
 	}
+
+	// Remove any leading colon if present
+	port = strings.TrimPrefix(port, ":")
+
 	log.Printf("server starting on :%s", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	if err := http.ListenAndServe(":"+port, r); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
 }

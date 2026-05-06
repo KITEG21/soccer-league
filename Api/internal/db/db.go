@@ -14,10 +14,29 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+// getEnvWithDefault returns environment variable value or default if not set
+func getEnvWithDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
 func NewDB(ctx context.Context) *sql.DB {
+	// First check if full DATABASE_URL is provided
 	dsn := os.Getenv("DATABASE_URL")
+
+	// If not, build DSN from individual environment variables
 	if dsn == "" {
-		dsn = "host=localhost port=5432 user=postgres password=postgres dbname=football sslmode=disable"
+		host := getEnvWithDefault("DB_HOST", "localhost")
+		port := getEnvWithDefault("DB_PORT", "5432")
+		user := getEnvWithDefault("DB_USER", "postgres")
+		password := os.Getenv("DB_PASSWORD") // No default for security
+		dbname := getEnvWithDefault("DB_NAME", "football")
+		sslmode := getEnvWithDefault("DB_SSLMODE", "disable")
+
+		dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+			host, port, user, password, dbname, sslmode)
 	}
 
 	db, err := sql.Open("pgx", dsn)
