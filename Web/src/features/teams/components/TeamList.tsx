@@ -15,7 +15,11 @@ export function TeamList() {
   });
 
   if (isLoading)
-    return <div className="text-center py-8">Cargando equipos...</div>;
+    return (
+      <div className="text-center py-8 text-foreground">
+        Cargando equipos...
+      </div>
+    );
   if (error)
     return (
       <div className="text-center py-8 text-destructive">
