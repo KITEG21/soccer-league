@@ -133,7 +133,7 @@ func (s *PlayerService) ListPlayers(ctx context.Context) ([]*Player, error) {
 }
 
 func (s *PlayerService) UpdatePlayer(ctx context.Context, id int64, req CreatePlayerRequest) error {
-	if err := s.store.UpdatePlayerFutbolista(ctx, store.UpdatePlayerFutbolistaParams{
+	if err := s.store.UpdatePlayerFootballer(ctx, store.UpdatePlayerFootballerParams{
 		ID:          id,
 		TeamID:      int64ToNullInt64(req.TeamID),
 		Name:        req.Name,
@@ -143,7 +143,7 @@ func (s *PlayerService) UpdatePlayer(ctx context.Context, id int64, req CreatePl
 		return err
 	}
 	return s.store.UpdatePlayerStats(ctx, store.UpdatePlayerStatsParams{
-		FutbolistaID:  id,
+		FootballerID:  id,
 		PositionID:    int64ToNullInt64(req.PositionID),
 		MatchesPlayed: int32ToNullInt32(req.MatchesPlayed),
 		Goals:         int32ToNullInt32(req.Goals),
@@ -155,7 +155,7 @@ func (s *PlayerService) DeletePlayer(ctx context.Context, id int64) error {
 	if err := s.store.DeletePlayerRecord(ctx, id); err != nil {
 		return err
 	}
-	return s.store.DeleteFutbolista(ctx, id)
+	return s.store.DeleteFootballer(ctx, id)
 }
 
 // Coach methods
@@ -204,7 +204,7 @@ func (s *PlayerService) ListCoaches(ctx context.Context) ([]*Coach, error) {
 }
 
 func (s *PlayerService) UpdateCoach(ctx context.Context, id int64, req CreateCoachRequest) error {
-	if err := s.store.UpdateCoachFutbolista(ctx, store.UpdateCoachFutbolistaParams{
+	if err := s.store.UpdateCoachFootballer(ctx, store.UpdateCoachFootballerParams{
 		ID:          id,
 		TeamID:      int64ToNullInt64(req.TeamID),
 		Name:        req.Name,
@@ -214,7 +214,7 @@ func (s *PlayerService) UpdateCoach(ctx context.Context, id int64, req CreateCoa
 		return err
 	}
 	return s.store.UpdateCoachExperience(ctx, store.UpdateCoachExperienceParams{
-		FutbolistaID:    id,
+		FootballerID:    id,
 		ExperienceYears: int32ToNullInt32(req.ExperienceYears),
 	})
 }
@@ -223,7 +223,7 @@ func (s *PlayerService) DeleteCoach(ctx context.Context, id int64) error {
 	if err := s.store.DeleteCoachRecord(ctx, id); err != nil {
 		return err
 	}
-	return s.store.DeleteFutbolista(ctx, id)
+	return s.store.DeleteFootballer(ctx, id)
 }
 
 // Helper for nullInt32 to int32 for coach experience years

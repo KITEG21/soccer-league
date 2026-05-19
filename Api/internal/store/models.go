@@ -9,11 +9,11 @@ import (
 )
 
 type Coach struct {
-	FutbolistaID    int64
+	FootballerID    int64
 	ExperienceYears sql.NullInt32
 }
 
-type Futbolistum struct {
+type Footballer struct {
 	ID          int64
 	TeamID      sql.NullInt64
 	Name        string
@@ -22,7 +22,7 @@ type Futbolistum struct {
 }
 
 type Player struct {
-	FutbolistaID  int64
+	FootballerID  int64
 	PositionID    sql.NullInt64
 	MatchesPlayed sql.NullInt32
 	Goals         sql.NullInt32

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -25,6 +26,10 @@ func (h *StadiumHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	stadium, err := h.svc.Create(r.Context(), req)
 	if err != nil {
+		if errors.Is(err, service.ErrNameConflict) {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -71,6 +76,10 @@ func (h *StadiumHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	stadium, err := h.svc.Update(r.Context(), id, req)
 	if err != nil {
+		if errors.Is(err, service.ErrNameConflict) {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -18,6 +20,9 @@ import (
 
 func main() {
 	ctx := context.Background()
+	if err := loadEnvFile(); err != nil {
+		log.Printf("env file not loaded: %v", err)
+	}
 
 	// Init DB (reads from environment variables)
 	dbConn := db.NewDB(ctx)
@@ -44,6 +49,18 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Accept,Authorization,Content-Type,X-CSRF-Token")
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	})
 
 	// Register API documentation routes
 	handler.ServeScalarUI(r)
@@ -102,4 +119,47 @@ func main() {
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
+}
+
+func loadEnvFile() error {
+	candidates := []string{
+		".env",
+		filepath.Join("..", ".env"),
+		filepath.Join("..", "..", ".env"),
+		filepath.Join("..", "..", "..", ".env"),
+	}
+
+	for _, path := range candidates {
+		if err := loadEnvFileAt(path); err == nil {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("no .env file found in expected locations")
+}
+
+func loadEnvFileAt(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			continue
+		}
+		key = strings.TrimSpace(key)
+		value = strings.TrimSpace(value)
+		if key == "" {
+			continue
+		}
+		_ = os.Setenv(key, strings.Trim(value, `"`))
+	}
+
+	return nil
 }

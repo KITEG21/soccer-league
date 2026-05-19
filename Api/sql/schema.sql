@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS Team (
     id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     province TEXT,
     mascot TEXT,
     color TEXT,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS Team (
 
 CREATE TABLE IF NOT EXISTS Stadium (
     id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     capacity INT
 );
 
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS Season (
     end_date DATE
 );
 
-CREATE TABLE IF NOT EXISTS Futbolista (
+CREATE TABLE IF NOT EXISTS Footballer (
     id BIGSERIAL PRIMARY KEY,
     team_id BIGINT REFERENCES Team(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS Position (
 );
 
 CREATE TABLE IF NOT EXISTS Player (
-    futbolista_id BIGINT PRIMARY KEY REFERENCES Futbolista(id) ON DELETE CASCADE,
+    footballer_id BIGINT PRIMARY KEY REFERENCES Footballer(id) ON DELETE CASCADE,
     position_id BIGINT REFERENCES Position(id),
     matches_played INT,
     goals INT,
@@ -42,6 +42,6 @@ CREATE TABLE IF NOT EXISTS Player (
 );
 
 CREATE TABLE IF NOT EXISTS Coach (
-    futbolista_id BIGINT PRIMARY KEY REFERENCES Futbolista(id) ON DELETE CASCADE,
+    footballer_id BIGINT PRIMARY KEY REFERENCES Footballer(id) ON DELETE CASCADE,
     experience_years INT
 );

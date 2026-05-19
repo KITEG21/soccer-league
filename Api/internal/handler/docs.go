@@ -68,11 +68,11 @@ func ServeScalarUI(r chi.Router) {
     },
     {
       "name": "Players",
-      "description": "Operations related to players (Futbolista + Player tables, atomic creation)"
+      "description": "Operations related to players (Footballer + Player tables, atomic creation)"
     },
     {
       "name": "Coaches",
-      "description": "Operations related to coaches (Futbolista + Coach tables, atomic creation)"
+      "description": "Operations related to coaches (Footballer + Coach tables, atomic creation)"
     }
   ],
   "paths": {
@@ -426,7 +426,7 @@ func ServeScalarUI(r chi.Router) {
       },
       "post": {
         "tags": ["Players"],
-        "summary": "Create a player (atomic: Futbolista + Player tables)",
+        "summary": "Create a player (atomic: Footballer + Player tables)",
         "requestBody": {
           "required": true,
           "content": {
@@ -529,7 +529,7 @@ func ServeScalarUI(r chi.Router) {
       },
       "post": {
         "tags": ["Coaches"],
-        "summary": "Create a coach (atomic: Futbolista + Coach tables)",
+        "summary": "Create a coach (atomic: Footballer + Coach tables)",
         "requestBody": {
           "required": true,
           "content": {

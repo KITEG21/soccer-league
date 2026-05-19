@@ -12,13 +12,13 @@ import (
 
 const createCoach = `-- name: CreateCoach :one
 WITH ins_fut AS (
-    INSERT INTO Futbolista (team_id, name, number, years_in_team)
+    INSERT INTO Footballer (team_id, name, number, years_in_team)
     VALUES ($1, $2, $3, $4)
     RETURNING id
 )
-INSERT INTO Coach (futbolista_id, experience_years)
+INSERT INTO Coach (footballer_id, experience_years)
 SELECT id, $5 FROM ins_fut
-RETURNING futbolista_id
+RETURNING footballer_id
 `
 
 type CreateCoachParams struct {
@@ -38,27 +38,27 @@ func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (int64
 		arg.YearsInTeam,
 		arg.ExperienceYears,
 	)
-	var futbolista_id int64
-	err := row.Scan(&futbolista_id)
-	return futbolista_id, err
+	var footballer_id int64
+	err := row.Scan(&footballer_id)
+	return footballer_id, err
 }
 
-const createFutbolista = `-- name: CreateFutbolista :one
-INSERT INTO Futbolista (team_id, name, number, years_in_team)
+const createFootballer = `-- name: CreateFootballer :one
+INSERT INTO Footballer (team_id, name, number, years_in_team)
 VALUES ($1, $2, $3, $4)
 RETURNING id
 `
 
-type CreateFutbolistaParams struct {
+type CreateFootballerParams struct {
 	TeamID      sql.NullInt64
 	Name        string
 	Number      sql.NullInt32
 	YearsInTeam sql.NullInt32
 }
 
-// Futbolista (internal, used by Player/Coach)
-func (q *Queries) CreateFutbolista(ctx context.Context, arg CreateFutbolistaParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, createFutbolista,
+// Footballer (internal, used by Player/Coach)
+func (q *Queries) CreateFootballer(ctx context.Context, arg CreateFootballerParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createFootballer,
 		arg.TeamID,
 		arg.Name,
 		arg.Number,
@@ -71,13 +71,13 @@ func (q *Queries) CreateFutbolista(ctx context.Context, arg CreateFutbolistaPara
 
 const createPlayer = `-- name: CreatePlayer :one
 WITH ins_fut AS (
-    INSERT INTO Futbolista (team_id, name, number, years_in_team)
+    INSERT INTO Footballer (team_id, name, number, years_in_team)
     VALUES ($1, $2, $3, $4)
     RETURNING id
 )
-INSERT INTO Player (futbolista_id, position_id, matches_played, goals, assists)
+INSERT INTO Player (footballer_id, position_id, matches_played, goals, assists)
 SELECT id, $5, $6, $7, $8 FROM ins_fut
-RETURNING futbolista_id
+RETURNING footballer_id
 `
 
 type CreatePlayerParams struct {
@@ -103,9 +103,9 @@ func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (int
 		arg.Goals,
 		arg.Assists,
 	)
-	var futbolista_id int64
-	err := row.Scan(&futbolista_id)
-	return futbolista_id, err
+	var footballer_id int64
+	err := row.Scan(&footballer_id)
+	return footballer_id, err
 }
 
 const createSeason = `-- name: CreateSeason :one
@@ -177,29 +177,29 @@ func (q *Queries) CreateTeam(ctx context.Context, arg CreateTeamParams) (int64, 
 }
 
 const deleteCoachRecord = `-- name: DeleteCoachRecord :exec
-DELETE FROM Coach WHERE futbolista_id = $1
+DELETE FROM Coach WHERE footballer_id = $1
 `
 
-func (q *Queries) DeleteCoachRecord(ctx context.Context, futbolistaID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteCoachRecord, futbolistaID)
+func (q *Queries) DeleteCoachRecord(ctx context.Context, footballerID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteCoachRecord, footballerID)
 	return err
 }
 
-const deleteFutbolista = `-- name: DeleteFutbolista :exec
-DELETE FROM Futbolista WHERE id = $1
+const deleteFootballer = `-- name: DeleteFootballer :exec
+DELETE FROM Footballer WHERE id = $1
 `
 
-func (q *Queries) DeleteFutbolista(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteFutbolista, id)
+func (q *Queries) DeleteFootballer(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteFootballer, id)
 	return err
 }
 
 const deletePlayerRecord = `-- name: DeletePlayerRecord :exec
-DELETE FROM Player WHERE futbolista_id = $1
+DELETE FROM Player WHERE footballer_id = $1
 `
 
-func (q *Queries) DeletePlayerRecord(ctx context.Context, futbolistaID int64) error {
-	_, err := q.db.ExecContext(ctx, deletePlayerRecord, futbolistaID)
+func (q *Queries) DeletePlayerRecord(ctx context.Context, footballerID int64) error {
+	_, err := q.db.ExecContext(ctx, deletePlayerRecord, footballerID)
 	return err
 }
 
@@ -233,8 +233,8 @@ func (q *Queries) DeleteTeam(ctx context.Context, id int64) error {
 const getCoach = `-- name: GetCoach :one
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
        c.experience_years
-FROM Futbolista f
-JOIN Coach c ON c.futbolista_id = f.id
+FROM Footballer f
+JOIN Coach c ON c.footballer_id = f.id
 WHERE f.id = $1
 `
 
@@ -261,13 +261,13 @@ func (q *Queries) GetCoach(ctx context.Context, id int64) (GetCoachRow, error) {
 	return i, err
 }
 
-const getFutbolista = `-- name: GetFutbolista :one
-SELECT id, team_id, name, number, years_in_team FROM Futbolista WHERE id = $1
+const getFootballer = `-- name: GetFootballer :one
+SELECT id, team_id, name, number, years_in_team FROM Footballer WHERE id = $1
 `
 
-func (q *Queries) GetFutbolista(ctx context.Context, id int64) (Futbolistum, error) {
-	row := q.db.QueryRowContext(ctx, getFutbolista, id)
-	var i Futbolistum
+func (q *Queries) GetFootballer(ctx context.Context, id int64) (Footballer, error) {
+	row := q.db.QueryRowContext(ctx, getFootballer, id)
+	var i Footballer
 	err := row.Scan(
 		&i.ID,
 		&i.TeamID,
@@ -281,8 +281,8 @@ func (q *Queries) GetFutbolista(ctx context.Context, id int64) (Futbolistum, err
 const getPlayer = `-- name: GetPlayer :one
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
        p.position_id, p.matches_played, p.goals, p.assists
-FROM Futbolista f
-JOIN Player p ON p.futbolista_id = f.id
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
 WHERE f.id = $1
 `
 
@@ -361,8 +361,8 @@ func (q *Queries) GetTeam(ctx context.Context, id int64) (Team, error) {
 const listCoaches = `-- name: ListCoaches :many
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
        c.experience_years
-FROM Futbolista f
-JOIN Coach c ON c.futbolista_id = f.id
+FROM Footballer f
+JOIN Coach c ON c.footballer_id = f.id
 ORDER BY f.id
 `
 
@@ -408,8 +408,8 @@ func (q *Queries) ListCoaches(ctx context.Context) ([]ListCoachesRow, error) {
 const listPlayers = `-- name: ListPlayers :many
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
        p.position_id, p.matches_played, p.goals, p.assists
-FROM Futbolista f
-JOIN Player p ON p.futbolista_id = f.id
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
 ORDER BY f.id
 `
 
@@ -552,26 +552,26 @@ func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
 const updateCoachExperience = `-- name: UpdateCoachExperience :exec
 UPDATE Coach
 SET experience_years = $2
-WHERE futbolista_id = $1
+WHERE footballer_id = $1
 `
 
 type UpdateCoachExperienceParams struct {
-	FutbolistaID    int64
+	FootballerID    int64
 	ExperienceYears sql.NullInt32
 }
 
 func (q *Queries) UpdateCoachExperience(ctx context.Context, arg UpdateCoachExperienceParams) error {
-	_, err := q.db.ExecContext(ctx, updateCoachExperience, arg.FutbolistaID, arg.ExperienceYears)
+	_, err := q.db.ExecContext(ctx, updateCoachExperience, arg.FootballerID, arg.ExperienceYears)
 	return err
 }
 
-const updateCoachFutbolista = `-- name: UpdateCoachFutbolista :exec
-UPDATE Futbolista
+const updateCoachFootballer = `-- name: UpdateCoachFootballer :exec
+UPDATE Footballer
 SET team_id = $2, name = $3, number = $4, years_in_team = $5
 WHERE id = $1
 `
 
-type UpdateCoachFutbolistaParams struct {
+type UpdateCoachFootballerParams struct {
 	ID          int64
 	TeamID      sql.NullInt64
 	Name        string
@@ -579,8 +579,8 @@ type UpdateCoachFutbolistaParams struct {
 	YearsInTeam sql.NullInt32
 }
 
-func (q *Queries) UpdateCoachFutbolista(ctx context.Context, arg UpdateCoachFutbolistaParams) error {
-	_, err := q.db.ExecContext(ctx, updateCoachFutbolista,
+func (q *Queries) UpdateCoachFootballer(ctx context.Context, arg UpdateCoachFootballerParams) error {
+	_, err := q.db.ExecContext(ctx, updateCoachFootballer,
 		arg.ID,
 		arg.TeamID,
 		arg.Name,
@@ -590,13 +590,13 @@ func (q *Queries) UpdateCoachFutbolista(ctx context.Context, arg UpdateCoachFutb
 	return err
 }
 
-const updatePlayerFutbolista = `-- name: UpdatePlayerFutbolista :exec
-UPDATE Futbolista
+const updatePlayerFootballer = `-- name: UpdatePlayerFootballer :exec
+UPDATE Footballer
 SET team_id = $2, name = $3, number = $4, years_in_team = $5
 WHERE id = $1
 `
 
-type UpdatePlayerFutbolistaParams struct {
+type UpdatePlayerFootballerParams struct {
 	ID          int64
 	TeamID      sql.NullInt64
 	Name        string
@@ -604,8 +604,8 @@ type UpdatePlayerFutbolistaParams struct {
 	YearsInTeam sql.NullInt32
 }
 
-func (q *Queries) UpdatePlayerFutbolista(ctx context.Context, arg UpdatePlayerFutbolistaParams) error {
-	_, err := q.db.ExecContext(ctx, updatePlayerFutbolista,
+func (q *Queries) UpdatePlayerFootballer(ctx context.Context, arg UpdatePlayerFootballerParams) error {
+	_, err := q.db.ExecContext(ctx, updatePlayerFootballer,
 		arg.ID,
 		arg.TeamID,
 		arg.Name,
@@ -618,11 +618,11 @@ func (q *Queries) UpdatePlayerFutbolista(ctx context.Context, arg UpdatePlayerFu
 const updatePlayerStats = `-- name: UpdatePlayerStats :exec
 UPDATE Player
 SET position_id = $2, matches_played = $3, goals = $4, assists = $5
-WHERE futbolista_id = $1
+WHERE footballer_id = $1
 `
 
 type UpdatePlayerStatsParams struct {
-	FutbolistaID  int64
+	FootballerID  int64
 	PositionID    sql.NullInt64
 	MatchesPlayed sql.NullInt32
 	Goals         sql.NullInt32
@@ -631,7 +631,7 @@ type UpdatePlayerStatsParams struct {
 
 func (q *Queries) UpdatePlayerStats(ctx context.Context, arg UpdatePlayerStatsParams) error {
 	_, err := q.db.ExecContext(ctx, updatePlayerStats,
-		arg.FutbolistaID,
+		arg.FootballerID,
 		arg.PositionID,
 		arg.MatchesPlayed,
 		arg.Goals,
