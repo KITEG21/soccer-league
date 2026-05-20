@@ -31,6 +31,12 @@ type UpdateStadiumRequest struct {
 }
 
 func (s *StadiumService) Create(ctx context.Context, req CreateStadiumRequest) (*Stadium, error) {
+	if conflict, err := stadiumNameConflictsWithTeams(ctx, s.store, req.Name); err != nil {
+		return nil, err
+	} else if conflict {
+		return nil, ErrNameConflict
+	}
+
 	id, err := s.store.CreateStadium(ctx, store.CreateStadiumParams{
 		Name:     req.Name,
 		Capacity: toNullInt32(req.Capacity),
@@ -81,6 +87,12 @@ func (s *StadiumService) List(ctx context.Context) ([]*Stadium, error) {
 }
 
 func (s *StadiumService) Update(ctx context.Context, id int64, req UpdateStadiumRequest) (*Stadium, error) {
+	if conflict, err := stadiumNameConflictsWithTeams(ctx, s.store, req.Name); err != nil {
+		return nil, err
+	} else if conflict {
+		return nil, ErrNameConflict
+	}
+
 	err := s.store.UpdateStadium(ctx, store.UpdateStadiumParams{
 		ID:       id,
 		Name:     req.Name,

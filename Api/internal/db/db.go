@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	migrate "github.com/golang-migrate/migrate/v4"
@@ -62,14 +63,10 @@ func NewDB(ctx context.Context) *sql.DB {
 
 // RunMigrations checks for and applies pending migrations
 func RunMigrations(databaseURL string) error {
-	// Create file source for migrations
-	wd, err := os.Getwd()
+	migrationDir, err := findMigrationDir()
 	if err != nil {
-		return fmt.Errorf("failed to get working directory: %w", err)
+		return err
 	}
-
-	// On Windows, convert path to file:// URL format
-	migrationDir := wd + string(os.PathSeparator) + "sql" + string(os.PathSeparator) + "migrations"
 
 	// For file source, we need to use the absolute path
 	fileSource, err := (&file.File{}).Open(migrationDir)
@@ -109,6 +106,27 @@ func RunMigrations(databaseURL string) error {
 
 	log.Println("Migrations applied successfully")
 	return nil
+}
+
+func findMigrationDir() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get working directory: %w", err)
+	}
+
+	checkDirs := []string{wd}
+	for i := 0; i < 4; i++ {
+		checkDirs = append(checkDirs, filepath.Dir(checkDirs[len(checkDirs)-1]))
+	}
+
+	for _, base := range checkDirs {
+		candidate := filepath.Join(base, "sql", "migrations")
+		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
+			return candidate, nil
+		}
+	}
+
+	return "", fmt.Errorf("failed to find migrations directory from %s", wd)
 }
 
 // checkPendingMigrations checks if there are any pending migrations

@@ -43,6 +43,12 @@ type UpdateTeamRequest struct {
 }
 
 func (s *TeamService) Create(ctx context.Context, req CreateTeamRequest) (*Team, error) {
+	if conflict, err := teamNameConflictsWithStadiums(ctx, s.store, req.Name); err != nil {
+		return nil, err
+	} else if conflict {
+		return nil, ErrNameConflict
+	}
+
 	id, err := s.store.CreateTeam(ctx, store.CreateTeamParams{
 		Name:                req.Name,
 		Province:            toNullString(req.Province),
@@ -109,6 +115,12 @@ func (s *TeamService) List(ctx context.Context) ([]*Team, error) {
 }
 
 func (s *TeamService) Update(ctx context.Context, id int64, req UpdateTeamRequest) (*Team, error) {
+	if conflict, err := teamNameConflictsWithStadiums(ctx, s.store, req.Name); err != nil {
+		return nil, err
+	} else if conflict {
+		return nil, ErrNameConflict
+	}
+
 	err := s.store.UpdateTeam(ctx, store.UpdateTeamParams{
 		ID:                  id,
 		Name:                req.Name,
