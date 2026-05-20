@@ -54,7 +54,7 @@ func NewDB(ctx context.Context) *sql.DB {
 	}
 
 	// Run migrations
-	if err := RunMigrations(dsn); err != nil {
+	if err := RunMigrations(ctx, dsn); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
@@ -62,7 +62,7 @@ func NewDB(ctx context.Context) *sql.DB {
 }
 
 // RunMigrations checks for and applies pending migrations
-func RunMigrations(databaseURL string) error {
+func RunMigrations(ctx context.Context, databaseURL string) error {
 	migrationDir, err := findMigrationDir()
 	if err != nil {
 		return err
@@ -94,9 +94,15 @@ func RunMigrations(databaseURL string) error {
 	}
 	defer m.Close()
 
-	// Check if there are pending migrations
-	if err := checkPendingMigrations(m); err != nil {
-		return err
+	version, dirty, err := m.Version()
+	if err != nil && err != migrate.ErrNilVersion {
+		return fmt.Errorf("failed to get migration version: %w", err)
+	}
+
+	if dirty {
+		if err := recoverDirtyMigration(ctx, db, m, version); err != nil {
+			return err
+		}
 	}
 
 	// Apply migrations
@@ -129,25 +135,186 @@ func findMigrationDir() (string, error) {
 	return "", fmt.Errorf("failed to find migrations directory from %s", wd)
 }
 
-// checkPendingMigrations checks if there are any pending migrations
-func checkPendingMigrations(m *migrate.Migrate) error {
-	// Get current version
-	version, dirty, err := m.Version()
-	if err != nil && err != migrate.ErrNilVersion {
-		return fmt.Errorf("failed to get migration version: %w", err)
-	}
-
-	if err == migrate.ErrNilVersion {
-		log.Println("No migrations applied yet. Applying initial migration...")
-		return nil
-	}
-
-	if dirty {
+func recoverDirtyMigration(ctx context.Context, db *sql.DB, m *migrate.Migrate, version uint) error {
+	if version != 2 {
 		return fmt.Errorf("database is in dirty state at version %d, manual intervention required", version)
 	}
 
-	// Check if there are pending migrations by looking at the next version
-	log.Printf("Database is up to date. Current version: %d\n", version)
+	log.Printf("database is in dirty state at version %d; attempting automatic recovery", version)
+
+	if err := applyMigrationTwoFixups(ctx, db); err != nil {
+		return err
+	}
+
+	if err := m.Force(int(version)); err != nil {
+		return fmt.Errorf("failed to force migration version %d after recovery: %w", version, err)
+	}
+
+	log.Printf("recovered dirty migration state at version %d", version)
+	return nil
+}
+
+func applyMigrationTwoFixups(ctx context.Context, db *sql.DB) error {
+	if err := renameTableIfNeeded(ctx, db, "futbolista", "footballer"); err != nil {
+		return err
+	}
+
+	if err := renameColumnIfNeeded(ctx, db, "player", "futbolista_id", "footballer_id"); err != nil {
+		return err
+	}
+
+	if err := renameColumnIfNeeded(ctx, db, "coach", "futbolista_id", "footballer_id"); err != nil {
+		return err
+	}
+
+	if err := ensureUniqueIndex(ctx, db, "team", "team_name_unique", "name"); err != nil {
+		return err
+	}
+
+	if err := ensureUniqueIndex(ctx, db, "stadium", "stadium_name_unique", "name"); err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func renameTableIfNeeded(ctx context.Context, db *sql.DB, oldName, newName string) error {
+	oldExists, err := tableExists(ctx, db, oldName)
+	if err != nil {
+		return err
+	}
+	newExists, err := tableExists(ctx, db, newName)
+	if err != nil {
+		return err
+	}
+
+	if oldExists && !newExists {
+		_, err = db.ExecContext(ctx, fmt.Sprintf("ALTER TABLE %s RENAME TO %s", oldName, newName))
+		if err != nil {
+			return fmt.Errorf("failed to rename table %s to %s: %w", oldName, newName, err)
+		}
+		log.Printf("renamed table %s to %s", oldName, newName)
+	}
+
+	return nil
+}
+
+func renameColumnIfNeeded(ctx context.Context, db *sql.DB, tableName, oldName, newName string) error {
+	oldExists, err := columnExists(ctx, db, tableName, oldName)
+	if err != nil {
+		return err
+	}
+	newExists, err := columnExists(ctx, db, tableName, newName)
+	if err != nil {
+		return err
+	}
+
+	if oldExists && !newExists {
+		_, err = db.ExecContext(ctx, fmt.Sprintf("ALTER TABLE %s RENAME COLUMN %s TO %s", tableName, oldName, newName))
+		if err != nil {
+			return fmt.Errorf("failed to rename column %s.%s to %s: %w", tableName, oldName, newName, err)
+		}
+		log.Printf("renamed column %s.%s to %s", tableName, oldName, newName)
+	}
+
+	return nil
+}
+
+func ensureUniqueIndex(ctx context.Context, db *sql.DB, tableName, indexName, columnName string) error {
+	exists, err := uniqueIndexExists(ctx, db, indexName)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	hasDuplicates, err := hasDuplicateValues(ctx, db, tableName, columnName)
+	if err != nil {
+		return err
+	}
+	if hasDuplicates {
+		log.Printf("skipping unique index %s because %s.%s contains duplicate values", indexName, tableName, columnName)
+		return nil
+	}
+
+	_, err = db.ExecContext(ctx, fmt.Sprintf("CREATE UNIQUE INDEX IF NOT EXISTS %s ON %s (%s)", indexName, tableName, columnName))
+	if err != nil {
+		return fmt.Errorf("failed to create unique index %s on %s(%s): %w", indexName, tableName, columnName, err)
+	}
+
+	log.Printf("created unique index %s on %s(%s)", indexName, tableName, columnName)
+	return nil
+}
+
+func tableExists(ctx context.Context, db *sql.DB, tableName string) (bool, error) {
+	var exists bool
+	err := db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM information_schema.tables
+			WHERE table_schema = current_schema()
+			  AND table_name = $1
+		)
+	`, tableName).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check whether table %s exists: %w", tableName, err)
+	}
+
+	return exists, nil
+}
+
+func columnExists(ctx context.Context, db *sql.DB, tableName, columnName string) (bool, error) {
+	var exists bool
+	err := db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM information_schema.columns
+			WHERE table_schema = current_schema()
+			  AND table_name = $1
+			  AND column_name = $2
+		)
+	`, tableName, columnName).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check whether column %s.%s exists: %w", tableName, columnName, err)
+	}
+
+	return exists, nil
+}
+
+func uniqueIndexExists(ctx context.Context, db *sql.DB, indexName string) (bool, error) {
+	var exists bool
+	err := db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM pg_indexes
+			WHERE schemaname = current_schema()
+			  AND indexname = $1
+		)
+	`, indexName).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check whether index %s exists: %w", indexName, err)
+	}
+
+	return exists, nil
+}
+
+func hasDuplicateValues(ctx context.Context, db *sql.DB, tableName, columnName string) (bool, error) {
+	query := fmt.Sprintf(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM %s
+			WHERE %s IS NOT NULL
+			GROUP BY %s
+			HAVING COUNT(*) > 1
+		)
+	`, tableName, columnName, columnName)
+
+	var exists bool
+	err := db.QueryRowContext(ctx, query).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check duplicate values for %s.%s: %w", tableName, columnName, err)
+	}
+
+	return exists, nil
 }
