@@ -1,25 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
-import type { Team } from "@/shared/types";
-import { apiService } from "@/shared/services/api";
+import type { Team } from "../types";
 import { Button } from "@/shared/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { Loading } from "@/shared/components/Loading";
 
-export function TeamList() {
-  const {
-    data: teams = [],
-    isLoading,
-    error,
-  } = useQuery<Team[]>({
-    queryKey: ["teams"],
-    queryFn: () => apiService.getTeams(),
-  });
+interface TeamListProps {
+  readonly teams: Team[];
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+  readonly onCreate: () => void;
+  readonly onEdit: (team: Team) => void;
+  readonly onDelete: (id: number) => void;
+}
 
-  if (isLoading)
-    return (
-      <div className="text-center py-8 text-foreground">
-        Cargando equipos...
-      </div>
-    );
+export function TeamList({
+  teams,
+  isLoading,
+  error,
+  onCreate,
+  onEdit,
+  onDelete,
+}: TeamListProps) {
+  if (isLoading) return <Loading />;
   if (error)
     return (
       <div className="text-center py-8 text-destructive">
@@ -31,7 +32,7 @@ export function TeamList() {
     <div className="container p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Equipos</h1>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={onCreate}>
           <Plus size={16} />
           Nuevo Equipo
         </Button>
@@ -46,13 +47,18 @@ export function TeamList() {
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-semibold">{team.name}</h3>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(team)}
+                >
                   <Edit size={14} />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   className="text-destructive hover:text-destructive"
+                  onClick={() => onDelete(team.id)}
                 >
                   <Trash2 size={14} />
                 </Button>
@@ -75,7 +81,7 @@ export function TeamList() {
                 <p>
                   <span className="font-medium">Color:</span>
                   <span
-                    className="inline-block w-4 h-4 ml-2 rounded border-border"
+                    className="inline-block w-4 h-4 ml-2 rounded border-2 border-gray-400 dark:border-gray-600"
                     style={{ backgroundColor: team.color }}
                   />
                 </p>
@@ -98,9 +104,9 @@ export function TeamList() {
       </div>
 
       {teams.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="text-center py-12 text-muted-foreground animate-in fade-in duration-300">
           <p className="text-lg mb-4">No hay equipos registrados</p>
-          <Button>Crear primer equipo</Button>
+          <Button onClick={onCreate}>Crear primer equipo</Button>
         </div>
       )}
     </div>

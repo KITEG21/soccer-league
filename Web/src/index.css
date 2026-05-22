@@ -6,6 +6,8 @@
   --color-foreground: #1e293b;
   --color-card: #ffffff;
   --color-card-foreground: #1e293b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1e293b;
   --color-primary: #059669;
   --color-primary-foreground: #ffffff;
   --color-secondary: #f1f5f9;
@@ -28,6 +30,8 @@
   --color-foreground: #f1f5f9;
   --color-card: #1e293b;
   --color-card-foreground: #f1f5f9;
+  --color-popover: #1e293b;
+  --color-popover-foreground: #f1f5f9;
   --color-primary: #10b981;
   --color-primary-foreground: #0f172a;
   --color-secondary: #334155;
@@ -45,4 +49,13 @@
 
 button {
   cursor: pointer;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
