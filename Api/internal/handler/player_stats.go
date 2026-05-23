@@ -9,77 +9,75 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type SeasonHandler struct {
-	svc *service.SeasonService
+type PlayerStatsHandler struct {
+	svc *service.PlayerStatsService
 }
 
-func NewSeasonHandler(svc *service.SeasonService) *SeasonHandler {
-	return &SeasonHandler{svc: svc}
+func NewPlayerStatsHandler(svc *service.PlayerStatsService) *PlayerStatsHandler {
+	return &PlayerStatsHandler{svc: svc}
 }
 
-func (h *SeasonHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req service.CreateSeasonRequest
+func (h *PlayerStatsHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var req service.CreatePlayerStatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
-	season, err := h.svc.Create(r.Context(), req)
+	stat, err := h.svc.Create(r.Context(), req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(season)
+	json.NewEncoder(w).Encode(stat)
 }
 
-func (h *SeasonHandler) List(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerStatsHandler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := parsePagination(r)
-	seasons, err := h.svc.List(r.Context(), limit, offset)
+	stats, err := h.svc.List(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(seasons)
+	json.NewEncoder(w).Encode(stats)
 }
 
-func (h *SeasonHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerStatsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
-	season, err := h.svc.Get(r.Context(), id)
+	stat, err := h.svc.Get(r.Context(), id)
 	if err != nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(season)
+	json.NewEncoder(w).Encode(stat)
 }
 
-func (h *SeasonHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerStatsHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
-	var req service.UpdateSeasonRequest
+	var req service.UpdatePlayerStatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
-	season, err := h.svc.Update(r.Context(), id, req)
-	if err != nil {
+	if err := h.svc.Update(r.Context(), id, req); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(season)
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *SeasonHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerStatsHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)

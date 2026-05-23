@@ -39,7 +39,8 @@ func (h *TeamHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TeamHandler) List(w http.ResponseWriter, r *http.Request) {
-	teams, err := h.svc.List(r.Context())
+	limit, offset := parsePagination(r)
+	teams, err := h.svc.List(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

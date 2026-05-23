@@ -12,6 +12,11 @@ import (
 
 var ErrNameConflict = errors.New("name already exists in the other entity")
 
+const (
+	DefaultPageLimit = 20
+	MaxPageLimit     = 100
+)
+
 func toNullString(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: s != ""}
 }
@@ -45,6 +50,17 @@ func fromNullInt64(ni sql.NullInt64) int64 {
 	return 0
 }
 
+func toNullFloat64(f float64) sql.NullFloat64 {
+	return sql.NullFloat64{Float64: f, Valid: true}
+}
+
+func fromNullFloat64(nf sql.NullFloat64) float64 {
+	if nf.Valid {
+		return nf.Float64
+	}
+	return 0
+}
+
 func toNullTime(s string) sql.NullTime {
 	if s == "" {
 		return sql.NullTime{Valid: false}
@@ -61,6 +77,31 @@ func fromNullTime(nt sql.NullTime) string {
 		return nt.Time.Format("2006-01-02")
 	}
 	return ""
+}
+
+func normalizePagination(limit, offset int) (int, int) {
+	if limit <= 0 {
+		limit = DefaultPageLimit
+	}
+	if limit > MaxPageLimit {
+		limit = MaxPageLimit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	return limit, offset
+}
+
+func paginateSlice[T any](items []T, limit, offset int) []T {
+	limit, offset = normalizePagination(limit, offset)
+	if offset >= len(items) {
+		return []T{}
+	}
+	end := offset + limit
+	if end > len(items) {
+		end = len(items)
+	}
+	return items[offset:end]
 }
 
 func normalizeName(name string) string {

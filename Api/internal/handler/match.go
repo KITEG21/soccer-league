@@ -9,77 +9,77 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type SeasonHandler struct {
-	svc *service.SeasonService
+type MatchHandler struct {
+	svc *service.MatchService
 }
 
-func NewSeasonHandler(svc *service.SeasonService) *SeasonHandler {
-	return &SeasonHandler{svc: svc}
+func NewMatchHandler(svc *service.MatchService) *MatchHandler {
+	return &MatchHandler{svc: svc}
 }
 
-func (h *SeasonHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req service.CreateSeasonRequest
+func (h *MatchHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var req service.CreateMatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
-	season, err := h.svc.Create(r.Context(), req)
+	match, err := h.svc.Create(r.Context(), req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(season)
+	json.NewEncoder(w).Encode(match)
 }
 
-func (h *SeasonHandler) List(w http.ResponseWriter, r *http.Request) {
+func (h *MatchHandler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := parsePagination(r)
-	seasons, err := h.svc.List(r.Context(), limit, offset)
+	matches, err := h.svc.List(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(seasons)
+	json.NewEncoder(w).Encode(matches)
 }
 
-func (h *SeasonHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *MatchHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
-	season, err := h.svc.Get(r.Context(), id)
+	match, err := h.svc.Get(r.Context(), id)
 	if err != nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(season)
+	json.NewEncoder(w).Encode(match)
 }
 
-func (h *SeasonHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *MatchHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
-	var req service.UpdateSeasonRequest
+	var req service.UpdateMatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
-	season, err := h.svc.Update(r.Context(), id, req)
+	match, err := h.svc.Update(r.Context(), id, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(season)
+	json.NewEncoder(w).Encode(match)
 }
 
-func (h *SeasonHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *MatchHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)

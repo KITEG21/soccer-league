@@ -69,7 +69,7 @@ func (s *StadiumService) Get(ctx context.Context, id int64) (*Stadium, error) {
 	}, nil
 }
 
-func (s *StadiumService) List(ctx context.Context) ([]*Stadium, error) {
+func (s *StadiumService) List(ctx context.Context, limit, offset int) ([]*Stadium, error) {
 	rows, err := s.store.ListStadiums(ctx)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (s *StadiumService) List(ctx context.Context) ([]*Stadium, error) {
 			Capacity: fromNullInt32(st.Capacity),
 		})
 	}
-	return stadiums, nil
+	return paginateSlice(stadiums, limit, offset), nil
 }
 
 func (s *StadiumService) Update(ctx context.Context, id int64, req UpdateStadiumRequest) (*Stadium, error) {

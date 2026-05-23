@@ -44,7 +44,7 @@ func ServeScalarUI(r chi.Router) {
   "openapi": "3.0.0",
   "info": {
     "title": "Football API",
-    "description": "REST API for managing football teams, stadiums, seasons, players and coaches",
+    "description": "REST API for managing football teams, stadiums, seasons, players, matches, player statistics and reports",
     "version": "1.0.0"
   },
   "servers": [
@@ -54,32 +54,24 @@ func ServeScalarUI(r chi.Router) {
     }
   ],
   "tags": [
-    {
-      "name": "Teams",
-      "description": "Operations related to football teams"
-    },
-    {
-      "name": "Stadiums",
-      "description": "Operations related to stadiums"
-    },
-    {
-      "name": "Seasons",
-      "description": "Operations related to seasons"
-    },
-    {
-      "name": "Players",
-      "description": "Operations related to players (Footballer + Player tables, atomic creation)"
-    },
-    {
-      "name": "Coaches",
-      "description": "Operations related to coaches (Footballer + Coach tables, atomic creation)"
-    }
+    { "name": "Teams", "description": "Operations related to football teams" },
+    { "name": "Stadiums", "description": "Operations related to stadiums" },
+    { "name": "Seasons", "description": "Operations related to seasons" },
+    { "name": "Players", "description": "Operations related to players (Footballer + Player tables, atomic creation)" },
+    { "name": "Coaches", "description": "Operations related to coaches (Footballer + Coach tables, atomic creation)" },
+    { "name": "Matches", "description": "Operations related to matches" },
+    { "name": "PlayerStats", "description": "Per-match player statistics" },
+    { "name": "Reports", "description": "Analytical and summary reports" }
   ],
   "paths": {
     "/teams": {
       "get": {
         "tags": ["Teams"],
         "summary": "List all teams",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
         "responses": {
           "200": {
             "description": "List of teams",
@@ -190,6 +182,10 @@ func ServeScalarUI(r chi.Router) {
       "get": {
         "tags": ["Stadiums"],
         "summary": "List all stadiums",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
         "responses": {
           "200": {
             "description": "List of stadiums",
@@ -300,6 +296,10 @@ func ServeScalarUI(r chi.Router) {
       "get": {
         "tags": ["Seasons"],
         "summary": "List all seasons",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
         "responses": {
           "200": {
             "description": "List of seasons",
@@ -410,6 +410,10 @@ func ServeScalarUI(r chi.Router) {
       "get": {
         "tags": ["Players"],
         "summary": "List all players",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
         "responses": {
           "200": {
             "description": "List of players",
@@ -513,6 +517,10 @@ func ServeScalarUI(r chi.Router) {
       "get": {
         "tags": ["Coaches"],
         "summary": "List all coaches",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
         "responses": {
           "200": {
             "description": "List of coaches",
@@ -612,6 +620,138 @@ func ServeScalarUI(r chi.Router) {
         }
       }
     }
+    ,
+    "/matches": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "List all matches",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": { "200": { "description": "List of matches", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Match" } } } } } }
+      },
+      "post": {
+        "tags": ["Matches"],
+        "summary": "Create a match",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateMatchRequest" } } } },
+        "responses": { "201": { "description": "Match created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Match" } } } } }
+      }
+    },
+    "/matches/{id}": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "Get match by ID",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "Match details", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Match" } } } } }
+      },
+      "put": {
+        "tags": ["Matches"],
+        "summary": "Update match",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateMatchRequest" } } } },
+        "responses": { "200": { "description": "Match updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Match" } } } } }
+      },
+      "delete": {
+        "tags": ["Matches"],
+        "summary": "Delete match",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "204": { "description": "Match deleted" } }
+      }
+    },
+    "/player-stats": {
+      "get": {
+        "tags": ["PlayerStats"],
+        "summary": "List all player stats",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": { "200": { "description": "List of player stats", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PlayerStat" } } } } } }
+      },
+      "post": {
+        "tags": ["PlayerStats"],
+        "summary": "Create player stat",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreatePlayerStatRequest" } } } },
+        "responses": { "201": { "description": "Player stat created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PlayerStat" } } } } }
+      }
+    },
+    "/player-stats/{id}": {
+      "get": {
+        "tags": ["PlayerStats"],
+        "summary": "Get player stat by ID",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "Player stat details", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PlayerStat" } } } } }
+      },
+      "put": {
+        "tags": ["PlayerStats"],
+        "summary": "Update player stat",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreatePlayerStatRequest" } } } },
+        "responses": { "204": { "description": "Player stat updated" } }
+      },
+      "delete": {
+        "tags": ["PlayerStats"],
+        "summary": "Delete player stat",
+        "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "204": { "description": "Player stat deleted" } }
+      }
+    },
+    "/reports/standings": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Get standings for a season",
+        "parameters": [ { "name": "seasonId", "in": "query", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "Standings", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/StandingRow" } } } } } }
+      }
+    },
+    "/reports/matches-between-teams": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List matches between two teams",
+        "parameters": [ { "name": "team1", "in": "query", "required": true, "schema": { "type": "integer" } }, { "name": "team2", "in": "query", "required": true, "schema": { "type": "integer" } }, { "name": "seasonId", "in": "query", "required": false, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "Matches between teams", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MatchBetweenTeamsRow" } } } } } }
+      }
+    },
+    "/reports/matches-by-date": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List matches by date (optionally filtered by stadium)",
+        "parameters": [ { "name": "date", "in": "query", "required": true, "schema": { "type": "string", "format": "date" } }, { "name": "stadiumId", "in": "query", "required": false, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "Matches on date", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MatchByDateRow" } } } } } }
+      }
+    },
+    "/reports/coaches-by-experience": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List coaches ordered by experience",
+        "responses": { "200": { "description": "Coaches report", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CoachReportRow" } } } } } }
+      }
+    },
+    "/reports/stadiums-by-attendance": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List stadiums ordered by attendance for a season",
+        "parameters": [ { "name": "seasonId", "in": "query", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "Stadium attendance report", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/StadiumAttendanceRow" } } } } } }
+      }
+    },
+    "/reports/team-status/{teamId}": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Get team status for a season",
+        "parameters": [ { "name": "teamId", "in": "path", "required": true, "schema": { "type": "integer" } }, { "name": "seasonId", "in": "query", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "Team status", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeamStatusRow" } } } } }
+      }
+    },
+    "/reports/all-star-team": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Get all-star team for a season",
+        "parameters": [ { "name": "seasonId", "in": "query", "required": true, "schema": { "type": "integer" } } ],
+        "responses": { "200": { "description": "All-star team", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AllStarRow" } } } } } }
+      }
+    }
   },
   "components": {
     "schemas": {
@@ -705,10 +845,9 @@ func ServeScalarUI(r chi.Router) {
           "name": { "type": "string" },
           "number": { "type": "integer" },
           "years_in_team": { "type": "integer" },
-          "position_id": { "type": "integer" },
+          "position": { "type": "string" },
           "matches_played": { "type": "integer" },
-          "goals": { "type": "integer" },
-          "assists": { "type": "integer" }
+          "average_goals_per_match": { "type": "number", "format": "float" }
         }
       },
       "CreatePlayerRequest": {
@@ -719,10 +858,9 @@ func ServeScalarUI(r chi.Router) {
           "name": { "type": "string" },
           "number": { "type": "integer" },
           "years_in_team": { "type": "integer" },
-          "position_id": { "type": "integer" },
+          "position": { "type": "string" },
           "matches_played": { "type": "integer" },
-          "goals": { "type": "integer" },
-          "assists": { "type": "integer" }
+          "average_goals_per_match": { "type": "number", "format": "float" }
         }
       },
       "Coach": {
@@ -733,7 +871,8 @@ func ServeScalarUI(r chi.Router) {
           "name": { "type": "string" },
           "number": { "type": "integer" },
           "years_in_team": { "type": "integer" },
-          "experience_years": { "type": "integer" }
+          "experience_years": { "type": "integer" },
+          "championships_won": { "type": "integer" }
         }
       },
       "CreateCoachRequest": {
@@ -744,7 +883,159 @@ func ServeScalarUI(r chi.Router) {
           "name": { "type": "string" },
           "number": { "type": "integer" },
           "years_in_team": { "type": "integer" },
-          "experience_years": { "type": "integer" }
+          "experience_years": { "type": "integer" },
+          "championships_won": { "type": "integer" }
+        }
+      }
+      ,
+      "Match": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "home_team_id": { "type": "integer" },
+          "away_team_id": { "type": "integer" },
+          "season_id": { "type": "integer" },
+          "stadium_id": { "type": "integer" },
+          "match_date": { "type": "string", "format": "date" },
+          "home_goals": { "type": "integer" },
+          "away_goals": { "type": "integer" },
+          "attendance": { "type": "integer" }
+        }
+      },
+      "CreateMatchRequest": {
+        "type": "object",
+        "required": ["home_team_id","away_team_id","season_id","match_date"],
+        "properties": {
+          "home_team_id": { "type": "integer" },
+          "away_team_id": { "type": "integer" },
+          "season_id": { "type": "integer" },
+          "stadium_id": { "type": "integer" },
+          "match_date": { "type": "string", "format": "date" },
+          "home_goals": { "type": "integer" },
+          "away_goals": { "type": "integer" },
+          "attendance": { "type": "integer" }
+        }
+      },
+      "UpdateMatchRequest": { "$ref": "#/components/schemas/CreateMatchRequest" },
+      "PlayerStat": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "player_id": { "type": "integer" },
+          "match_id": { "type": "integer" },
+          "goals_scored": { "type": "integer" },
+          "assists": { "type": "integer" },
+          "shots_on_goal": { "type": "integer" },
+          "passes_completed": { "type": "integer" },
+          "interceptions": { "type": "integer" },
+          "tackles": { "type": "integer" },
+          "blocks": { "type": "integer" },
+          "saves": { "type": "integer" },
+          "goals_conceded": { "type": "integer" }
+        }
+      },
+      "CreatePlayerStatRequest": {
+        "type": "object",
+        "required": ["player_id","match_id"],
+        "properties": {
+          "player_id": { "type": "integer" },
+          "match_id": { "type": "integer" },
+          "goals_scored": { "type": "integer" },
+          "assists": { "type": "integer" },
+          "shots_on_goal": { "type": "integer" },
+          "passes_completed": { "type": "integer" },
+          "interceptions": { "type": "integer" },
+          "tackles": { "type": "integer" },
+          "blocks": { "type": "integer" },
+          "saves": { "type": "integer" },
+          "goals_conceded": { "type": "integer" }
+        }
+      },
+      "StandingRow": {
+        "type": "object",
+        "properties": { "team_id": { "type": "integer" }, "name": { "type": "string" }, "points": { "type": "integer" } }
+      },
+      "MatchBetweenTeamsRow": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "match_date": { "type": "string", "format": "date" },
+          "stadium_name": { "type": "string" },
+          "home_team_name": { "type": "string" },
+          "away_team_name": { "type": "string" },
+          "home_goals": { "type": "integer" },
+          "away_goals": { "type": "integer" },
+          "home_assists": { "type": "integer" },
+          "away_assists": { "type": "integer" }
+        }
+      },
+      "MatchByDateRow": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "match_date": { "type": "string", "format": "date" },
+          "stadium_name": { "type": "string" },
+          "home_team_name": { "type": "string" },
+          "away_team_name": { "type": "string" },
+          "home_goals": { "type": "integer" },
+          "away_goals": { "type": "integer" },
+          "attendance": { "type": "integer" }
+        }
+      },
+      "CoachReportRow": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "number": { "type": "integer" },
+          "experience_years": { "type": "integer" },
+          "championships_won": { "type": "integer" },
+          "team_name": { "type": "string" }
+        }
+      },
+      "StadiumAttendanceRow": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "capacity": { "type": "integer" },
+          "total_attendance": { "type": "integer" },
+          "total_matches": { "type": "integer" },
+          "attendance_percentage": { "type": "number", "format": "float" }
+        }
+      },
+      "TeamStatusRow": {
+        "type": "object",
+        "properties": {
+          "team_id": { "type": "integer" },
+          "name": { "type": "string" },
+          "home_wins": { "type": "integer" },
+          "home_draws": { "type": "integer" },
+          "home_losses": { "type": "integer" },
+          "away_wins": { "type": "integer" },
+          "away_draws": { "type": "integer" },
+          "away_losses": { "type": "integer" },
+          "total_wins": { "type": "integer" },
+          "total_draws": { "type": "integer" },
+          "total_losses": { "type": "integer" }
+        }
+      },
+      "AllStarRow": {
+        "type": "object",
+        "properties": {
+          "position": { "type": "string" },
+          "player_name": { "type": "string" },
+          "team_name": { "type": "string" },
+          "metric_name": { "type": "string" },
+          "metric_value": { "type": "integer" },
+          "goals_scored": { "type": "integer" },
+          "assists": { "type": "integer" },
+          "shots_on_goal": { "type": "integer" },
+          "passes_completed": { "type": "integer" },
+          "interceptions": { "type": "integer" },
+          "tackles": { "type": "integer" },
+          "blocks": { "type": "integer" },
+          "saves": { "type": "integer" },
+          "goals_conceded": { "type": "integer" }
         }
       }
     }

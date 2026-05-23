@@ -36,12 +36,18 @@ func main() {
 	stadiumSvc := service.NewStadiumService(store)
 	seasonSvc := service.NewSeasonService(store)
 	playerSvc := service.NewPlayerService(store)
+	matchSvc := service.NewMatchService(store)
+	playerStatsSvc := service.NewPlayerStatsService(store)
+	reportsSvc := service.NewReportsService(store)
 
 	// Init handlers
 	teamHandler := handler.NewTeamHandler(teamSvc)
 	stadiumHandler := handler.NewStadiumHandler(stadiumSvc)
 	seasonHandler := handler.NewSeasonHandler(seasonSvc)
 	playerHandler := handler.NewPlayerHandler(playerSvc)
+	matchHandler := handler.NewMatchHandler(matchSvc)
+	playerStatsHandler := handler.NewPlayerStatsHandler(playerStatsSvc)
+	reportsHandler := handler.NewReportsHandler(reportsSvc)
 
 	// Init router
 	r := chi.NewRouter()
@@ -98,12 +104,38 @@ func main() {
 		r.Delete("/{id}", playerHandler.DeletePlayer)
 	})
 
+	r.Route("/matches", func(r chi.Router) {
+		r.Post("/", matchHandler.Create)
+		r.Get("/", matchHandler.List)
+		r.Get("/{id}", matchHandler.Get)
+		r.Put("/{id}", matchHandler.Update)
+		r.Delete("/{id}", matchHandler.Delete)
+	})
+
+	r.Route("/player-stats", func(r chi.Router) {
+		r.Post("/", playerStatsHandler.Create)
+		r.Get("/", playerStatsHandler.List)
+		r.Get("/{id}", playerStatsHandler.Get)
+		r.Put("/{id}", playerStatsHandler.Update)
+		r.Delete("/{id}", playerStatsHandler.Delete)
+	})
+
 	r.Route("/coaches", func(r chi.Router) {
 		r.Post("/", playerHandler.CreateCoach)
 		r.Get("/", playerHandler.ListCoaches)
 		r.Get("/{id}", playerHandler.GetCoach)
 		r.Put("/{id}", playerHandler.UpdateCoach)
 		r.Delete("/{id}", playerHandler.DeleteCoach)
+	})
+
+	r.Route("/reports", func(r chi.Router) {
+		r.Get("/standings", reportsHandler.Standings)
+		r.Get("/matches-between-teams", reportsHandler.MatchesBetweenTeams)
+		r.Get("/matches-by-date", reportsHandler.MatchesByDate)
+		r.Get("/coaches-by-experience", reportsHandler.CoachesByExperience)
+		r.Get("/stadiums-by-attendance", reportsHandler.StadiumsByAttendance)
+		r.Get("/team-status/{teamId}", reportsHandler.TeamStatus)
+		r.Get("/all-star-team", reportsHandler.AllStarTeam)
 	})
 
 	// Get port from environment variable or default

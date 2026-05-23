@@ -93,7 +93,7 @@ func (s *TeamService) Get(ctx context.Context, id int64) (*Team, error) {
 	}, nil
 }
 
-func (s *TeamService) List(ctx context.Context) ([]*Team, error) {
+func (s *TeamService) List(ctx context.Context, limit, offset int) ([]*Team, error) {
 	rows, err := s.store.ListTeams(ctx)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (s *TeamService) List(ctx context.Context) ([]*Team, error) {
 			ChampionshipsWon:    fromNullInt32(t.ChampionshipsWon),
 		})
 	}
-	return teams, nil
+	return paginateSlice(teams, limit, offset), nil
 }
 
 func (s *TeamService) Update(ctx context.Context, id int64, req UpdateTeamRequest) (*Team, error) {

@@ -35,7 +35,8 @@ func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlayerHandler) ListPlayers(w http.ResponseWriter, r *http.Request) {
-	players, err := h.svc.ListPlayers(r.Context())
+	limit, offset := parsePagination(r)
+	players, err := h.svc.ListPlayers(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -108,7 +109,8 @@ func (h *PlayerHandler) CreateCoach(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlayerHandler) ListCoaches(w http.ResponseWriter, r *http.Request) {
-	coaches, err := h.svc.ListCoaches(r.Context())
+	limit, offset := parsePagination(r)
+	coaches, err := h.svc.ListCoaches(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
