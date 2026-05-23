@@ -8,6 +8,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const createCoach = `-- name: CreateCoach :one
@@ -16,20 +17,21 @@ WITH ins_fut AS (
     VALUES ($1, $2, $3, $4)
     RETURNING id
 )
-INSERT INTO Coach (footballer_id, experience_years)
-SELECT id, $5 FROM ins_fut
+INSERT INTO Coach (footballer_id, experience_years, championships_won)
+SELECT id, $5, $6 FROM ins_fut
 RETURNING footballer_id
 `
 
 type CreateCoachParams struct {
-	TeamID          sql.NullInt64
-	Name            string
-	Number          sql.NullInt32
-	YearsInTeam     sql.NullInt32
-	ExperienceYears sql.NullInt32
+	TeamID           sql.NullInt64
+	Name             string
+	Number           sql.NullInt32
+	YearsInTeam      sql.NullInt32
+	ExperienceYears  sql.NullInt32
+	ChampionshipsWon sql.NullInt32
 }
 
-// Coach CRUD (atomic with transaction via WITH clause)
+// Coach CRUD
 func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, createCoach,
 		arg.TeamID,
@@ -37,6 +39,7 @@ func (q *Queries) CreateCoach(ctx context.Context, arg CreateCoachParams) (int64
 		arg.Number,
 		arg.YearsInTeam,
 		arg.ExperienceYears,
+		arg.ChampionshipsWon,
 	)
 	var footballer_id int64
 	err := row.Scan(&footballer_id)
@@ -69,43 +72,127 @@ func (q *Queries) CreateFootballer(ctx context.Context, arg CreateFootballerPara
 	return id, err
 }
 
+const createMatch = `-- name: CreateMatch :one
+INSERT INTO Match (home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id
+`
+
+type CreateMatchParams struct {
+	HomeTeamID sql.NullInt64
+	AwayTeamID sql.NullInt64
+	SeasonID   sql.NullInt64
+	StadiumID  sql.NullInt64
+	MatchDate  time.Time
+	HomeGoals  sql.NullInt32
+	AwayGoals  sql.NullInt32
+	Attendance sql.NullInt32
+}
+
+// Match CRUD
+func (q *Queries) CreateMatch(ctx context.Context, arg CreateMatchParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createMatch,
+		arg.HomeTeamID,
+		arg.AwayTeamID,
+		arg.SeasonID,
+		arg.StadiumID,
+		arg.MatchDate,
+		arg.HomeGoals,
+		arg.AwayGoals,
+		arg.Attendance,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createPlayer = `-- name: CreatePlayer :one
 WITH ins_fut AS (
     INSERT INTO Footballer (team_id, name, number, years_in_team)
     VALUES ($1, $2, $3, $4)
     RETURNING id
 )
-INSERT INTO Player (footballer_id, position_id, matches_played, goals, assists)
-SELECT id, $5, $6, $7, $8 FROM ins_fut
+INSERT INTO Player (footballer_id, position, matches_played, average_goals_per_match)
+SELECT id, $5, $6, $7 FROM ins_fut
 RETURNING footballer_id
 `
 
 type CreatePlayerParams struct {
-	TeamID        sql.NullInt64
-	Name          string
-	Number        sql.NullInt32
-	YearsInTeam   sql.NullInt32
-	PositionID    sql.NullInt64
-	MatchesPlayed sql.NullInt32
-	Goals         sql.NullInt32
-	Assists       sql.NullInt32
+	TeamID               sql.NullInt64
+	Name                 string
+	Number               sql.NullInt32
+	YearsInTeam          sql.NullInt32
+	Position             string
+	MatchesPlayed        sql.NullInt32
+	AverageGoalsPerMatch sql.NullFloat64
 }
 
-// Player CRUD (atomic with transaction via WITH clause)
+// Player CRUD
 func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, createPlayer,
 		arg.TeamID,
 		arg.Name,
 		arg.Number,
 		arg.YearsInTeam,
-		arg.PositionID,
+		arg.Position,
 		arg.MatchesPlayed,
-		arg.Goals,
-		arg.Assists,
+		arg.AverageGoalsPerMatch,
 	)
 	var footballer_id int64
 	err := row.Scan(&footballer_id)
 	return footballer_id, err
+}
+
+const createPlayerStat = `-- name: CreatePlayerStat :one
+INSERT INTO PlayerStats (
+    player_id,
+    match_id,
+    goals_scored,
+    assists,
+    shots_on_goal,
+    passes_completed,
+    interceptions,
+    tackles,
+    blocks,
+    saves,
+    goals_conceded
+)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+RETURNING id
+`
+
+type CreatePlayerStatParams struct {
+	PlayerID        sql.NullInt64
+	MatchID         sql.NullInt64
+	GoalsScored     sql.NullInt32
+	Assists         sql.NullInt32
+	ShotsOnGoal     sql.NullInt32
+	PassesCompleted sql.NullInt32
+	Interceptions   sql.NullInt32
+	Tackles         sql.NullInt32
+	Blocks          sql.NullInt32
+	Saves           sql.NullInt32
+	GoalsConceded   sql.NullInt32
+}
+
+// PlayerStats CRUD
+func (q *Queries) CreatePlayerStat(ctx context.Context, arg CreatePlayerStatParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createPlayerStat,
+		arg.PlayerID,
+		arg.MatchID,
+		arg.GoalsScored,
+		arg.Assists,
+		arg.ShotsOnGoal,
+		arg.PassesCompleted,
+		arg.Interceptions,
+		arg.Tackles,
+		arg.Blocks,
+		arg.Saves,
+		arg.GoalsConceded,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const createSeason = `-- name: CreateSeason :one
@@ -194,12 +281,30 @@ func (q *Queries) DeleteFootballer(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteMatch = `-- name: DeleteMatch :exec
+DELETE FROM Match WHERE id = $1
+`
+
+func (q *Queries) DeleteMatch(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteMatch, id)
+	return err
+}
+
 const deletePlayerRecord = `-- name: DeletePlayerRecord :exec
 DELETE FROM Player WHERE footballer_id = $1
 `
 
 func (q *Queries) DeletePlayerRecord(ctx context.Context, footballerID int64) error {
 	_, err := q.db.ExecContext(ctx, deletePlayerRecord, footballerID)
+	return err
+}
+
+const deletePlayerStat = `-- name: DeletePlayerStat :exec
+DELETE FROM PlayerStats WHERE id = $1
+`
+
+func (q *Queries) DeletePlayerStat(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deletePlayerStat, id)
 	return err
 }
 
@@ -230,21 +335,287 @@ func (q *Queries) DeleteTeam(ctx context.Context, id int64) error {
 	return err
 }
 
+const getBestDefender = `-- name: GetBestDefender :one
+SELECT
+    'Defensa' AS position,
+    f.name AS player_name,
+    COALESCE(t.name, '') AS team_name,
+    'tackles_plus_blocks' AS metric_name,
+    COALESCE(SUM(ps.tackles + ps.blocks), 0) AS metric_value,
+    COALESCE(SUM(ps.goals_scored), 0) AS goals_scored,
+    COALESCE(SUM(ps.assists), 0) AS assists,
+    COALESCE(SUM(ps.shots_on_goal), 0) AS shots_on_goal,
+    COALESCE(SUM(ps.passes_completed), 0) AS passes_completed,
+    COALESCE(SUM(ps.interceptions), 0) AS interceptions,
+    COALESCE(SUM(ps.tackles), 0) AS tackles,
+    COALESCE(SUM(ps.blocks), 0) AS blocks,
+    COALESCE(SUM(ps.saves), 0) AS saves,
+    COALESCE(SUM(ps.goals_conceded), 0) AS goals_conceded
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
+JOIN PlayerStats ps ON ps.player_id = p.footballer_id
+JOIN Match m ON m.id = ps.match_id
+LEFT JOIN Team t ON t.id = f.team_id
+WHERE p.position = 'Defensa' AND m.season_id = $1
+GROUP BY f.id, f.name, t.name
+ORDER BY metric_value DESC, tackles DESC, blocks DESC, f.name
+LIMIT 1
+`
+
+type GetBestDefenderRow struct {
+	Position        string
+	PlayerName      string
+	TeamName        string
+	MetricName      string
+	MetricValue     interface{}
+	GoalsScored     interface{}
+	Assists         interface{}
+	ShotsOnGoal     interface{}
+	PassesCompleted interface{}
+	Interceptions   interface{}
+	Tackles         interface{}
+	Blocks          interface{}
+	Saves           interface{}
+	GoalsConceded   interface{}
+}
+
+func (q *Queries) GetBestDefender(ctx context.Context, seasonID sql.NullInt64) (GetBestDefenderRow, error) {
+	row := q.db.QueryRowContext(ctx, getBestDefender, seasonID)
+	var i GetBestDefenderRow
+	err := row.Scan(
+		&i.Position,
+		&i.PlayerName,
+		&i.TeamName,
+		&i.MetricName,
+		&i.MetricValue,
+		&i.GoalsScored,
+		&i.Assists,
+		&i.ShotsOnGoal,
+		&i.PassesCompleted,
+		&i.Interceptions,
+		&i.Tackles,
+		&i.Blocks,
+		&i.Saves,
+		&i.GoalsConceded,
+	)
+	return i, err
+}
+
+const getBestForward = `-- name: GetBestForward :one
+SELECT
+    'Delantero' AS position,
+    f.name AS player_name,
+    COALESCE(t.name, '') AS team_name,
+    'shots_on_goal' AS metric_name,
+    COALESCE(SUM(ps.shots_on_goal), 0) AS metric_value,
+    COALESCE(SUM(ps.goals_scored), 0) AS goals_scored,
+    COALESCE(SUM(ps.assists), 0) AS assists,
+    COALESCE(SUM(ps.shots_on_goal), 0) AS shots_on_goal,
+    COALESCE(SUM(ps.passes_completed), 0) AS passes_completed,
+    COALESCE(SUM(ps.interceptions), 0) AS interceptions,
+    COALESCE(SUM(ps.tackles), 0) AS tackles,
+    COALESCE(SUM(ps.blocks), 0) AS blocks,
+    COALESCE(SUM(ps.saves), 0) AS saves,
+    COALESCE(SUM(ps.goals_conceded), 0) AS goals_conceded
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
+JOIN PlayerStats ps ON ps.player_id = p.footballer_id
+JOIN Match m ON m.id = ps.match_id
+LEFT JOIN Team t ON t.id = f.team_id
+WHERE p.position = 'Delantero' AND m.season_id = $1
+GROUP BY f.id, f.name, t.name
+ORDER BY metric_value DESC, goals_scored DESC, assists DESC, f.name
+LIMIT 1
+`
+
+type GetBestForwardRow struct {
+	Position        string
+	PlayerName      string
+	TeamName        string
+	MetricName      string
+	MetricValue     interface{}
+	GoalsScored     interface{}
+	Assists         interface{}
+	ShotsOnGoal     interface{}
+	PassesCompleted interface{}
+	Interceptions   interface{}
+	Tackles         interface{}
+	Blocks          interface{}
+	Saves           interface{}
+	GoalsConceded   interface{}
+}
+
+// Report 7: all-star team
+func (q *Queries) GetBestForward(ctx context.Context, seasonID sql.NullInt64) (GetBestForwardRow, error) {
+	row := q.db.QueryRowContext(ctx, getBestForward, seasonID)
+	var i GetBestForwardRow
+	err := row.Scan(
+		&i.Position,
+		&i.PlayerName,
+		&i.TeamName,
+		&i.MetricName,
+		&i.MetricValue,
+		&i.GoalsScored,
+		&i.Assists,
+		&i.ShotsOnGoal,
+		&i.PassesCompleted,
+		&i.Interceptions,
+		&i.Tackles,
+		&i.Blocks,
+		&i.Saves,
+		&i.GoalsConceded,
+	)
+	return i, err
+}
+
+const getBestGoalkeeper = `-- name: GetBestGoalkeeper :one
+SELECT
+    'Portero' AS position,
+    f.name AS player_name,
+    COALESCE(t.name, '') AS team_name,
+    'saves_minus_goals_conceded' AS metric_name,
+    COALESCE(SUM(ps.saves - ps.goals_conceded), 0) AS metric_value,
+    COALESCE(SUM(ps.goals_scored), 0) AS goals_scored,
+    COALESCE(SUM(ps.assists), 0) AS assists,
+    COALESCE(SUM(ps.shots_on_goal), 0) AS shots_on_goal,
+    COALESCE(SUM(ps.passes_completed), 0) AS passes_completed,
+    COALESCE(SUM(ps.interceptions), 0) AS interceptions,
+    COALESCE(SUM(ps.tackles), 0) AS tackles,
+    COALESCE(SUM(ps.blocks), 0) AS blocks,
+    COALESCE(SUM(ps.saves), 0) AS saves,
+    COALESCE(SUM(ps.goals_conceded), 0) AS goals_conceded
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
+JOIN PlayerStats ps ON ps.player_id = p.footballer_id
+JOIN Match m ON m.id = ps.match_id
+LEFT JOIN Team t ON t.id = f.team_id
+WHERE p.position = 'Portero' AND m.season_id = $1
+GROUP BY f.id, f.name, t.name
+ORDER BY metric_value DESC, saves DESC, goals_conceded ASC, f.name
+LIMIT 1
+`
+
+type GetBestGoalkeeperRow struct {
+	Position        string
+	PlayerName      string
+	TeamName        string
+	MetricName      string
+	MetricValue     interface{}
+	GoalsScored     interface{}
+	Assists         interface{}
+	ShotsOnGoal     interface{}
+	PassesCompleted interface{}
+	Interceptions   interface{}
+	Tackles         interface{}
+	Blocks          interface{}
+	Saves           interface{}
+	GoalsConceded   interface{}
+}
+
+func (q *Queries) GetBestGoalkeeper(ctx context.Context, seasonID sql.NullInt64) (GetBestGoalkeeperRow, error) {
+	row := q.db.QueryRowContext(ctx, getBestGoalkeeper, seasonID)
+	var i GetBestGoalkeeperRow
+	err := row.Scan(
+		&i.Position,
+		&i.PlayerName,
+		&i.TeamName,
+		&i.MetricName,
+		&i.MetricValue,
+		&i.GoalsScored,
+		&i.Assists,
+		&i.ShotsOnGoal,
+		&i.PassesCompleted,
+		&i.Interceptions,
+		&i.Tackles,
+		&i.Blocks,
+		&i.Saves,
+		&i.GoalsConceded,
+	)
+	return i, err
+}
+
+const getBestMidfielder = `-- name: GetBestMidfielder :one
+SELECT
+    'Mediocampista' AS position,
+    f.name AS player_name,
+    COALESCE(t.name, '') AS team_name,
+    'passes_completed_plus_interceptions' AS metric_name,
+    COALESCE(SUM(ps.passes_completed + ps.interceptions), 0) AS metric_value,
+    COALESCE(SUM(ps.goals_scored), 0) AS goals_scored,
+    COALESCE(SUM(ps.assists), 0) AS assists,
+    COALESCE(SUM(ps.shots_on_goal), 0) AS shots_on_goal,
+    COALESCE(SUM(ps.passes_completed), 0) AS passes_completed,
+    COALESCE(SUM(ps.interceptions), 0) AS interceptions,
+    COALESCE(SUM(ps.tackles), 0) AS tackles,
+    COALESCE(SUM(ps.blocks), 0) AS blocks,
+    COALESCE(SUM(ps.saves), 0) AS saves,
+    COALESCE(SUM(ps.goals_conceded), 0) AS goals_conceded
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
+JOIN PlayerStats ps ON ps.player_id = p.footballer_id
+JOIN Match m ON m.id = ps.match_id
+LEFT JOIN Team t ON t.id = f.team_id
+WHERE p.position = 'Mediocampista' AND m.season_id = $1
+GROUP BY f.id, f.name, t.name
+ORDER BY metric_value DESC, passes_completed DESC, interceptions DESC, f.name
+LIMIT 1
+`
+
+type GetBestMidfielderRow struct {
+	Position        string
+	PlayerName      string
+	TeamName        string
+	MetricName      string
+	MetricValue     interface{}
+	GoalsScored     interface{}
+	Assists         interface{}
+	ShotsOnGoal     interface{}
+	PassesCompleted interface{}
+	Interceptions   interface{}
+	Tackles         interface{}
+	Blocks          interface{}
+	Saves           interface{}
+	GoalsConceded   interface{}
+}
+
+func (q *Queries) GetBestMidfielder(ctx context.Context, seasonID sql.NullInt64) (GetBestMidfielderRow, error) {
+	row := q.db.QueryRowContext(ctx, getBestMidfielder, seasonID)
+	var i GetBestMidfielderRow
+	err := row.Scan(
+		&i.Position,
+		&i.PlayerName,
+		&i.TeamName,
+		&i.MetricName,
+		&i.MetricValue,
+		&i.GoalsScored,
+		&i.Assists,
+		&i.ShotsOnGoal,
+		&i.PassesCompleted,
+		&i.Interceptions,
+		&i.Tackles,
+		&i.Blocks,
+		&i.Saves,
+		&i.GoalsConceded,
+	)
+	return i, err
+}
+
 const getCoach = `-- name: GetCoach :one
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       c.experience_years
+       c.experience_years, c.championships_won
 FROM Footballer f
 JOIN Coach c ON c.footballer_id = f.id
 WHERE f.id = $1
 `
 
 type GetCoachRow struct {
-	ID              int64
-	TeamID          sql.NullInt64
-	Name            string
-	Number          sql.NullInt32
-	YearsInTeam     sql.NullInt32
-	ExperienceYears sql.NullInt32
+	ID               int64
+	TeamID           sql.NullInt64
+	Name             string
+	Number           sql.NullInt32
+	YearsInTeam      sql.NullInt32
+	ExperienceYears  sql.NullInt32
+	ChampionshipsWon sql.NullInt32
 }
 
 func (q *Queries) GetCoach(ctx context.Context, id int64) (GetCoachRow, error) {
@@ -257,6 +628,7 @@ func (q *Queries) GetCoach(ctx context.Context, id int64) (GetCoachRow, error) {
 		&i.Number,
 		&i.YearsInTeam,
 		&i.ExperienceYears,
+		&i.ChampionshipsWon,
 	)
 	return i, err
 }
@@ -278,24 +650,46 @@ func (q *Queries) GetFootballer(ctx context.Context, id int64) (Footballer, erro
 	return i, err
 }
 
+const getMatch = `-- name: GetMatch :one
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE id = $1
+`
+
+func (q *Queries) GetMatch(ctx context.Context, id int64) (Match, error) {
+	row := q.db.QueryRowContext(ctx, getMatch, id)
+	var i Match
+	err := row.Scan(
+		&i.ID,
+		&i.HomeTeamID,
+		&i.AwayTeamID,
+		&i.SeasonID,
+		&i.StadiumID,
+		&i.MatchDate,
+		&i.HomeGoals,
+		&i.AwayGoals,
+		&i.Attendance,
+	)
+	return i, err
+}
+
 const getPlayer = `-- name: GetPlayer :one
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       p.position_id, p.matches_played, p.goals, p.assists
+       p.position, p.matches_played, p.average_goals_per_match
 FROM Footballer f
 JOIN Player p ON p.footballer_id = f.id
 WHERE f.id = $1
 `
 
 type GetPlayerRow struct {
-	ID            int64
-	TeamID        sql.NullInt64
-	Name          string
-	Number        sql.NullInt32
-	YearsInTeam   sql.NullInt32
-	PositionID    sql.NullInt64
-	MatchesPlayed sql.NullInt32
-	Goals         sql.NullInt32
-	Assists       sql.NullInt32
+	ID                   int64
+	TeamID               sql.NullInt64
+	Name                 string
+	Number               sql.NullInt32
+	YearsInTeam          sql.NullInt32
+	Position             string
+	MatchesPlayed        sql.NullInt32
+	AverageGoalsPerMatch sql.NullFloat64
 }
 
 func (q *Queries) GetPlayer(ctx context.Context, id int64) (GetPlayerRow, error) {
@@ -307,10 +701,35 @@ func (q *Queries) GetPlayer(ctx context.Context, id int64) (GetPlayerRow, error)
 		&i.Name,
 		&i.Number,
 		&i.YearsInTeam,
-		&i.PositionID,
+		&i.Position,
 		&i.MatchesPlayed,
-		&i.Goals,
+		&i.AverageGoalsPerMatch,
+	)
+	return i, err
+}
+
+const getPlayerStat = `-- name: GetPlayerStat :one
+SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
+FROM PlayerStats
+WHERE id = $1
+`
+
+func (q *Queries) GetPlayerStat(ctx context.Context, id int64) (Playerstat, error) {
+	row := q.db.QueryRowContext(ctx, getPlayerStat, id)
+	var i Playerstat
+	err := row.Scan(
+		&i.ID,
+		&i.PlayerID,
+		&i.MatchID,
+		&i.GoalsScored,
 		&i.Assists,
+		&i.ShotsOnGoal,
+		&i.PassesCompleted,
+		&i.Interceptions,
+		&i.Tackles,
+		&i.Blocks,
+		&i.Saves,
+		&i.GoalsConceded,
 	)
 	return i, err
 }
@@ -358,21 +777,80 @@ func (q *Queries) GetTeam(ctx context.Context, id int64) (Team, error) {
 	return i, err
 }
 
+const getTeamStatus = `-- name: GetTeamStatus :one
+SELECT
+    t.id AS team_id,
+    t.name,
+    COUNT(CASE WHEN m.home_team_id = t.id AND m.home_goals > m.away_goals THEN 1 END) AS home_wins,
+    COUNT(CASE WHEN m.home_team_id = t.id AND m.home_goals = m.away_goals THEN 1 END) AS home_draws,
+    COUNT(CASE WHEN m.home_team_id = t.id AND m.home_goals < m.away_goals THEN 1 END) AS home_losses,
+    COUNT(CASE WHEN m.away_team_id = t.id AND m.away_goals > m.home_goals THEN 1 END) AS away_wins,
+    COUNT(CASE WHEN m.away_team_id = t.id AND m.away_goals = m.home_goals THEN 1 END) AS away_draws,
+    COUNT(CASE WHEN m.away_team_id = t.id AND m.away_goals < m.home_goals THEN 1 END) AS away_losses,
+    COUNT(CASE WHEN (m.home_team_id = t.id AND m.home_goals > m.away_goals) OR (m.away_team_id = t.id AND m.away_goals > m.home_goals) THEN 1 END) AS total_wins,
+    COUNT(CASE WHEN m.home_goals = m.away_goals AND (m.home_team_id = t.id OR m.away_team_id = t.id) THEN 1 END) AS total_draws,
+    COUNT(CASE WHEN (m.home_team_id = t.id AND m.home_goals < m.away_goals) OR (m.away_team_id = t.id AND m.away_goals < m.home_goals) THEN 1 END) AS total_losses
+FROM Team t
+LEFT JOIN Match m ON (m.home_team_id = t.id OR m.away_team_id = t.id) AND m.season_id = $2
+WHERE t.id = $1
+GROUP BY t.id, t.name
+`
+
+type GetTeamStatusParams struct {
+	ID       int64
+	SeasonID sql.NullInt64
+}
+
+type GetTeamStatusRow struct {
+	TeamID      int64
+	Name        string
+	HomeWins    int64
+	HomeDraws   int64
+	HomeLosses  int64
+	AwayWins    int64
+	AwayDraws   int64
+	AwayLosses  int64
+	TotalWins   int64
+	TotalDraws  int64
+	TotalLosses int64
+}
+
+// Report 6: team status
+func (q *Queries) GetTeamStatus(ctx context.Context, arg GetTeamStatusParams) (GetTeamStatusRow, error) {
+	row := q.db.QueryRowContext(ctx, getTeamStatus, arg.ID, arg.SeasonID)
+	var i GetTeamStatusRow
+	err := row.Scan(
+		&i.TeamID,
+		&i.Name,
+		&i.HomeWins,
+		&i.HomeDraws,
+		&i.HomeLosses,
+		&i.AwayWins,
+		&i.AwayDraws,
+		&i.AwayLosses,
+		&i.TotalWins,
+		&i.TotalDraws,
+		&i.TotalLosses,
+	)
+	return i, err
+}
+
 const listCoaches = `-- name: ListCoaches :many
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       c.experience_years
+       c.experience_years, c.championships_won
 FROM Footballer f
 JOIN Coach c ON c.footballer_id = f.id
 ORDER BY f.id
 `
 
 type ListCoachesRow struct {
-	ID              int64
-	TeamID          sql.NullInt64
-	Name            string
-	Number          sql.NullInt32
-	YearsInTeam     sql.NullInt32
-	ExperienceYears sql.NullInt32
+	ID               int64
+	TeamID           sql.NullInt64
+	Name             string
+	Number           sql.NullInt32
+	YearsInTeam      sql.NullInt32
+	ExperienceYears  sql.NullInt32
+	ChampionshipsWon sql.NullInt32
 }
 
 func (q *Queries) ListCoaches(ctx context.Context) ([]ListCoachesRow, error) {
@@ -391,6 +869,598 @@ func (q *Queries) ListCoaches(ctx context.Context) ([]ListCoachesRow, error) {
 			&i.Number,
 			&i.YearsInTeam,
 			&i.ExperienceYears,
+			&i.ChampionshipsWon,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCoachesByExperience = `-- name: ListCoachesByExperience :many
+SELECT
+    f.name,
+    f.number,
+    c.experience_years,
+    c.championships_won,
+    t.name AS team_name
+FROM Footballer f
+JOIN Coach c ON c.footballer_id = f.id
+LEFT JOIN Team t ON t.id = f.team_id
+ORDER BY c.championships_won DESC, c.experience_years DESC, f.name
+`
+
+type ListCoachesByExperienceRow struct {
+	Name             string
+	Number           sql.NullInt32
+	ExperienceYears  sql.NullInt32
+	ChampionshipsWon sql.NullInt32
+	TeamName         sql.NullString
+}
+
+// Report 4: coaches by experience
+func (q *Queries) ListCoachesByExperience(ctx context.Context) ([]ListCoachesByExperienceRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCoachesByExperience)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCoachesByExperienceRow
+	for rows.Next() {
+		var i ListCoachesByExperienceRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.Number,
+			&i.ExperienceYears,
+			&i.ChampionshipsWon,
+			&i.TeamName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatches = `-- name: ListMatches :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+ORDER BY match_date, id
+`
+
+func (q *Queries) ListMatches(ctx context.Context) ([]Match, error) {
+	rows, err := q.db.QueryContext(ctx, listMatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Match
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.SeasonID,
+			&i.StadiumID,
+			&i.MatchDate,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesBetweenTeams = `-- name: ListMatchesBetweenTeams :many
+SELECT
+    m.id,
+    m.match_date,
+    s.name AS stadium_name,
+    ht.name AS home_team_name,
+    at.name AS away_team_name,
+    m.home_goals,
+    m.away_goals,
+    COALESCE((
+        SELECT SUM(ps.assists)
+        FROM PlayerStats ps
+        JOIN Player p ON p.footballer_id = ps.player_id
+        JOIN Footballer f ON f.id = p.footballer_id
+        WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    ), 0) AS home_assists,
+    COALESCE((
+        SELECT SUM(ps.assists)
+        FROM PlayerStats ps
+        JOIN Player p ON p.footballer_id = ps.player_id
+        JOIN Footballer f ON f.id = p.footballer_id
+        WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    ), 0) AS away_assists
+FROM Match m
+JOIN Team ht ON m.home_team_id = ht.id
+JOIN Team at ON m.away_team_id = at.id
+JOIN Stadium s ON m.stadium_id = s.id
+WHERE ((m.home_team_id = $1 AND m.away_team_id = $2) OR (m.home_team_id = $2 AND m.away_team_id = $1))
+  AND m.season_id = $3
+ORDER BY m.match_date, m.id
+`
+
+type ListMatchesBetweenTeamsParams struct {
+	HomeTeamID sql.NullInt64
+	AwayTeamID sql.NullInt64
+	SeasonID   sql.NullInt64
+}
+
+type ListMatchesBetweenTeamsRow struct {
+	ID           int64
+	MatchDate    time.Time
+	StadiumName  string
+	HomeTeamName string
+	AwayTeamName string
+	HomeGoals    sql.NullInt32
+	AwayGoals    sql.NullInt32
+	HomeAssists  interface{}
+	AwayAssists  interface{}
+}
+
+// Report 2: matches between teams
+func (q *Queries) ListMatchesBetweenTeams(ctx context.Context, arg ListMatchesBetweenTeamsParams) ([]ListMatchesBetweenTeamsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesBetweenTeams, arg.HomeTeamID, arg.AwayTeamID, arg.SeasonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListMatchesBetweenTeamsRow
+	for rows.Next() {
+		var i ListMatchesBetweenTeamsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.MatchDate,
+			&i.StadiumName,
+			&i.HomeTeamName,
+			&i.AwayTeamName,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.HomeAssists,
+			&i.AwayAssists,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesBetweenTeamsAllSeasons = `-- name: ListMatchesBetweenTeamsAllSeasons :many
+SELECT
+    m.id,
+    m.match_date,
+    s.name AS stadium_name,
+    ht.name AS home_team_name,
+    at.name AS away_team_name,
+    m.home_goals,
+    m.away_goals,
+    COALESCE((
+        SELECT SUM(ps.assists)
+        FROM PlayerStats ps
+        JOIN Player p ON p.footballer_id = ps.player_id
+        JOIN Footballer f ON f.id = p.footballer_id
+        WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    ), 0) AS home_assists,
+    COALESCE((
+        SELECT SUM(ps.assists)
+        FROM PlayerStats ps
+        JOIN Player p ON p.footballer_id = ps.player_id
+        JOIN Footballer f ON f.id = p.footballer_id
+        WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    ), 0) AS away_assists
+FROM Match m
+JOIN Team ht ON m.home_team_id = ht.id
+JOIN Team at ON m.away_team_id = at.id
+JOIN Stadium s ON m.stadium_id = s.id
+WHERE (m.home_team_id = $1 AND m.away_team_id = $2) OR (m.home_team_id = $2 AND m.away_team_id = $1)
+ORDER BY m.match_date, m.id
+`
+
+type ListMatchesBetweenTeamsAllSeasonsParams struct {
+	HomeTeamID sql.NullInt64
+	AwayTeamID sql.NullInt64
+}
+
+type ListMatchesBetweenTeamsAllSeasonsRow struct {
+	ID           int64
+	MatchDate    time.Time
+	StadiumName  string
+	HomeTeamName string
+	AwayTeamName string
+	HomeGoals    sql.NullInt32
+	AwayGoals    sql.NullInt32
+	HomeAssists  interface{}
+	AwayAssists  interface{}
+}
+
+func (q *Queries) ListMatchesBetweenTeamsAllSeasons(ctx context.Context, arg ListMatchesBetweenTeamsAllSeasonsParams) ([]ListMatchesBetweenTeamsAllSeasonsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesBetweenTeamsAllSeasons, arg.HomeTeamID, arg.AwayTeamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListMatchesBetweenTeamsAllSeasonsRow
+	for rows.Next() {
+		var i ListMatchesBetweenTeamsAllSeasonsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.MatchDate,
+			&i.StadiumName,
+			&i.HomeTeamName,
+			&i.AwayTeamName,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.HomeAssists,
+			&i.AwayAssists,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesByDate = `-- name: ListMatchesByDate :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE match_date = $1
+ORDER BY id
+`
+
+func (q *Queries) ListMatchesByDate(ctx context.Context, matchDate time.Time) ([]Match, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesByDate, matchDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Match
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.SeasonID,
+			&i.StadiumID,
+			&i.MatchDate,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesByDateAndStadium = `-- name: ListMatchesByDateAndStadium :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE match_date = $1 AND stadium_id = $2
+ORDER BY id
+`
+
+type ListMatchesByDateAndStadiumParams struct {
+	MatchDate time.Time
+	StadiumID sql.NullInt64
+}
+
+func (q *Queries) ListMatchesByDateAndStadium(ctx context.Context, arg ListMatchesByDateAndStadiumParams) ([]Match, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesByDateAndStadium, arg.MatchDate, arg.StadiumID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Match
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.SeasonID,
+			&i.StadiumID,
+			&i.MatchDate,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesBySeason = `-- name: ListMatchesBySeason :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE season_id = $1
+ORDER BY match_date, id
+`
+
+func (q *Queries) ListMatchesBySeason(ctx context.Context, seasonID sql.NullInt64) ([]Match, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesBySeason, seasonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Match
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.SeasonID,
+			&i.StadiumID,
+			&i.MatchDate,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesByTeam = `-- name: ListMatchesByTeam :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE home_team_id = $1 OR away_team_id = $1
+ORDER BY match_date, id
+`
+
+func (q *Queries) ListMatchesByTeam(ctx context.Context, homeTeamID sql.NullInt64) ([]Match, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesByTeam, homeTeamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Match
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.SeasonID,
+			&i.StadiumID,
+			&i.MatchDate,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesForDate = `-- name: ListMatchesForDate :many
+SELECT
+    m.id,
+    m.match_date,
+    s.name AS stadium_name,
+    ht.name AS home_team_name,
+    at.name AS away_team_name,
+    m.home_goals,
+    m.away_goals,
+    m.attendance
+FROM Match m
+JOIN Team ht ON m.home_team_id = ht.id
+JOIN Team at ON m.away_team_id = at.id
+JOIN Stadium s ON m.stadium_id = s.id
+WHERE m.match_date = $1
+ORDER BY m.id
+`
+
+type ListMatchesForDateRow struct {
+	ID           int64
+	MatchDate    time.Time
+	StadiumName  string
+	HomeTeamName string
+	AwayTeamName string
+	HomeGoals    sql.NullInt32
+	AwayGoals    sql.NullInt32
+	Attendance   sql.NullInt32
+}
+
+// Report 3: matches by date
+func (q *Queries) ListMatchesForDate(ctx context.Context, matchDate time.Time) ([]ListMatchesForDateRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesForDate, matchDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListMatchesForDateRow
+	for rows.Next() {
+		var i ListMatchesForDateRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.MatchDate,
+			&i.StadiumName,
+			&i.HomeTeamName,
+			&i.AwayTeamName,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMatchesForDateAndStadium = `-- name: ListMatchesForDateAndStadium :many
+SELECT
+    m.id,
+    m.match_date,
+    s.name AS stadium_name,
+    ht.name AS home_team_name,
+    at.name AS away_team_name,
+    m.home_goals,
+    m.away_goals,
+    m.attendance
+FROM Match m
+JOIN Team ht ON m.home_team_id = ht.id
+JOIN Team at ON m.away_team_id = at.id
+JOIN Stadium s ON m.stadium_id = s.id
+WHERE m.match_date = $1
+  AND m.stadium_id = $2
+ORDER BY m.id
+`
+
+type ListMatchesForDateAndStadiumParams struct {
+	MatchDate time.Time
+	StadiumID sql.NullInt64
+}
+
+type ListMatchesForDateAndStadiumRow struct {
+	ID           int64
+	MatchDate    time.Time
+	StadiumName  string
+	HomeTeamName string
+	AwayTeamName string
+	HomeGoals    sql.NullInt32
+	AwayGoals    sql.NullInt32
+	Attendance   sql.NullInt32
+}
+
+func (q *Queries) ListMatchesForDateAndStadium(ctx context.Context, arg ListMatchesForDateAndStadiumParams) ([]ListMatchesForDateAndStadiumRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMatchesForDateAndStadium, arg.MatchDate, arg.StadiumID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListMatchesForDateAndStadiumRow
+	for rows.Next() {
+		var i ListMatchesForDateAndStadiumRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.MatchDate,
+			&i.StadiumName,
+			&i.HomeTeamName,
+			&i.AwayTeamName,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPlayerStats = `-- name: ListPlayerStats :many
+SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
+FROM PlayerStats
+ORDER BY id
+`
+
+func (q *Queries) ListPlayerStats(ctx context.Context) ([]Playerstat, error) {
+	rows, err := q.db.QueryContext(ctx, listPlayerStats)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Playerstat
+	for rows.Next() {
+		var i Playerstat
+		if err := rows.Scan(
+			&i.ID,
+			&i.PlayerID,
+			&i.MatchID,
+			&i.GoalsScored,
+			&i.Assists,
+			&i.ShotsOnGoal,
+			&i.PassesCompleted,
+			&i.Interceptions,
+			&i.Tackles,
+			&i.Blocks,
+			&i.Saves,
+			&i.GoalsConceded,
 		); err != nil {
 			return nil, err
 		}
@@ -407,22 +1477,21 @@ func (q *Queries) ListCoaches(ctx context.Context) ([]ListCoachesRow, error) {
 
 const listPlayers = `-- name: ListPlayers :many
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       p.position_id, p.matches_played, p.goals, p.assists
+       p.position, p.matches_played, p.average_goals_per_match
 FROM Footballer f
 JOIN Player p ON p.footballer_id = f.id
 ORDER BY f.id
 `
 
 type ListPlayersRow struct {
-	ID            int64
-	TeamID        sql.NullInt64
-	Name          string
-	Number        sql.NullInt32
-	YearsInTeam   sql.NullInt32
-	PositionID    sql.NullInt64
-	MatchesPlayed sql.NullInt32
-	Goals         sql.NullInt32
-	Assists       sql.NullInt32
+	ID                   int64
+	TeamID               sql.NullInt64
+	Name                 string
+	Number               sql.NullInt32
+	YearsInTeam          sql.NullInt32
+	Position             string
+	MatchesPlayed        sql.NullInt32
+	AverageGoalsPerMatch sql.NullFloat64
 }
 
 func (q *Queries) ListPlayers(ctx context.Context) ([]ListPlayersRow, error) {
@@ -440,10 +1509,9 @@ func (q *Queries) ListPlayers(ctx context.Context) ([]ListPlayersRow, error) {
 			&i.Name,
 			&i.Number,
 			&i.YearsInTeam,
-			&i.PositionID,
+			&i.Position,
 			&i.MatchesPlayed,
-			&i.Goals,
-			&i.Assists,
+			&i.AverageGoalsPerMatch,
 		); err != nil {
 			return nil, err
 		}
@@ -512,6 +1580,112 @@ func (q *Queries) ListStadiums(ctx context.Context) ([]Stadium, error) {
 	return items, nil
 }
 
+const listStadiumsByAttendance = `-- name: ListStadiumsByAttendance :many
+SELECT
+    s.id,
+    s.name,
+    s.capacity,
+    COALESCE(SUM(m.attendance), 0) AS total_attendance,
+    COUNT(m.id) AS total_matches,
+	CASE
+		WHEN COALESCE(s.capacity, 0) > 0 AND COUNT(m.id) > 0
+		THEN ROUND(((COALESCE(SUM(m.attendance), 0)::numeric / (COUNT(m.id) * s.capacity)::numeric) * 100)::numeric, 2)
+		ELSE 0
+	END AS attendance_percentage
+FROM Stadium s
+LEFT JOIN Match m ON s.id = m.stadium_id AND m.season_id = $1
+GROUP BY s.id, s.name, s.capacity
+ORDER BY attendance_percentage DESC, s.name
+`
+
+type ListStadiumsByAttendanceRow struct {
+	ID                   int64
+	Name                 string
+	Capacity             sql.NullInt32
+	TotalAttendance      interface{}
+	TotalMatches         int64
+	AttendancePercentage interface{}
+}
+
+// Report 5: stadiums by attendance
+func (q *Queries) ListStadiumsByAttendance(ctx context.Context, seasonID sql.NullInt64) ([]ListStadiumsByAttendanceRow, error) {
+	rows, err := q.db.QueryContext(ctx, listStadiumsByAttendance, seasonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListStadiumsByAttendanceRow
+	for rows.Next() {
+		var i ListStadiumsByAttendanceRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Capacity,
+			&i.TotalAttendance,
+			&i.TotalMatches,
+			&i.AttendancePercentage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStandings = `-- name: ListStandings :many
+SELECT
+    t.id AS team_id,
+    t.name,
+    COALESCE(SUM(
+        CASE
+            WHEN m.home_team_id = t.id AND m.home_goals > m.away_goals THEN 3
+            WHEN m.away_team_id = t.id AND m.away_goals > m.home_goals THEN 3
+            WHEN m.home_goals = m.away_goals THEN 1
+            ELSE 0
+        END
+    ), 0) AS points
+FROM Team t
+LEFT JOIN Match m ON (m.home_team_id = t.id OR m.away_team_id = t.id) AND m.season_id = $1
+GROUP BY t.id, t.name
+ORDER BY points DESC, t.name
+`
+
+type ListStandingsRow struct {
+	TeamID int64
+	Name   string
+	Points interface{}
+}
+
+// Report 1: standings
+func (q *Queries) ListStandings(ctx context.Context, seasonID sql.NullInt64) ([]ListStandingsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listStandings, seasonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListStandingsRow
+	for rows.Next() {
+		var i ListStandingsRow
+		if err := rows.Scan(&i.TeamID, &i.Name, &i.Points); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTeams = `-- name: ListTeams :many
 SELECT id, name, province, mascot, color, championships_played, championships_won
 FROM Team
@@ -549,19 +1723,20 @@ func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
 	return items, nil
 }
 
-const updateCoachExperience = `-- name: UpdateCoachExperience :exec
+const updateCoachDetails = `-- name: UpdateCoachDetails :exec
 UPDATE Coach
-SET experience_years = $2
+SET experience_years = $2, championships_won = $3
 WHERE footballer_id = $1
 `
 
-type UpdateCoachExperienceParams struct {
-	FootballerID    int64
-	ExperienceYears sql.NullInt32
+type UpdateCoachDetailsParams struct {
+	FootballerID     int64
+	ExperienceYears  sql.NullInt32
+	ChampionshipsWon sql.NullInt32
 }
 
-func (q *Queries) UpdateCoachExperience(ctx context.Context, arg UpdateCoachExperienceParams) error {
-	_, err := q.db.ExecContext(ctx, updateCoachExperience, arg.FootballerID, arg.ExperienceYears)
+func (q *Queries) UpdateCoachDetails(ctx context.Context, arg UpdateCoachDetailsParams) error {
+	_, err := q.db.ExecContext(ctx, updateCoachDetails, arg.FootballerID, arg.ExperienceYears, arg.ChampionshipsWon)
 	return err
 }
 
@@ -586,6 +1761,69 @@ func (q *Queries) UpdateCoachFootballer(ctx context.Context, arg UpdateCoachFoot
 		arg.Name,
 		arg.Number,
 		arg.YearsInTeam,
+	)
+	return err
+}
+
+const updateMatch = `-- name: UpdateMatch :exec
+UPDATE Match
+SET home_team_id = $2,
+    away_team_id = $3,
+    season_id = $4,
+    stadium_id = $5,
+    match_date = $6,
+    home_goals = $7,
+    away_goals = $8,
+    attendance = $9
+WHERE id = $1
+`
+
+type UpdateMatchParams struct {
+	ID         int64
+	HomeTeamID sql.NullInt64
+	AwayTeamID sql.NullInt64
+	SeasonID   sql.NullInt64
+	StadiumID  sql.NullInt64
+	MatchDate  time.Time
+	HomeGoals  sql.NullInt32
+	AwayGoals  sql.NullInt32
+	Attendance sql.NullInt32
+}
+
+func (q *Queries) UpdateMatch(ctx context.Context, arg UpdateMatchParams) error {
+	_, err := q.db.ExecContext(ctx, updateMatch,
+		arg.ID,
+		arg.HomeTeamID,
+		arg.AwayTeamID,
+		arg.SeasonID,
+		arg.StadiumID,
+		arg.MatchDate,
+		arg.HomeGoals,
+		arg.AwayGoals,
+		arg.Attendance,
+	)
+	return err
+}
+
+const updatePlayerDetails = `-- name: UpdatePlayerDetails :exec
+UPDATE Player
+SET position = $2, matches_played = $3, average_goals_per_match = $4
+WHERE footballer_id = $1
+`
+
+type UpdatePlayerDetailsParams struct {
+	FootballerID         int64
+	Position             string
+	MatchesPlayed        sql.NullInt32
+	AverageGoalsPerMatch sql.NullFloat64
+}
+
+func (q *Queries) UpdatePlayerDetails(ctx context.Context, arg UpdatePlayerDetailsParams) error {
+	_, err := q.db.ExecContext(ctx, updatePlayerDetails,
+		arg.FootballerID,
+		arg.Position,
+		arg.MatchesPlayed,
+		arg.AverageGoalsPerMatch,
 	)
 	return err
 }
@@ -615,27 +1853,51 @@ func (q *Queries) UpdatePlayerFootballer(ctx context.Context, arg UpdatePlayerFo
 	return err
 }
 
-const updatePlayerStats = `-- name: UpdatePlayerStats :exec
-UPDATE Player
-SET position_id = $2, matches_played = $3, goals = $4, assists = $5
-WHERE footballer_id = $1
+const updatePlayerStat = `-- name: UpdatePlayerStat :exec
+UPDATE PlayerStats
+SET player_id = $2,
+    match_id = $3,
+    goals_scored = $4,
+    assists = $5,
+    shots_on_goal = $6,
+    passes_completed = $7,
+    interceptions = $8,
+    tackles = $9,
+    blocks = $10,
+    saves = $11,
+    goals_conceded = $12
+WHERE id = $1
 `
 
-type UpdatePlayerStatsParams struct {
-	FootballerID  int64
-	PositionID    sql.NullInt64
-	MatchesPlayed sql.NullInt32
-	Goals         sql.NullInt32
-	Assists       sql.NullInt32
+type UpdatePlayerStatParams struct {
+	ID              int64
+	PlayerID        sql.NullInt64
+	MatchID         sql.NullInt64
+	GoalsScored     sql.NullInt32
+	Assists         sql.NullInt32
+	ShotsOnGoal     sql.NullInt32
+	PassesCompleted sql.NullInt32
+	Interceptions   sql.NullInt32
+	Tackles         sql.NullInt32
+	Blocks          sql.NullInt32
+	Saves           sql.NullInt32
+	GoalsConceded   sql.NullInt32
 }
 
-func (q *Queries) UpdatePlayerStats(ctx context.Context, arg UpdatePlayerStatsParams) error {
-	_, err := q.db.ExecContext(ctx, updatePlayerStats,
-		arg.FootballerID,
-		arg.PositionID,
-		arg.MatchesPlayed,
-		arg.Goals,
+func (q *Queries) UpdatePlayerStat(ctx context.Context, arg UpdatePlayerStatParams) error {
+	_, err := q.db.ExecContext(ctx, updatePlayerStat,
+		arg.ID,
+		arg.PlayerID,
+		arg.MatchID,
+		arg.GoalsScored,
 		arg.Assists,
+		arg.ShotsOnGoal,
+		arg.PassesCompleted,
+		arg.Interceptions,
+		arg.Tackles,
+		arg.Blocks,
+		arg.Saves,
+		arg.GoalsConceded,
 	)
 	return err
 }

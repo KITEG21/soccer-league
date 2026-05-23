@@ -39,7 +39,8 @@ func (h *StadiumHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *StadiumHandler) List(w http.ResponseWriter, r *http.Request) {
-	stadiums, err := h.svc.List(r.Context())
+	limit, offset := parsePagination(r)
+	stadiums, err := h.svc.List(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

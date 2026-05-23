@@ -1,0 +1,46 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Go API build artifacts
+Api/bin/
+Api/*.exe
+Api/*.test
+Api/*.out
+Api/cmd/api/api
+Api/cmd/api/api.exe
+Api/cmd/api/*.exe
+Api/cmd/api/*.test
+Api/cmd/api/*.out
+Api/internal/store/*.sql.go.bak
+
+# Go coverage and temp files
+*.cover
+coverage.out
+coverage.txt
+
+# Web dependencies and build output
+Web/node_modules/
+Web/dist/
+Web/dist-ssr/
+Web/.vite/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor and OS files
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

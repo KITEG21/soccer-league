@@ -6,11 +6,13 @@ package store
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Coach struct {
-	FootballerID    int64
-	ExperienceYears sql.NullInt32
+	FootballerID     int64
+	ExperienceYears  sql.NullInt32
+	ChampionshipsWon sql.NullInt32
 }
 
 type Footballer struct {
@@ -21,17 +23,38 @@ type Footballer struct {
 	YearsInTeam sql.NullInt32
 }
 
-type Player struct {
-	FootballerID  int64
-	PositionID    sql.NullInt64
-	MatchesPlayed sql.NullInt32
-	Goals         sql.NullInt32
-	Assists       sql.NullInt32
+type Match struct {
+	ID         int64
+	HomeTeamID sql.NullInt64
+	AwayTeamID sql.NullInt64
+	SeasonID   sql.NullInt64
+	StadiumID  sql.NullInt64
+	MatchDate  time.Time
+	HomeGoals  sql.NullInt32
+	AwayGoals  sql.NullInt32
+	Attendance sql.NullInt32
 }
 
-type Position struct {
-	ID   int64
-	Name string
+type Player struct {
+	FootballerID         int64
+	Position             string
+	MatchesPlayed        sql.NullInt32
+	AverageGoalsPerMatch sql.NullFloat64
+}
+
+type Playerstat struct {
+	ID              int64
+	PlayerID        sql.NullInt64
+	MatchID         sql.NullInt64
+	GoalsScored     sql.NullInt32
+	Assists         sql.NullInt32
+	ShotsOnGoal     sql.NullInt32
+	PassesCompleted sql.NullInt32
+	Interceptions   sql.NullInt32
+	Tackles         sql.NullInt32
+	Blocks          sql.NullInt32
+	Saves           sql.NullInt32
+	GoalsConceded   sql.NullInt32
 }
 
 type Season struct {
