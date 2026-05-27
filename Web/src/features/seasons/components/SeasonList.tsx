@@ -33,7 +33,6 @@ export function SeasonList({
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "N/A";
     try {
-      // parseISO avoids the timezone shift for YYYY-MM-DD strings
       return format(parseISO(dateStr), "dd/MM/yyyy");
     } catch (e) {
       return "N/A";
@@ -54,7 +53,7 @@ export function SeasonList({
   };
 
   return (
-    <div className="container mx-auto px-4">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Temporadas</h1>
         <Button className="flex items-center gap-2" onClick={onCreate}>

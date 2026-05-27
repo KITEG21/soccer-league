@@ -2,6 +2,7 @@ import type { Futbolista } from "@/shared/types";
 
 export interface Coach extends Futbolista {
   experience_years?: number;
+  championships_won?: number;
 }
 
 export interface CreateCoachRequest {
@@ -10,4 +11,7 @@ export interface CreateCoachRequest {
   number?: number;
   years_in_team?: number;
   experience_years?: number;
+  championships_won?: number;
 }
+
+export interface UpdateCoachRequest extends CreateCoachRequest {}

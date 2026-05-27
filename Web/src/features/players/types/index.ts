@@ -1,10 +1,9 @@
 import type { Futbolista } from "@/shared/types";
 
 export interface Player extends Futbolista {
-  position_id?: number;
+  position: string;
   matches_played?: number;
-  goals?: number;
-  assists?: number;
+  average_goals_per_match?: number;
 }
 
 export interface CreatePlayerRequest {
@@ -12,8 +11,9 @@ export interface CreatePlayerRequest {
   name: string;
   number?: number;
   years_in_team?: number;
-  position_id?: number;
+  position: string;
   matches_played?: number;
-  goals?: number;
-  assists?: number;
+  average_goals_per_match?: number;
 }
+
+export interface UpdatePlayerRequest extends CreatePlayerRequest {}

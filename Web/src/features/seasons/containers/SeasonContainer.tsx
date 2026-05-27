@@ -5,6 +5,7 @@ import { seasonsApiService } from "../services/api";
 import { SeasonList } from "../components/SeasonList";
 import { SeasonForm } from "../components/SeasonForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
 export const SeasonContainer = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -77,7 +78,8 @@ export const SeasonContainer = () => {
   };
 
   return (
-    <>
+    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
+      <BreadcrumbNav items={[{ label: "Temporadas" }]} />
       <SeasonList
         seasons={seasons}
         isLoading={isLoading}
@@ -101,6 +103,6 @@ export const SeasonContainer = () => {
         cancelText="Cancelar"
         isLoading={deleteMutation.isPending}
       />
-    </>
+    </div>
   );
 };

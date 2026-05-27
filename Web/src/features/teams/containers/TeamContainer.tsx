@@ -5,6 +5,7 @@ import { teamsApiService } from "../services/api";
 import { TeamList } from "../components/TeamList";
 import { TeamForm } from "../components/TeamForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
 export const TeamContainer = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -29,14 +30,11 @@ export const TeamContainer = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => teamsApiService.deleteTeam(id),
     onSuccess: async () => {
-      console.log("Delete successful, invalidating queries");
       await queryClient.invalidateQueries({
         queryKey: ["teams"],
         refetchType: "active",
       });
-      console.log("Queries invalidated, refetching");
       await refetch();
-      console.log("Refetch completed");
       setRefreshKey((prev) => prev + 1);
       setDeleteDialogOpen(false);
       setTeamToDelete(undefined);
@@ -80,7 +78,8 @@ export const TeamContainer = () => {
   };
 
   return (
-    <>
+    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
+      <BreadcrumbNav items={[{ label: "Equipos" }]} />
       <TeamList
         teams={teams}
         isLoading={isLoading}
@@ -104,6 +103,6 @@ export const TeamContainer = () => {
         cancelText="Cancelar"
         isLoading={deleteMutation.isPending}
       />
-    </>
+    </div>
   );
 };
