@@ -1,8 +1,15 @@
 import { AppProviders, AppLayout } from "./features/layout";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePage } from "./features/home";
 import { TeamContainer, TeamDetailsPage } from "./features/teams";
 import { SeasonContainer } from "./features/seasons";
+import { useAuth } from "./shared/contexts/AuthContext";
+import { LoginPage } from "./features/auth/LoginPage";
+
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
 
 function App() {
   return (
@@ -10,10 +17,39 @@ function App() {
       <BrowserRouter>
         <AppLayout>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/teams" element={<TeamContainer />} />
-            <Route path="/teams/:id" element={<TeamDetailsPage />} />
-            <Route path="/seasons" element={<SeasonContainer />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <HomePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/teams"
+              element={
+                <PrivateRoute>
+                  <TeamContainer />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/teams/:id"
+              element={
+                <PrivateRoute>
+                  <TeamDetailsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/seasons"
+              element={
+                <PrivateRoute>
+                  <SeasonContainer />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </AppLayout>
       </BrowserRouter>

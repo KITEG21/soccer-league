@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Globe, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/shared/contexts/AuthContext";
 
 const creators = [
   {
@@ -44,8 +45,12 @@ const footerLinks = [
 ];
 
 export const Footer = () => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) return null;
+
   return (
-    <footer className="mt-10 border-t border-border/40 bg-card/30 backdrop-blur-md relative overflow-hidden">
+    <footer className="mt-auto border-t border-border/40 bg-card/30 backdrop-blur-md relative overflow-hidden animate-in fade-in slide-in-from-bottom-20 duration-1000">
       <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2" />
       
       <div className="container mx-auto px-6 py-6 relative z-10">
