@@ -2,6 +2,7 @@ import { AppProviders, AppLayout } from "./features/layout";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HomePage } from "./features/home";
 import { TeamContainer } from "./features/teams";
+import { SeasonContainer } from "./features/seasons";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/teams" element={<TeamContainer />} />
+            <Route path="/seasons" element={<SeasonContainer />} />
           </Routes>
         </AppLayout>
       </BrowserRouter>
