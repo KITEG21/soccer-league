@@ -1,5 +1,6 @@
 import { Carousel } from "../components/Carousel";
 import { NavigationCards } from "../components/NavigationCards";
+import { ReportCards } from "../components/ReportCards";
 
 const carouselSlides = [
   {
@@ -43,6 +44,7 @@ export const HomePage = () => {
         </p>
       </div>
       <NavigationCards />
+      <ReportCards />
     </div>
   );
 };

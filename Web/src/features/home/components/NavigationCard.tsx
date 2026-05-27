@@ -18,15 +18,18 @@ export const NavigationCard = ({
   return (
     <Link
       to={to}
-      className="group relative bg-card hover:bg-accent/30 rounded-lg p-6 transition-all duration-300 hover:shadow-lg hover:scale-105 border border-border"
+      className="group relative overflow-hidden bg-card hover:bg-accent/5 rounded-2xl p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 border border-border/50"
     >
-      <div className="flex flex-col h-full">
-        <div className="flex items-start justify-between mb-4">
-          <Icon className="w-12 h-12 text-primary" />
-          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+      <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
+      <div className="flex flex-col h-full relative z-10">
+        <div className="flex items-start justify-between mb-5">
+          <div className="p-3 bg-primary/10 text-primary rounded-xl group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+            <Icon className="w-8 h-8 transition-transform duration-500 group-hover:rotate-12" />
+          </div>
+          <ArrowRight className="w-5 h-5 text-muted-foreground opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
         </div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
-        <p className="text-muted-foreground text-sm grow">{description}</p>
+        <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{title}</h3>
+        <p className="text-muted-foreground text-sm leading-relaxed grow">{description}</p>
       </div>
     </Link>
   );

@@ -1,5 +1,5 @@
 import { NavigationCard } from "./NavigationCard";
-import { Calendar, Users, User, Megaphone, Flag, FileText } from "lucide-react";
+import { Calendar, Users, User, Megaphone, Flag, Landmark } from "lucide-react";
 
 const navigationItems = [
   {
@@ -34,10 +34,10 @@ const navigationItems = [
     to: "/matches",
   },
   {
-    icon: FileText,
-    title: "Reportes",
-    description: "Genera y consulta reportes estadísticos",
-    to: "/reports",
+    icon: Landmark,
+    title: "Estadios",
+    description: "Explora y administra las sedes de los encuentros",
+    to: "/stadiums",
   },
 ];
 
