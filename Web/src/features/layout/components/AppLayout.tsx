@@ -7,9 +7,9 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
+    <div className="min-h-screen w-full bg-background transition-colors duration-300">
       <Navbar />
-      <main>{children}</main>
+      <main className="container mx-auto py-8 px-6">{children}</main>
     </div>
   );
 };

@@ -29,7 +29,7 @@ export function TeamList({
     );
 
   return (
-    <div className="container p-6">
+    <div className="container">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Equipos</h1>
         <Button className="flex items-center gap-2" onClick={onCreate}>
