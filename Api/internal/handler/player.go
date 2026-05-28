@@ -26,6 +26,10 @@ func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := h.svc.CreatePlayer(r.Context(), req)
 	if err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -72,6 +76,10 @@ func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.svc.UpdatePlayer(r.Context(), id, req); err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -100,6 +108,10 @@ func (h *PlayerHandler) CreateCoach(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := h.svc.CreateCoach(r.Context(), req)
 	if err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -146,6 +158,10 @@ func (h *PlayerHandler) UpdateCoach(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.svc.UpdateCoach(r.Context(), id, req); err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

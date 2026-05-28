@@ -112,19 +112,17 @@ WITH ins_fut AS (
     VALUES ($1, $2, $3, $4)
     RETURNING id
 )
-INSERT INTO Player (footballer_id, position, matches_played, average_goals_per_match)
-SELECT id, $5, $6, $7 FROM ins_fut
+INSERT INTO Player (footballer_id, position)
+SELECT id, $5 FROM ins_fut
 RETURNING footballer_id
 `
 
 type CreatePlayerParams struct {
-	TeamID               sql.NullInt64
-	Name                 string
-	Number               sql.NullInt32
-	YearsInTeam          sql.NullInt32
-	Position             string
-	MatchesPlayed        sql.NullInt32
-	AverageGoalsPerMatch sql.NullFloat64
+	TeamID      sql.NullInt64
+	Name        string
+	Number      sql.NullInt32
+	YearsInTeam sql.NullInt32
+	Position    string
 }
 
 // Player CRUD
@@ -135,8 +133,6 @@ func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (int
 		arg.Number,
 		arg.YearsInTeam,
 		arg.Position,
-		arg.MatchesPlayed,
-		arg.AverageGoalsPerMatch,
 	)
 	var footballer_id int64
 	err := row.Scan(&footballer_id)
@@ -650,6 +646,43 @@ func (q *Queries) GetFootballer(ctx context.Context, id int64) (Footballer, erro
 	return i, err
 }
 
+const getFootballersByTeam = `-- name: GetFootballersByTeam :many
+SELECT id, team_id, name, number, years_in_team
+FROM Footballer
+WHERE team_id = $1
+ORDER BY id
+`
+
+// Validation queries
+func (q *Queries) GetFootballersByTeam(ctx context.Context, teamID sql.NullInt64) ([]Footballer, error) {
+	rows, err := q.db.QueryContext(ctx, getFootballersByTeam, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Footballer
+	for rows.Next() {
+		var i Footballer
+		if err := rows.Scan(
+			&i.ID,
+			&i.TeamID,
+			&i.Name,
+			&i.Number,
+			&i.YearsInTeam,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMatch = `-- name: GetMatch :one
 SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
 FROM Match
@@ -673,23 +706,101 @@ func (q *Queries) GetMatch(ctx context.Context, id int64) (Match, error) {
 	return i, err
 }
 
+const getMatchesByAwayTeam = `-- name: GetMatchesByAwayTeam :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE away_team_id = $1
+ORDER BY match_date, id
+`
+
+func (q *Queries) GetMatchesByAwayTeam(ctx context.Context, awayTeamID sql.NullInt64) ([]Match, error) {
+	rows, err := q.db.QueryContext(ctx, getMatchesByAwayTeam, awayTeamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Match
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.SeasonID,
+			&i.StadiumID,
+			&i.MatchDate,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMatchesByHomeTeam = `-- name: GetMatchesByHomeTeam :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE home_team_id = $1
+ORDER BY match_date, id
+`
+
+func (q *Queries) GetMatchesByHomeTeam(ctx context.Context, homeTeamID sql.NullInt64) ([]Match, error) {
+	rows, err := q.db.QueryContext(ctx, getMatchesByHomeTeam, homeTeamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Match
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.SeasonID,
+			&i.StadiumID,
+			&i.MatchDate,
+			&i.HomeGoals,
+			&i.AwayGoals,
+			&i.Attendance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPlayer = `-- name: GetPlayer :one
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       p.position, p.matches_played, p.average_goals_per_match
+       p.position
 FROM Footballer f
 JOIN Player p ON p.footballer_id = f.id
 WHERE f.id = $1
 `
 
 type GetPlayerRow struct {
-	ID                   int64
-	TeamID               sql.NullInt64
-	Name                 string
-	Number               sql.NullInt32
-	YearsInTeam          sql.NullInt32
-	Position             string
-	MatchesPlayed        sql.NullInt32
-	AverageGoalsPerMatch sql.NullFloat64
+	ID          int64
+	TeamID      sql.NullInt64
+	Name        string
+	Number      sql.NullInt32
+	YearsInTeam sql.NullInt32
+	Position    string
 }
 
 func (q *Queries) GetPlayer(ctx context.Context, id int64) (GetPlayerRow, error) {
@@ -702,8 +813,6 @@ func (q *Queries) GetPlayer(ctx context.Context, id int64) (GetPlayerRow, error)
 		&i.Number,
 		&i.YearsInTeam,
 		&i.Position,
-		&i.MatchesPlayed,
-		&i.AverageGoalsPerMatch,
 	)
 	return i, err
 }
@@ -762,9 +871,19 @@ FROM Team
 WHERE id = $1
 `
 
-func (q *Queries) GetTeam(ctx context.Context, id int64) (Team, error) {
+type GetTeamRow struct {
+	ID                  int64
+	Name                string
+	Province            sql.NullString
+	Mascot              sql.NullString
+	Color               sql.NullString
+	ChampionshipsPlayed sql.NullInt32
+	ChampionshipsWon    sql.NullInt32
+}
+
+func (q *Queries) GetTeam(ctx context.Context, id int64) (GetTeamRow, error) {
 	row := q.db.QueryRowContext(ctx, getTeam, id)
-	var i Team
+	var i GetTeamRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -1477,21 +1596,19 @@ func (q *Queries) ListPlayerStats(ctx context.Context) ([]Playerstat, error) {
 
 const listPlayers = `-- name: ListPlayers :many
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       p.position, p.matches_played, p.average_goals_per_match
+       p.position
 FROM Footballer f
 JOIN Player p ON p.footballer_id = f.id
 ORDER BY f.id
 `
 
 type ListPlayersRow struct {
-	ID                   int64
-	TeamID               sql.NullInt64
-	Name                 string
-	Number               sql.NullInt32
-	YearsInTeam          sql.NullInt32
-	Position             string
-	MatchesPlayed        sql.NullInt32
-	AverageGoalsPerMatch sql.NullFloat64
+	ID          int64
+	TeamID      sql.NullInt64
+	Name        string
+	Number      sql.NullInt32
+	YearsInTeam sql.NullInt32
+	Position    string
 }
 
 func (q *Queries) ListPlayers(ctx context.Context) ([]ListPlayersRow, error) {
@@ -1510,8 +1627,6 @@ func (q *Queries) ListPlayers(ctx context.Context) ([]ListPlayersRow, error) {
 			&i.Number,
 			&i.YearsInTeam,
 			&i.Position,
-			&i.MatchesPlayed,
-			&i.AverageGoalsPerMatch,
 		); err != nil {
 			return nil, err
 		}
@@ -1587,11 +1702,11 @@ SELECT
     s.capacity,
     COALESCE(SUM(m.attendance), 0) AS total_attendance,
     COUNT(m.id) AS total_matches,
-	CASE
-		WHEN COALESCE(s.capacity, 0) > 0 AND COUNT(m.id) > 0
-		THEN ROUND(((COALESCE(SUM(m.attendance), 0)::numeric / (COUNT(m.id) * s.capacity)::numeric) * 100)::numeric, 2)
-		ELSE 0
-	END AS attendance_percentage
+    CASE
+        WHEN COALESCE(s.capacity, 0) > 0 AND COUNT(m.id) > 0
+        THEN ROUND(((COALESCE(SUM(m.attendance), 0)::numeric / (COUNT(m.id) * s.capacity)::numeric) * 100)::numeric, 2)
+        ELSE 0
+    END AS attendance_percentage
 FROM Stadium s
 LEFT JOIN Match m ON s.id = m.stadium_id AND m.season_id = $1
 GROUP BY s.id, s.name, s.capacity
@@ -1604,7 +1719,7 @@ type ListStadiumsByAttendanceRow struct {
 	Capacity             sql.NullInt32
 	TotalAttendance      interface{}
 	TotalMatches         int64
-	AttendancePercentage interface{}
+	AttendancePercentage int32
 }
 
 // Report 5: stadiums by attendance
@@ -1692,15 +1807,25 @@ FROM Team
 ORDER BY id
 `
 
-func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
+type ListTeamsRow struct {
+	ID                  int64
+	Name                string
+	Province            sql.NullString
+	Mascot              sql.NullString
+	Color               sql.NullString
+	ChampionshipsPlayed sql.NullInt32
+	ChampionshipsWon    sql.NullInt32
+}
+
+func (q *Queries) ListTeams(ctx context.Context) ([]ListTeamsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listTeams)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Team
+	var items []ListTeamsRow
 	for rows.Next() {
-		var i Team
+		var i ListTeamsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -1807,24 +1932,17 @@ func (q *Queries) UpdateMatch(ctx context.Context, arg UpdateMatchParams) error 
 
 const updatePlayerDetails = `-- name: UpdatePlayerDetails :exec
 UPDATE Player
-SET position = $2, matches_played = $3, average_goals_per_match = $4
+SET position = $2
 WHERE footballer_id = $1
 `
 
 type UpdatePlayerDetailsParams struct {
-	FootballerID         int64
-	Position             string
-	MatchesPlayed        sql.NullInt32
-	AverageGoalsPerMatch sql.NullFloat64
+	FootballerID int64
+	Position     string
 }
 
 func (q *Queries) UpdatePlayerDetails(ctx context.Context, arg UpdatePlayerDetailsParams) error {
-	_, err := q.db.ExecContext(ctx, updatePlayerDetails,
-		arg.FootballerID,
-		arg.Position,
-		arg.MatchesPlayed,
-		arg.AverageGoalsPerMatch,
-	)
+	_, err := q.db.ExecContext(ctx, updatePlayerDetails, arg.FootballerID, arg.Position)
 	return err
 }
 

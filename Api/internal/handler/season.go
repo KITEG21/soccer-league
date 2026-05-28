@@ -25,6 +25,14 @@ func (h *SeasonHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	season, err := h.svc.Create(r.Context(), req)
 	if err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
+		if _, ok := err.(*service.DateRangeOverlapError); ok {
+			handleDateRangeError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -72,6 +80,14 @@ func (h *SeasonHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	season, err := h.svc.Update(r.Context(), id, req)
 	if err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
+		if _, ok := err.(*service.DateRangeOverlapError); ok {
+			handleDateRangeError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -86,6 +102,10 @@ func (h *SeasonHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.svc.Delete(r.Context(), id); err != nil {
+		if _, ok := err.(*service.EntityInUseError); ok {
+			handleEntityInUseError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

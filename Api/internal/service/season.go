@@ -31,6 +31,11 @@ type UpdateSeasonRequest struct {
 }
 
 func (s *SeasonService) Create(ctx context.Context, req CreateSeasonRequest) (*Season, error) {
+	// Validar que no haya solapamiento de fechas
+	if err := ValidateSeasonDatesNoOverlap(ctx, s.store, req.StartDate, req.EndDate, nil); err != nil {
+		return nil, err
+	}
+
 	id, err := s.store.CreateSeason(ctx, store.CreateSeasonParams{
 		StartDate: toNullTime(req.StartDate),
 		EndDate:   toNullTime(req.EndDate),
@@ -81,6 +86,16 @@ func (s *SeasonService) List(ctx context.Context, limit, offset int) ([]*Season,
 }
 
 func (s *SeasonService) Update(ctx context.Context, id int64, req UpdateSeasonRequest) (*Season, error) {
+	// Validar que no haya solapamiento de fechas
+	if err := ValidateSeasonDatesNoOverlap(ctx, s.store, req.StartDate, req.EndDate, &id); err != nil {
+		return nil, err
+	}
+
+	// Validar consistencia de fechas con partidos programados
+	if err := ValidateSeasonDateRangeConsistency(ctx, s.store, id, req.StartDate, req.EndDate); err != nil {
+		return nil, err
+	}
+
 	err := s.store.UpdateSeason(ctx, store.UpdateSeasonParams{
 		ID:        id,
 		StartDate: toNullTime(req.StartDate),
@@ -93,5 +108,10 @@ func (s *SeasonService) Update(ctx context.Context, id int64, req UpdateSeasonRe
 }
 
 func (s *SeasonService) Delete(ctx context.Context, id int64) error {
+	// Validar que no hay partidos usando esta temporada
+	if err := ValidateSeasonCanBeDeleted(ctx, s.store, id); err != nil {
+		return err
+	}
+
 	return s.store.DeleteSeason(ctx, id)
 }

@@ -36,10 +36,8 @@ type Match struct {
 }
 
 type Player struct {
-	FootballerID         int64
-	Position             string
-	MatchesPlayed        sql.NullInt32
-	AverageGoalsPerMatch sql.NullFloat64
+	FootballerID int64
+	Position     string
 }
 
 type Playerstat struct {
@@ -77,4 +75,6 @@ type Team struct {
 	Color               sql.NullString
 	ChampionshipsPlayed sql.NullInt32
 	ChampionshipsWon    sql.NullInt32
+	PlayersCount        sql.NullInt32
+	CoachesCount        sql.NullInt32
 }

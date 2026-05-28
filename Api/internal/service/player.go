@@ -16,34 +16,30 @@ func NewPlayerService(s *store.Queries) *PlayerService {
 }
 
 type Player struct {
-	ID                   int64   `json:"id"`
-	TeamID               int64   `json:"team_id"`
-	Name                 string  `json:"name"`
-	Number               int32   `json:"number"`
-	YearsInTeam          int32   `json:"years_in_team"`
-	Position             string  `json:"position"`
-	MatchesPlayed        int32   `json:"matches_played"`
-	AverageGoalsPerMatch float64 `json:"average_goals_per_match"`
+	ID           int64  `json:"id"`
+	TeamID       int64  `json:"team_id"`
+	Name         string `json:"name"`
+	Number       int32  `json:"number"`
+	YearsInTeam  int32  `json:"years_in_team"`
+	Position     string `json:"position"`
 }
 
 type Coach struct {
-	ID               int64  `json:"id"`
-	TeamID           int64  `json:"team_id"`
-	Name             string `json:"name"`
-	Number           int32  `json:"number"`
-	YearsInTeam      int32  `json:"years_in_team"`
-	ExperienceYears  int32  `json:"experience_years"`
+	ID              int64  `json:"id"`
+	TeamID          int64  `json:"team_id"`
+	Name            string `json:"name"`
+	Number          int32  `json:"number"`
+	YearsInTeam     int32  `json:"years_in_team"`
+	ExperienceYears int32  `json:"experience_years"`
 	ChampionshipsWon int32  `json:"championships_won"`
 }
 
 type CreatePlayerRequest struct {
-	TeamID               int64   `json:"team_id"`
-	Name                 string  `json:"name" validate:"required"`
-	Number               int32   `json:"number"`
-	YearsInTeam          int32   `json:"years_in_team"`
-	Position             string  `json:"position"`
-	MatchesPlayed        int32   `json:"matches_played"`
-	AverageGoalsPerMatch float64 `json:"average_goals_per_match"`
+	TeamID      int64  `json:"team_id"`
+	Name        string `json:"name" validate:"required"`
+	Number      int32  `json:"number"`
+	YearsInTeam int32  `json:"years_in_team"`
+	Position    string `json:"position"`
 }
 
 type CreateCoachRequest struct {
@@ -91,14 +87,17 @@ func float64ToNullFloat64(n float64) sql.NullFloat64 {
 
 // Player methods
 func (s *PlayerService) CreatePlayer(ctx context.Context, req CreatePlayerRequest) (int64, error) {
+	// Validar que el dorsal es único en el equipo
+	if err := ValidatePlayerDorsalUniqueInTeam(ctx, s.store, req.TeamID, req.Number, nil); err != nil {
+		return 0, err
+	}
+
 	return s.store.CreatePlayer(ctx, store.CreatePlayerParams{
-		TeamID:               int64ToNullInt64(req.TeamID),
-		Name:                 req.Name,
-		Number:               int32ToNullInt32(req.Number),
-		YearsInTeam:          int32ToNullInt32(req.YearsInTeam),
-		Position:             req.Position,
-		MatchesPlayed:        int32ToNullInt32(req.MatchesPlayed),
-		AverageGoalsPerMatch: float64ToNullFloat64(req.AverageGoalsPerMatch),
+		TeamID:      int64ToNullInt64(req.TeamID),
+		Name:        req.Name,
+		Number:      int32ToNullInt32(req.Number),
+		YearsInTeam: int32ToNullInt32(req.YearsInTeam),
+		Position:    req.Position,
 	})
 }
 
@@ -108,14 +107,12 @@ func (s *PlayerService) GetPlayer(ctx context.Context, id int64) (*Player, error
 		return nil, err
 	}
 	return &Player{
-		ID:                   row.ID,
-		TeamID:               nullInt64ToInt64(row.TeamID),
-		Name:                 row.Name,
-		Number:               nullInt32ToInt32(row.Number),
-		YearsInTeam:          nullInt32ToInt32(row.YearsInTeam),
-		Position:             row.Position,
-		MatchesPlayed:        nullInt32ToInt32(row.MatchesPlayed),
-		AverageGoalsPerMatch: nullFloat64ToFloat64(row.AverageGoalsPerMatch),
+		ID:          row.ID,
+		TeamID:      nullInt64ToInt64(row.TeamID),
+		Name:        row.Name,
+		Number:      nullInt32ToInt32(row.Number),
+		YearsInTeam: nullInt32ToInt32(row.YearsInTeam),
+		Position:    row.Position,
 	}, nil
 }
 
@@ -127,20 +124,23 @@ func (s *PlayerService) ListPlayers(ctx context.Context, limit, offset int) ([]*
 	var players []*Player
 	for _, row := range rows {
 		players = append(players, &Player{
-			ID:                   row.ID,
-			TeamID:               nullInt64ToInt64(row.TeamID),
-			Name:                 row.Name,
-			Number:               nullInt32ToInt32(row.Number),
-			YearsInTeam:          nullInt32ToInt32(row.YearsInTeam),
-			Position:             row.Position,
-			MatchesPlayed:        nullInt32ToInt32(row.MatchesPlayed),
-			AverageGoalsPerMatch: nullFloat64ToFloat64(row.AverageGoalsPerMatch),
+			ID:          row.ID,
+			TeamID:      nullInt64ToInt64(row.TeamID),
+			Name:        row.Name,
+			Number:      nullInt32ToInt32(row.Number),
+			YearsInTeam: nullInt32ToInt32(row.YearsInTeam),
+			Position:    row.Position,
 		})
 	}
 	return paginateSlice(players, limit, offset), nil
 }
 
 func (s *PlayerService) UpdatePlayer(ctx context.Context, id int64, req CreatePlayerRequest) error {
+	// Validar que el dorsal es único en el equipo (excluyendo el jugador actual)
+	if err := ValidatePlayerDorsalUniqueInTeam(ctx, s.store, req.TeamID, req.Number, &id); err != nil {
+		return err
+	}
+
 	if err := s.store.UpdatePlayerFootballer(ctx, store.UpdatePlayerFootballerParams{
 		ID:          id,
 		TeamID:      int64ToNullInt64(req.TeamID),
@@ -151,10 +151,8 @@ func (s *PlayerService) UpdatePlayer(ctx context.Context, id int64, req CreatePl
 		return err
 	}
 	return s.store.UpdatePlayerDetails(ctx, store.UpdatePlayerDetailsParams{
-		FootballerID:         id,
-		Position:             req.Position,
-		MatchesPlayed:        int32ToNullInt32(req.MatchesPlayed),
-		AverageGoalsPerMatch: float64ToNullFloat64(req.AverageGoalsPerMatch),
+		FootballerID: id,
+		Position:     req.Position,
 	})
 }
 
@@ -167,6 +165,16 @@ func (s *PlayerService) DeletePlayer(ctx context.Context, id int64) error {
 
 // Coach methods
 func (s *PlayerService) CreateCoach(ctx context.Context, req CreateCoachRequest) (int64, error) {
+	// Validar que el dorsal es único en el equipo
+	if err := ValidatePlayerDorsalUniqueInTeam(ctx, s.store, req.TeamID, req.Number, nil); err != nil {
+		return 0, err
+	}
+
+	// Validar que años de experiencia >= años en equipo
+	if err := ValidateCoachExperienceYearsVsTeamYears(req.ExperienceYears, req.YearsInTeam); err != nil {
+		return 0, err
+	}
+
 	return s.store.CreateCoach(ctx, store.CreateCoachParams{
 		TeamID:           int64ToNullInt64(req.TeamID),
 		Name:             req.Name,
@@ -183,12 +191,12 @@ func (s *PlayerService) GetCoach(ctx context.Context, id int64) (*Coach, error) 
 		return nil, err
 	}
 	return &Coach{
-		ID:               row.ID,
-		TeamID:           nullInt64ToInt64(row.TeamID),
-		Name:             row.Name,
-		Number:           nullInt32ToInt32(row.Number),
-		YearsInTeam:      nullInt32ToInt32(row.YearsInTeam),
-		ExperienceYears:  nullInt32ToInt32(row.ExperienceYears),
+		ID:              row.ID,
+		TeamID:          nullInt64ToInt64(row.TeamID),
+		Name:            row.Name,
+		Number:          nullInt32ToInt32(row.Number),
+		YearsInTeam:     nullInt32ToInt32(row.YearsInTeam),
+		ExperienceYears: nullInt32ToInt32(row.ExperienceYears),
 		ChampionshipsWon: nullInt32ToInt32(row.ChampionshipsWon),
 	}, nil
 }
@@ -201,12 +209,12 @@ func (s *PlayerService) ListCoaches(ctx context.Context, limit, offset int) ([]*
 	var coaches []*Coach
 	for _, row := range rows {
 		coaches = append(coaches, &Coach{
-			ID:               row.ID,
-			TeamID:           nullInt64ToInt64(row.TeamID),
-			Name:             row.Name,
-			Number:           nullInt32ToInt32(row.Number),
-			YearsInTeam:      nullInt32ToInt32(row.YearsInTeam),
-			ExperienceYears:  nullInt32ToInt32(row.ExperienceYears),
+			ID:              row.ID,
+			TeamID:          nullInt64ToInt64(row.TeamID),
+			Name:            row.Name,
+			Number:          nullInt32ToInt32(row.Number),
+			YearsInTeam:     nullInt32ToInt32(row.YearsInTeam),
+			ExperienceYears: nullInt32ToInt32(row.ExperienceYears),
 			ChampionshipsWon: nullInt32ToInt32(row.ChampionshipsWon),
 		})
 	}
@@ -214,6 +222,16 @@ func (s *PlayerService) ListCoaches(ctx context.Context, limit, offset int) ([]*
 }
 
 func (s *PlayerService) UpdateCoach(ctx context.Context, id int64, req CreateCoachRequest) error {
+	// Validar que el dorsal es único en el equipo (excluyendo el entrenador actual)
+	if err := ValidatePlayerDorsalUniqueInTeam(ctx, s.store, req.TeamID, req.Number, &id); err != nil {
+		return err
+	}
+
+	// Validar que años de experiencia >= años en equipo
+	if err := ValidateCoachExperienceYearsVsTeamYears(req.ExperienceYears, req.YearsInTeam); err != nil {
+		return err
+	}
+
 	if err := s.store.UpdateCoachFootballer(ctx, store.UpdateCoachFootballerParams{
 		ID:          id,
 		TeamID:      int64ToNullInt64(req.TeamID),
@@ -224,8 +242,8 @@ func (s *PlayerService) UpdateCoach(ctx context.Context, id int64, req CreateCoa
 		return err
 	}
 	return s.store.UpdateCoachDetails(ctx, store.UpdateCoachDetailsParams{
-		FootballerID:     id,
-		ExperienceYears:  int32ToNullInt32(req.ExperienceYears),
+		FootballerID:    id,
+		ExperienceYears: int32ToNullInt32(req.ExperienceYears),
 		ChampionshipsWon: int32ToNullInt32(req.ChampionshipsWon),
 	})
 }
