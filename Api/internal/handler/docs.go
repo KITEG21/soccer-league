@@ -1,10 +1,73 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
+	"github.com/football-api/internal/service"
 	"github.com/go-chi/chi/v5"
 )
+
+// ErrorResponse estructura de respuesta de error
+type ErrorResponse struct {
+	Error  string            `json:"error"`
+	Errors map[string]string `json:"errors,omitempty"`
+	Code   int               `json:"code"`
+}
+
+// handleValidationError maneja errores de validación
+func handleValidationError(w http.ResponseWriter, err error) {
+	if validationErr, ok := err.(*service.ValidationError); ok {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error:  "validation error",
+			Errors: validationErr.Errors,
+			Code:   http.StatusBadRequest,
+		})
+		return
+	}
+
+	// Default error response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Error: err.Error(),
+		Code:  http.StatusInternalServerError,
+	})
+}
+
+// handleDateRangeError maneja errores de rango de fechas
+func handleDateRangeError(w http.ResponseWriter, err error) {
+	if droe, ok := err.(*service.DateRangeOverlapError); ok {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error:  "date range conflict",
+			Errors: map[string]string{droe.Field: droe.Message},
+			Code:   http.StatusConflict,
+		})
+		return
+	}
+
+	handleValidationError(w, err)
+}
+
+// handleEntityInUseError maneja errores de entidades en uso
+func handleEntityInUseError(w http.ResponseWriter, err error) {
+	if eiue, ok := err.(*service.EntityInUseError); ok {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(ErrorResponse{
+			Error:  "entity in use, cannot delete",
+			Errors: map[string]string{"delete": eiue.Message},
+			Code:   http.StatusConflict,
+		})
+		return
+	}
+
+	handleValidationError(w, err)
+}
 
 // ServeScalarUI serves the Scalar API documentation UI
 func ServeScalarUI(r chi.Router) {

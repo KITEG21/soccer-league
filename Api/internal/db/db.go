@@ -136,21 +136,23 @@ func findMigrationDir() (string, error) {
 }
 
 func recoverDirtyMigration(ctx context.Context, db *sql.DB, m *migrate.Migrate, version uint) error {
-	if version != 2 {
-		return fmt.Errorf("database is in dirty state at version %d, manual intervention required", version)
-	}
-
 	log.Printf("database is in dirty state at version %d; attempting automatic recovery", version)
 
-	if err := applyMigrationTwoFixups(ctx, db); err != nil {
-		return err
+	if version == 2 {
+		if err := applyMigrationTwoFixups(ctx, db); err != nil {
+			return err
+		}
 	}
 
-	if err := m.Force(int(version)); err != nil {
-		return fmt.Errorf("failed to force migration version %d after recovery: %w", version, err)
+	forceVersion := int(version) - 1
+	if forceVersion < 0 {
+		forceVersion = 0
+	}
+	if err := m.Force(forceVersion); err != nil {
+		return fmt.Errorf("failed to force migration version %d after recovery: %w", forceVersion, err)
 	}
 
-	log.Printf("recovered dirty migration state at version %d", version)
+	log.Printf("recovered dirty migration state, forced to version %d", forceVersion)
 	return nil
 }
 

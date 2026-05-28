@@ -137,5 +137,10 @@ func (s *TeamService) Update(ctx context.Context, id int64, req UpdateTeamReques
 }
 
 func (s *TeamService) Delete(ctx context.Context, id int64) error {
+	// Validar que el equipo no tiene entidades relacionadas
+	if err := ValidateTeamCanBeDeleted(ctx, s.store, id); err != nil {
+		return err
+	}
+
 	return s.store.DeleteTeam(ctx, id)
 }

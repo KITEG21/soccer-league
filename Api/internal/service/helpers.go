@@ -3,14 +3,11 @@ package service
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"strings"
 	"time"
 
 	"github.com/football-api/internal/store"
 )
-
-var ErrNameConflict = errors.New("name already exists in the other entity")
 
 const (
 	DefaultPageLimit = 20

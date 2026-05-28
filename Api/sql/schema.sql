@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS Team (
     mascot TEXT,
     color TEXT,
     championships_played INT,
-    championships_won INT
+    championships_won INT,
+    players_count INT DEFAULT 0,
+    coaches_count INT DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS Stadium (
@@ -25,14 +27,13 @@ CREATE TABLE IF NOT EXISTS Footballer (
     team_id BIGINT REFERENCES Team(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
     number INT,
-    years_in_team INT
+    years_in_team INT,
+    UNIQUE(team_id, number)
 );
 
 CREATE TABLE IF NOT EXISTS Player (
     footballer_id BIGINT PRIMARY KEY REFERENCES Footballer(id) ON DELETE CASCADE,
-    position TEXT NOT NULL,
-    matches_played INT,
-    average_goals_per_match DOUBLE PRECISION DEFAULT 0
+    position TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Coach (

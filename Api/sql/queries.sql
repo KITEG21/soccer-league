@@ -77,20 +77,20 @@ WITH ins_fut AS (
     VALUES ($1, $2, $3, $4)
     RETURNING id
 )
-INSERT INTO Player (footballer_id, position, matches_played, average_goals_per_match)
-SELECT id, $5, $6, $7 FROM ins_fut
+INSERT INTO Player (footballer_id, position)
+SELECT id, $5 FROM ins_fut
 RETURNING footballer_id;
 
 -- name: GetPlayer :one
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       p.position, p.matches_played, p.average_goals_per_match
+       p.position
 FROM Footballer f
 JOIN Player p ON p.footballer_id = f.id
 WHERE f.id = $1;
 
 -- name: ListPlayers :many
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
-       p.position, p.matches_played, p.average_goals_per_match
+       p.position
 FROM Footballer f
 JOIN Player p ON p.footballer_id = f.id
 ORDER BY f.id;
@@ -102,7 +102,7 @@ WHERE id = $1;
 
 -- name: UpdatePlayerDetails :exec
 UPDATE Player
-SET position = $2, matches_played = $3, average_goals_per_match = $4
+SET position = $2
 WHERE footballer_id = $1;
 
 -- name: DeletePlayerRecord :exec
@@ -517,3 +517,22 @@ WHERE p.position = 'Portero' AND m.season_id = $1
 GROUP BY f.id, f.name, t.name
 ORDER BY metric_value DESC, saves DESC, goals_conceded ASC, f.name
 LIMIT 1;
+
+-- Validation queries
+-- name: GetFootballersByTeam :many
+SELECT id, team_id, name, number, years_in_team
+FROM Footballer
+WHERE team_id = $1
+ORDER BY id;
+
+-- name: GetMatchesByHomeTeam :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE home_team_id = $1
+ORDER BY match_date, id;
+
+-- name: GetMatchesByAwayTeam :many
+SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
+FROM Match
+WHERE away_team_id = $1
+ORDER BY match_date, id;
