@@ -1,5 +1,5 @@
 // Shared types used across multiple modules
-export interface Futbolista {
+export interface Footballer {
   id: number;
   team_id?: number;
   name: string;

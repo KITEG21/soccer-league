@@ -6,6 +6,8 @@ export interface Team {
   color?: string;
   championships_played?: number;
   championships_won?: number;
+  players_count?: number;
+  coaches_count?: number;
 }
 
 export interface CreateTeamRequest {

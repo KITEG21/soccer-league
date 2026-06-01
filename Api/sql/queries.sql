@@ -1,16 +1,16 @@
--- Team CRUD
+﻿-- Team CRUD
 -- name: CreateTeam :one
 INSERT INTO Team (name, province, mascot, color, championships_played, championships_won)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id;
 
 -- name: GetTeam :one
-SELECT id, name, province, mascot, color, championships_played, championships_won
+SELECT id, name, province, mascot, color, championships_played, championships_won, players_count, coaches_count
 FROM Team
 WHERE id = $1;
 
 -- name: ListTeams :many
-SELECT id, name, province, mascot, color, championships_played, championships_won
+SELECT id, name, province, mascot, color, championships_played, championships_won, players_count, coaches_count
 FROM Team
 ORDER BY id;
 

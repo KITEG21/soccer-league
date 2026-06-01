@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { Player } from "../types";
 import { playerSchema, type PlayerFormData } from "../schemas/playerSchema";
 import { playersApiService } from "../services/api";
+import { ApiError } from "@/shared/utils/api-client";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -53,8 +54,6 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
       number: 0,
       years_in_team: 0,
       position: "",
-      matches_played: 0,
-      average_goals_per_match: 0,
     },
   });
 
@@ -65,8 +64,6 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
         number: player.number || 0,
         years_in_team: player.years_in_team || 0,
         position: player.position,
-        matches_played: player.matches_played || 0,
-        average_goals_per_match: player.average_goals_per_match || 0,
       });
     } else {
       reset({
@@ -74,8 +71,6 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
         number: 0,
         years_in_team: 0,
         position: "",
-        matches_played: 0,
-        average_goals_per_match: 0,
       });
     }
   }, [player, isOpen, reset]);
@@ -114,6 +109,16 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
   const isLoading =
     isSubmitting || createMutation.isPending || updateMutation.isPending;
 
+  const getErrorMessage = (error: unknown) => {
+    if (error instanceof ApiError) {
+      return error.message;
+    }
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return null;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -132,6 +137,12 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
+            {createMutation.error instanceof ApiError && createMutation.error.errors.name && (
+              <p className="text-sm text-destructive">{createMutation.error.errors.name}</p>
+            )}
+            {updateMutation.error instanceof ApiError && updateMutation.error.errors.name && (
+              <p className="text-sm text-destructive">{updateMutation.error.errors.name}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -144,6 +155,15 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
                 {...register("number", { valueAsNumber: true })}
                 disabled={isLoading}
               />
+              {errors.number && (
+                <p className="text-sm text-destructive">{errors.number.message}</p>
+              )}
+              {createMutation.error instanceof ApiError && createMutation.error.errors.number && (
+                <p className="text-sm text-destructive">{createMutation.error.errors.number}</p>
+              )}
+              {updateMutation.error instanceof ApiError && updateMutation.error.errors.number && (
+                <p className="text-sm text-destructive">{updateMutation.error.errors.number}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="player-position">Posición *</Label>
@@ -153,7 +173,7 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
                 render={({ field }) => (
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                     disabled={isLoading}
                   >
                     <SelectTrigger>
@@ -175,40 +195,25 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="player-years">Años en Equipo</Label>
-              <Input
-                id="player-years"
-                type="number"
-                min="0"
-                {...register("years_in_team", { valueAsNumber: true })}
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="player-matches">Partidos Jugados</Label>
-              <Input
-                id="player-matches"
-                type="number"
-                min="0"
-                {...register("matches_played", { valueAsNumber: true })}
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
           <div className="space-y-2">
-            <Label htmlFor="player-goals">Goles promedio por partido</Label>
+            <Label htmlFor="player-years">Años en Equipo</Label>
             <Input
-              id="player-goals"
+              id="player-years"
               type="number"
               min="0"
-              step="0.01"
-              {...register("average_goals_per_match", { valueAsNumber: true })}
+              {...register("years_in_team", { valueAsNumber: true })}
               disabled={isLoading}
             />
+            {errors.years_in_team && (
+              <p className="text-sm text-destructive">{errors.years_in_team.message}</p>
+            )}
           </div>
+
+          {(createMutation.isError || updateMutation.isError) && (
+            <p className="text-sm text-destructive font-medium">
+              {getErrorMessage(createMutation.error || updateMutation.error)}
+            </p>
+          )}
 
           <div className="flex justify-end gap-2 pt-4">
             <Button

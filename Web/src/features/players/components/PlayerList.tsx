@@ -78,10 +78,8 @@ export const PlayerList = ({ teamId }: PlayerListProps) => {
               </span>
             </div>
             
-            <div className="text-xs text-muted-foreground space-y-1 mb-4 grid grid-cols-2 gap-x-2">
+            <div className="text-xs text-muted-foreground space-y-1 mb-4">
               <p><span className="font-medium text-foreground/80">Años en equipo:</span> {player.years_in_team || 0}</p>
-              <p><span className="font-medium text-foreground/80">Partidos:</span> {player.matches_played || 0}</p>
-              <p className="col-span-2"><span className="font-medium text-foreground/80">Goles promedio:</span> {player.average_goals_per_match || 0}</p>
             </div>
 
             <div className="flex gap-2 justify-end pt-2 border-t">

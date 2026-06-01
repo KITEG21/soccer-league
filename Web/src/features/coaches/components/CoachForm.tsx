@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { Coach } from "../types";
 import { coachSchema, type CoachFormData } from "../schemas/coachSchema";
 import { coachesApiService } from "../services/api";
+import { ApiError } from "@/shared/utils/api-client";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -96,6 +97,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
   const isLoading =
     isSubmitting || createMutation.isPending || updateMutation.isPending;
 
+  const getErrorMessage = (error: unknown) => {
+    if (error instanceof ApiError) return error.message;
+    if (error instanceof Error) return error.message;
+    return null;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -114,6 +121,9 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
+            {createMutation.error instanceof ApiError && createMutation.error.errors.name && (
+              <p className="text-sm text-destructive">{createMutation.error.errors.name}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -126,6 +136,9 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
                 {...register("number", { valueAsNumber: true })}
                 disabled={isLoading}
               />
+              {createMutation.error instanceof ApiError && createMutation.error.errors.number && (
+                <p className="text-sm text-destructive">{createMutation.error.errors.number}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="coach-years">Años en Equipo</Label>
@@ -149,6 +162,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
                 {...register("experience_years", { valueAsNumber: true })}
                 disabled={isLoading}
               />
+              {errors.experience_years && (
+                <p className="text-sm text-destructive">{errors.experience_years.message}</p>
+              )}
+              {createMutation.error instanceof ApiError && createMutation.error.errors.experience_years && (
+                <p className="text-sm text-destructive">{createMutation.error.errors.experience_years}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="coach-won">Campeonatos Ganados</Label>
@@ -161,6 +180,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
               />
             </div>
           </div>
+
+          {(createMutation.isError || updateMutation.isError) && (
+            <p className="text-sm text-destructive font-medium">
+              {getErrorMessage(createMutation.error || updateMutation.error)}
+            </p>
+          )}
 
           <div className="flex justify-end gap-2 pt-4">
             <Button
