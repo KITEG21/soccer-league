@@ -5,6 +5,15 @@ import { TeamContainer, TeamDetailsPage } from "./features/teams";
 import { SeasonContainer } from "./features/seasons";
 import { StadiumContainer } from "./features/stadiums";
 import { MatchContainer, MatchDetailContainer } from "./features/matches";
+import { 
+  StandingsReport, 
+  CoachExperienceReport, 
+  AllStarReport, 
+  AttendanceReport,
+  HeadToHeadReport,
+  ScheduleReport,
+  TeamStatusReport
+} from "./features/reports";
 import { PlayerGlobalList } from "./features/players/components/PlayerGlobalList";
 import { CoachGlobalList } from "./features/coaches/components/CoachGlobalList";
 import { useAuth } from "./shared/contexts/AuthContext";
@@ -95,6 +104,63 @@ function App() {
                   <div className="container mx-auto py-8">
                     <CoachGlobalList />
                   </div>
+                </PrivateRoute>
+              }
+            />
+            {/* Reports Routes */}
+            <Route
+              path="/reports/standings"
+              element={
+                <PrivateRoute>
+                  <StandingsReport />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reports/coach-experience"
+              element={
+                <PrivateRoute>
+                  <CoachExperienceReport />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reports/all-star"
+              element={
+                <PrivateRoute>
+                  <AllStarReport />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reports/attendance"
+              element={
+                <PrivateRoute>
+                  <AttendanceReport />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reports/head-to-head"
+              element={
+                <PrivateRoute>
+                  <HeadToHeadReport />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reports/schedule"
+              element={
+                <PrivateRoute>
+                  <ScheduleReport />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reports/team-status"
+              element={
+                <PrivateRoute>
+                  <TeamStatusReport />
                 </PrivateRoute>
               }
             />
