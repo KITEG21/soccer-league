@@ -8,6 +8,7 @@ import { playersApiService } from "../services/api";
 import { PlayerForm } from "./PlayerForm";
 import type { Player } from "../types";
 
+
 interface PlayerListProps {
   readonly teamId: number;
 }
@@ -66,34 +67,58 @@ export const PlayerList = ({ teamId }: PlayerListProps) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {players.map((player) => (
-          <div key={player.id} className="border rounded-lg p-4 bg-card flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="font-semibold">{player.name}</p>
-                <p className="text-xs text-primary font-medium uppercase">{player.position}</p>
-              </div>
-              <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded">
-                #{player.number}
-              </span>
-            </div>
-            
-            <div className="text-xs text-muted-foreground space-y-1 mb-4">
-              <p><span className="font-medium text-foreground/80">Años en equipo:</span> {player.years_in_team || 0}</p>
-            </div>
-
-            <div className="flex gap-2 justify-end pt-2 border-t">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(player)}>
-                <Edit size={14} />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(player.id)}>
-                <Trash2 size={14} />
-              </Button>
-            </div>
+        {players.length === 0 ? (
+          <div className="col-span-full text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+            No hay jugadores registrados para este equipo.
           </div>
-        ))}
-        {players.length === 0 && (
-          <p className="text-muted-foreground text-sm italic col-span-full text-center py-4">No hay jugadores registrados para este equipo.</p>
+        ) : (
+          players.map((player) => (
+            <div
+              key={player.id}
+              className="bg-card border rounded-xl p-4 flex flex-col gap-3 relative group overflow-hidden"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    {player.number}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-foreground">{player.name}</h3>
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">
+                      {player.position}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleEdit(player)}
+                  >
+                    <Edit size={14} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(player.id)}
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="bg-muted/50 p-2 rounded-lg">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                    Años en equipo
+                  </p>
+                  <p className="font-semibold">{player.years_in_team || 0}</p>
+                </div>
+              </div>
+            </div>
+          ))
         )}
       </div>
 
@@ -115,3 +140,4 @@ export const PlayerList = ({ teamId }: PlayerListProps) => {
     </div>
   );
 };
+

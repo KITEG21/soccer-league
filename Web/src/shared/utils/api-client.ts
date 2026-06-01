@@ -13,17 +13,21 @@ export interface ApiErrorResponse {
 }
 
 export class ApiError extends Error {
-  public errors: Record<string, string> = {};
+  public status: number;
+  public errors: Record<string, string>;
 
-  constructor(public data: ApiErrorResponse) {
-    super(translateError(data.error));
+  constructor(status: number, message: string, errors: Record<string, string> = {}) {
+    const translatedMessage = translateError(message);
+    const translatedErrors: Record<string, string> = {};
+    
+    Object.entries(errors).forEach(([key, val]) => {
+      translatedErrors[key] = translateError(val);
+    });
+
+    super(translatedMessage);
     this.name = "ApiError";
-
-    if (data.errors) {
-      Object.entries(data.errors).forEach(([field, msg]) => {
-        this.errors[field] = translateError(msg);
-      });
-    }
+    this.status = status;
+    this.errors = translatedErrors;
   }
 }
 
@@ -44,8 +48,8 @@ export async function apiRequest<T>(
   if (!response.ok) {
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
-      const errorData = await response.json();
-      throw new ApiError(errorData);
+      const errorData: ApiErrorResponse = await response.json();
+      throw new ApiError(response.status, errorData.error, errorData.errors || {});
     }
     const statusText = translateError(response.statusText);
     throw new Error(`Error API: ${response.status} ${statusText}`);

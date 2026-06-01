@@ -1,8 +1,10 @@
-import type { Futbolista } from "@/shared/types";
+import type { Footballer } from "@/shared/types";
+import type { Team } from "@/features/teams/types";
 
-export interface Coach extends Futbolista {
+export interface Coach extends Footballer {
   experience_years?: number;
   championships_won?: number;
+  team?: Team;
 }
 
 export interface CreateCoachRequest {
