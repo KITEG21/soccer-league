@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"context"
@@ -15,6 +15,8 @@ func NewTeamService(s *store.Queries) *TeamService {
 }
 
 type Team struct {
+	PlayersCount        int32  `json:"players_count"`
+	CoachesCount        int32  `json:"coaches_count"`
 	ID                  int64  `json:"id"`
 	Name                string `json:"name"`
 	Province            string `json:"province,omitempty"`
@@ -74,6 +76,8 @@ func (s *TeamService) Create(ctx context.Context, req CreateTeamRequest) (*Team,
 		Color:               fromNullString(t.Color),
 		ChampionshipsPlayed: fromNullInt32(t.ChampionshipsPlayed),
 		ChampionshipsWon:    fromNullInt32(t.ChampionshipsWon),
+			PlayersCount:        fromNullInt32(t.PlayersCount),
+			CoachesCount:        fromNullInt32(t.CoachesCount),
 	}, nil
 }
 
@@ -90,6 +94,8 @@ func (s *TeamService) Get(ctx context.Context, id int64) (*Team, error) {
 		Color:               fromNullString(t.Color),
 		ChampionshipsPlayed: fromNullInt32(t.ChampionshipsPlayed),
 		ChampionshipsWon:    fromNullInt32(t.ChampionshipsWon),
+			PlayersCount:        fromNullInt32(t.PlayersCount),
+			CoachesCount:        fromNullInt32(t.CoachesCount),
 	}, nil
 }
 
@@ -109,7 +115,9 @@ func (s *TeamService) List(ctx context.Context, limit, offset int) ([]*Team, err
 			Color:               fromNullString(t.Color),
 			ChampionshipsPlayed: fromNullInt32(t.ChampionshipsPlayed),
 			ChampionshipsWon:    fromNullInt32(t.ChampionshipsWon),
-		})
+			PlayersCount:        fromNullInt32(t.PlayersCount),
+			CoachesCount:        fromNullInt32(t.CoachesCount),
+			})
 	}
 	return paginateSlice(teams, limit, offset), nil
 }
@@ -144,3 +152,6 @@ func (s *TeamService) Delete(ctx context.Context, id int64) error {
 
 	return s.store.DeleteTeam(ctx, id)
 }
+
+
+

@@ -17,6 +17,7 @@ interface ConfirmDialogProps {
   readonly confirmText?: string;
   readonly cancelText?: string;
   readonly isLoading?: boolean;
+  readonly error?: string | null;
 }
 
 export const ConfirmDialog = ({
@@ -28,6 +29,7 @@ export const ConfirmDialog = ({
   confirmText = "Confirmar",
   cancelText = "Cancelar",
   isLoading = false,
+  error = null,
 }: ConfirmDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -36,6 +38,11 @@ export const ConfirmDialog = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {error && (
+          <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm font-medium">
+            {error}
+          </div>
+        )}
         <DialogFooter>
           <Button
             type="button"

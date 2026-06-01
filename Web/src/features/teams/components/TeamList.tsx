@@ -91,6 +91,16 @@ export function TeamList({
                   <span className="font-medium text-foreground">Mascota:</span> {team.mascot}
                 </p>
               )}
+              <div className="flex gap-4 mt-2">
+                <p>
+                  <span className="font-medium text-foreground">Jugadores:</span>{" "}
+                  {team.players_count ?? 0}
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">Entrenadores:</span>{" "}
+                  {team.coaches_count ?? 0}
+                </p>
+              </div>
             </div>
 
             <div className="mt-4 pt-4 border-t flex justify-between items-center text-primary text-sm font-medium">

@@ -41,8 +41,6 @@ export const SeasonContainer = () => {
     },
     onError: (error) => {
       console.error("Delete error:", error);
-      setDeleteDialogOpen(false);
-      setSeasonToDelete(undefined);
     },
   });
 
@@ -57,6 +55,7 @@ export const SeasonContainer = () => {
   };
 
   const handleDelete = (id: number) => {
+    deleteMutation.reset();
     setSeasonToDelete(id);
     setDeleteDialogOpen(true);
   };
@@ -70,6 +69,7 @@ export const SeasonContainer = () => {
   const handleCloseDeleteDialog = () => {
     setDeleteDialogOpen(false);
     setSeasonToDelete(undefined);
+    deleteMutation.reset();
   };
 
   const handleCloseForm = () => {
@@ -102,6 +102,7 @@ export const SeasonContainer = () => {
         confirmText="Eliminar"
         cancelText="Cancelar"
         isLoading={deleteMutation.isPending}
+        error={deleteMutation.isError ? (deleteMutation.error instanceof Error ? deleteMutation.error.message : "Error al eliminar") : null}
       />
     </div>
   );

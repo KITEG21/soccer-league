@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { t } from "@/shared/translations";
 
 export interface CarouselSlide {
   id: string;
@@ -52,61 +53,72 @@ export const Carousel = ({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-lg`}
+      className="relative w-full overflow-hidden rounded-lg"
       style={{ height }}
     >
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 overflow-hidden transition-opacity duration-1000 ease-in-out ${
-            index === currentIndex ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <div className="absolute inset-0 overflow-hidden">
-            {slide.backgroundImage ? (
-              <img
-                src={slide.backgroundImage}
-                alt=""
-                className="w-full h-full object-cover"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              <div
-                className="w-full h-full"
-                style={{
-                  backgroundColor: slide.backgroundColor || "bg-primary",
-                }}
-              />
-            )}
-          </div>
-          <div className={`absolute inset-0 ${overlayOpacity}`} />
-          {slide.content ? (
-            slide.content
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-              {slide.title && (
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 max-w-4xl">
-                  {slide.title}
-                </h2>
-              )}
-              {slide.description && (
-                <p className="text-xl md:text-2xl text-white/90 max-w-3xl mb-6">
-                  {slide.description}
-                </p>
-              )}
-              {slide.link && (
-                <Link
-                  to={slide.link}
-                  className="inline-flex z-10 items-center text-white gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm hover:scale-105 px-4 py-2 rounded-full font-semibold transition-all"
-                >
-                  Ver más
-                  <ChevronRight className="w-5 h-5" />
-                </Link>
+      {slides.map((slide, index) => {
+        const isNearby = Math.abs(index - currentIndex) <= 1 ||
+          (currentIndex === 0 && index === slides.length - 1) ||
+          (currentIndex === slides.length - 1 && index === 0);
+
+        return (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 overflow-hidden transition-opacity duration-1000 ease-in-out ${
+              index === currentIndex ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div className="absolute inset-0 overflow-hidden">
+              {slide.backgroundImage ? (
+                isNearby ? (
+                  <img
+                    src={slide.backgroundImage}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-900" />
+                )
+              ) : (
+                <div
+                  className="w-full h-full"
+                  style={{
+                    backgroundColor: slide.backgroundColor || "bg-primary",
+                  }}
+                />
               )}
             </div>
-          )}
-        </div>
-      ))}
+            <div className={`absolute inset-0 ${overlayOpacity}`} />
+            {slide.content ? (
+              slide.content
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                {slide.title && (
+                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 max-w-4xl">
+                    {slide.title}
+                  </h2>
+                )}
+                {slide.description && (
+                  <p className="text-xl md:text-2xl text-white/90 max-w-3xl mb-6">
+                    {slide.description}
+                  </p>
+                )}
+                {slide.link && (
+                  <Link
+                    to={slide.link}
+                    className="inline-flex z-10 items-center text-white gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm hover:scale-105 px-4 py-2 rounded-full font-semibold transition-all"
+                  >
+                    {t.common.viewMore}
+                    <ChevronRight className="w-5 h-5" />
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {showArrows && (
         <>

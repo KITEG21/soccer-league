@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { Season } from "../types";
 import { seasonSchema, type SeasonFormValues } from "../schemas/seasonSchema";
 import { seasonsApiService } from "../services/api";
+import { ApiError } from "@/shared/utils/api-client";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Calendar } from "@/shared/components/ui/calendar";
@@ -198,6 +199,24 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
               <p className="text-sm text-destructive">{errors.end_date.message}</p>
             )}
           </div>
+
+          {(createMutation.isError || updateMutation.isError) && (
+            <div className="space-y-1">
+              <p className="text-sm text-destructive font-semibold">
+                {(createMutation.error as any)?.message || (updateMutation.error as any)?.message || "Error en la temporada"}
+              </p>
+              {(createMutation.error instanceof ApiError && createMutation.error.errors.date_range) && (
+                <p className="text-xs text-destructive/80 italic">
+                  {createMutation.error.errors.date_range}
+                </p>
+              )}
+              {(updateMutation.error instanceof ApiError && updateMutation.error.errors.date_range) && (
+                <p className="text-xs text-destructive/80 italic">
+                  {updateMutation.error.errors.date_range}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-4">
             <Button

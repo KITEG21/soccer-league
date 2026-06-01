@@ -41,8 +41,6 @@ export const TeamContainer = () => {
     },
     onError: (error) => {
       console.error("Delete error:", error);
-      setDeleteDialogOpen(false);
-      setTeamToDelete(undefined);
     },
   });
 
@@ -57,6 +55,7 @@ export const TeamContainer = () => {
   };
 
   const handleDelete = (id: number) => {
+    deleteMutation.reset();
     setTeamToDelete(id);
     setDeleteDialogOpen(true);
   };
@@ -70,6 +69,7 @@ export const TeamContainer = () => {
   const handleCloseDeleteDialog = () => {
     setDeleteDialogOpen(false);
     setTeamToDelete(undefined);
+    deleteMutation.reset();
   };
 
   const handleCloseForm = () => {
@@ -102,6 +102,13 @@ export const TeamContainer = () => {
         confirmText="Eliminar"
         cancelText="Cancelar"
         isLoading={deleteMutation.isPending}
+        error={
+          deleteMutation.isError
+            ? deleteMutation.error instanceof Error
+              ? deleteMutation.error.message
+              : "Error al eliminar"
+            : null
+        }
       />
     </div>
   );
