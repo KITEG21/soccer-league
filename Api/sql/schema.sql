@@ -5,9 +5,7 @@ CREATE TABLE IF NOT EXISTS Team (
     mascot TEXT,
     color TEXT,
     championships_played INT,
-    championships_won INT,
-    players_count INT DEFAULT 0,
-    coaches_count INT DEFAULT 0
+    championships_won INT
 );
 
 CREATE TABLE IF NOT EXISTS Stadium (
