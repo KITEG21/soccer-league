@@ -30,9 +30,8 @@ type Match struct {
 	SeasonID   sql.NullInt64
 	StadiumID  sql.NullInt64
 	MatchDate  time.Time
-	HomeGoals  sql.NullInt32
-	AwayGoals  sql.NullInt32
 	Attendance sql.NullInt32
+	Disputed   bool
 }
 
 type Player struct {

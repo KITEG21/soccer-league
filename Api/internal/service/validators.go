@@ -161,6 +161,38 @@ func ValidateTeamCanBeDeleted(ctx context.Context, q *store.Queries, teamID int6
 	return nil
 }
 
+// ValidateMatchCanBeDeleted valida si un partido puede ser eliminado
+func ValidateMatchCanBeDeleted(ctx context.Context, q *store.Queries, matchID int64) *EntityInUseError {
+	stats, err := q.ListPlayerStats(ctx)
+	if err != nil {
+		return nil
+	}
+	for _, stat := range stats {
+		if fromNullInt64(stat.MatchID) == matchID {
+			refs := map[string]int{"player_stats": 1}
+			return NewEntityInUseError("match", matchID, refs)
+		}
+	}
+	return nil
+}
+
+// ValidateMatchDisputed permite operar solo si el partido está disputado
+func ValidateMatchDisputed(ctx context.Context, q *store.Queries, matchID int64) *ValidationError {
+	ve := NewValidationError()
+	row, err := q.GetMatch(ctx, matchID)
+	if err != nil {
+		ve.Add("match_id", "partido no encontrado")
+		return ve
+	}
+	if !row.Disputed {
+		ve.Add("match_id", "no se pueden agregar estadísticas a un partido no disputado")
+	}
+	if ve.HasErrors() {
+		return ve
+	}
+	return nil
+}
+
 // ValidateSeasonDateRangeConsistency valida consistencia de fechas al editar
 func ValidateSeasonDateRangeConsistency(ctx context.Context, q *store.Queries, seasonID int64, newStartDate, newEndDate string) *ValidationError {
 	ve := NewValidationError()

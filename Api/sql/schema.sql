@@ -49,9 +49,8 @@ CREATE TABLE IF NOT EXISTS Match (
     season_id BIGINT REFERENCES Season(id) ON DELETE RESTRICT,
     stadium_id BIGINT REFERENCES Stadium(id) ON DELETE RESTRICT,
     match_date DATE NOT NULL,
-    home_goals INT DEFAULT 0,
-    away_goals INT DEFAULT 0,
-    attendance INT DEFAULT 0
+    attendance INT DEFAULT 0,
+    disputed BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS PlayerStats (

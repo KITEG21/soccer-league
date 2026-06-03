@@ -63,6 +63,9 @@ func playerStatFromStore(row store.Playerstat) *PlayerStat {
 }
 
 func (s *PlayerStatsService) Create(ctx context.Context, req CreatePlayerStatRequest) (*PlayerStat, error) {
+	if ve := ValidateMatchDisputed(ctx, s.store, req.MatchID); ve != nil {
+		return nil, ve
+	}
 	id, err := s.store.CreatePlayerStat(ctx, store.CreatePlayerStatParams{
 		PlayerID:        int64ToNullInt64(req.PlayerID),
 		MatchID:         int64ToNullInt64(req.MatchID),
@@ -107,6 +110,9 @@ func (s *PlayerStatsService) List(ctx context.Context, limit, offset int) ([]*Pl
 }
 
 func (s *PlayerStatsService) Update(ctx context.Context, id int64, req UpdatePlayerStatRequest) error {
+	if ve := ValidateMatchDisputed(ctx, s.store, req.MatchID); ve != nil {
+		return ve
+	}
 	return s.store.UpdatePlayerStat(ctx, store.UpdatePlayerStatParams{
 		ID:              id,
 		PlayerID:        int64ToNullInt64(req.PlayerID),
