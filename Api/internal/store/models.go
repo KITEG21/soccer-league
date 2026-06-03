@@ -74,6 +74,4 @@ type Team struct {
 	Color               sql.NullString
 	ChampionshipsPlayed sql.NullInt32
 	ChampionshipsWon    sql.NullInt32
-	PlayersCount        sql.NullInt32
-	CoachesCount        sql.NullInt32
 }

@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit, Trash2, Users } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Loading } from "@/shared/components/Loading";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { playersApiService } from "../services/api";
 import { PlayerForm } from "./PlayerForm";
@@ -11,9 +10,10 @@ import type { Player } from "../types";
 
 interface PlayerListProps {
   readonly teamId: number;
+  readonly players: Player[];
 }
 
-export const PlayerList = ({ teamId }: PlayerListProps) => {
+export const PlayerList = ({ teamId, players }: PlayerListProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -21,21 +21,10 @@ export const PlayerList = ({ teamId }: PlayerListProps) => {
 
   const queryClient = useQueryClient();
 
-  const {
-    data: allPlayers = [],
-    isLoading,
-    error,
-  } = useQuery<Player[]>({
-    queryKey: ["players"],
-    queryFn: () => playersApiService.getPlayers(),
-  });
-
-  const players = allPlayers.filter((p) => p.team_id === teamId);
-
   const deleteMutation = useMutation({
     mutationFn: (id: number) => playersApiService.deletePlayer(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["players"] });
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] });
       setDeleteDialogOpen(false);
     },
   });
@@ -49,9 +38,6 @@ export const PlayerList = ({ teamId }: PlayerListProps) => {
     setPlayerToDelete(id);
     setDeleteDialogOpen(true);
   };
-
-  if (isLoading) return <Loading />;
-  if (error) return <div className="text-destructive">Error al cargar jugadores</div>;
 
   return (
     <div className="space-y-4">

@@ -957,7 +957,7 @@ func (q *Queries) GetStadium(ctx context.Context, id int64) (Stadium, error) {
 }
 
 const getTeam = `-- name: GetTeam :one
-SELECT id, name, province, mascot, color, championships_played, championships_won, players_count, coaches_count
+SELECT id, name, province, mascot, color, championships_played, championships_won
 FROM Team
 WHERE id = $1
 `
@@ -973,8 +973,6 @@ func (q *Queries) GetTeam(ctx context.Context, id int64) (Team, error) {
 		&i.Color,
 		&i.ChampionshipsPlayed,
 		&i.ChampionshipsWon,
-		&i.PlayersCount,
-		&i.CoachesCount,
 	)
 	return i, err
 }
@@ -1088,6 +1086,56 @@ func (q *Queries) ListCoaches(ctx context.Context) ([]ListCoachesRow, error) {
 	var items []ListCoachesRow
 	for rows.Next() {
 		var i ListCoachesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TeamID,
+			&i.Name,
+			&i.Number,
+			&i.YearsInTeam,
+			&i.ExperienceYears,
+			&i.ChampionshipsWon,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCoachesByTeam = `-- name: ListCoachesByTeam :many
+SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
+       c.experience_years, c.championships_won
+FROM Footballer f
+JOIN Coach c ON c.footballer_id = f.id
+WHERE f.team_id = $1
+ORDER BY f.id
+`
+
+type ListCoachesByTeamRow struct {
+	ID               int64
+	TeamID           sql.NullInt64
+	Name             string
+	Number           sql.NullInt32
+	YearsInTeam      sql.NullInt32
+	ExperienceYears  sql.NullInt32
+	ChampionshipsWon sql.NullInt32
+}
+
+func (q *Queries) ListCoachesByTeam(ctx context.Context, teamID sql.NullInt64) ([]ListCoachesByTeamRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCoachesByTeam, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCoachesByTeamRow
+	for rows.Next() {
+		var i ListCoachesByTeamRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.TeamID,
@@ -1959,6 +2007,54 @@ func (q *Queries) ListPlayers(ctx context.Context) ([]ListPlayersRow, error) {
 	return items, nil
 }
 
+const listPlayersByTeam = `-- name: ListPlayersByTeam :many
+SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
+       p.position
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
+WHERE f.team_id = $1
+ORDER BY f.id
+`
+
+type ListPlayersByTeamRow struct {
+	ID          int64
+	TeamID      sql.NullInt64
+	Name        string
+	Number      sql.NullInt32
+	YearsInTeam sql.NullInt32
+	Position    string
+}
+
+func (q *Queries) ListPlayersByTeam(ctx context.Context, teamID sql.NullInt64) ([]ListPlayersByTeamRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPlayersByTeam, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPlayersByTeamRow
+	for rows.Next() {
+		var i ListPlayersByTeamRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TeamID,
+			&i.Name,
+			&i.Number,
+			&i.YearsInTeam,
+			&i.Position,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSeasons = `-- name: ListSeasons :many
 SELECT id, start_date, end_date FROM Season ORDER BY id
 `
@@ -2134,7 +2230,7 @@ func (q *Queries) ListStandings(ctx context.Context, seasonID sql.NullInt64) ([]
 }
 
 const listTeams = `-- name: ListTeams :many
-SELECT id, name, province, mascot, color, championships_played, championships_won, players_count, coaches_count
+SELECT id, name, province, mascot, color, championships_played, championships_won
 FROM Team
 ORDER BY id
 `
@@ -2156,8 +2252,6 @@ func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
 			&i.Color,
 			&i.ChampionshipsPlayed,
 			&i.ChampionshipsWon,
-			&i.PlayersCount,
-			&i.CoachesCount,
 		); err != nil {
 			return nil, err
 		}

@@ -5,12 +5,12 @@ VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id;
 
 -- name: GetTeam :one
-SELECT id, name, province, mascot, color, championships_played, championships_won, players_count, coaches_count
+SELECT id, name, province, mascot, color, championships_played, championships_won
 FROM Team
 WHERE id = $1;
 
 -- name: ListTeams :many
-SELECT id, name, province, mascot, color, championships_played, championships_won, players_count, coaches_count
+SELECT id, name, province, mascot, color, championships_played, championships_won
 FROM Team
 ORDER BY id;
 
@@ -95,6 +95,14 @@ FROM Footballer f
 JOIN Player p ON p.footballer_id = f.id
 ORDER BY f.id;
 
+-- name: ListPlayersByTeam :many
+SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
+       p.position
+FROM Footballer f
+JOIN Player p ON p.footballer_id = f.id
+WHERE f.team_id = $1
+ORDER BY f.id;
+
 -- name: UpdatePlayerFootballer :exec
 UPDATE Footballer
 SET team_id = $2, name = $3, number = $4, years_in_team = $5
@@ -131,6 +139,14 @@ SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
        c.experience_years, c.championships_won
 FROM Footballer f
 JOIN Coach c ON c.footballer_id = f.id
+ORDER BY f.id;
+
+-- name: ListCoachesByTeam :many
+SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
+       c.experience_years, c.championships_won
+FROM Footballer f
+JOIN Coach c ON c.footballer_id = f.id
+WHERE f.team_id = $1
 ORDER BY f.id;
 
 -- name: UpdateCoachFootballer :exec

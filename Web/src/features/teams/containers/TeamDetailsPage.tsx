@@ -83,13 +83,13 @@ export const TeamDetailsPage = () => {
                 <span className="font-semibold text-foreground">
                   Jugadores:
                 </span>{" "}
-                {team.players_count || 0}
+                {team.players?.length ?? 0}
               </p>
               <p>
                 <span className="font-semibold text-foreground">
                   Entrenadores:
                 </span>{" "}
-                {team.coaches_count || 0}
+                {team.coaches?.length ?? 0}
               </p>
             </div>
           </div>
@@ -97,11 +97,11 @@ export const TeamDetailsPage = () => {
       </div>
 
       <div className="bg-card rounded-xl border shadow-sm p-6">
-        <CoachList teamId={teamId} />
+        <CoachList teamId={teamId} coaches={team.coaches ?? []} />
       </div>
 
       <div className="bg-card rounded-xl border shadow-sm p-6">
-        <PlayerList teamId={teamId} />
+        <PlayerList teamId={teamId} players={team.players ?? []} />
       </div>
     </div>
   );

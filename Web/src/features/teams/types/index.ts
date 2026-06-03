@@ -1,3 +1,6 @@
+import type { Player } from "../../players/types";
+import type { Coach } from "../../coaches/types";
+
 export interface Team {
   id: number;
   name: string;
@@ -6,8 +9,8 @@ export interface Team {
   color?: string;
   championships_played?: number;
   championships_won?: number;
-  players_count?: number;
-  coaches_count?: number;
+  players?: Player[];
+  coaches?: Coach[];
 }
 
 export interface CreateTeamRequest {

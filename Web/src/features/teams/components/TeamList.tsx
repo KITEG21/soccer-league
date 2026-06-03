@@ -94,11 +94,11 @@ export function TeamList({
               <div className="flex gap-4 mt-2">
                 <p>
                   <span className="font-medium text-foreground">Jugadores:</span>{" "}
-                  {team.players_count ?? 0}
+                  {team.players?.length ?? 0}
                 </p>
                 <p>
                   <span className="font-medium text-foreground">Entrenadores:</span>{" "}
-                  {team.coaches_count ?? 0}
+                  {team.coaches?.length ?? 0}
                 </p>
               </div>
             </div>

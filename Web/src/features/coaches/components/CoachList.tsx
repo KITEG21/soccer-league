@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit, Trash2, UserCog } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Loading } from "@/shared/components/Loading";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { coachesApiService } from "../services/api";
 import { CoachForm } from "./CoachForm";
@@ -11,9 +10,10 @@ import type { Coach } from "../types";
 
 interface CoachListProps {
   readonly teamId: number;
+  readonly coaches: Coach[];
 }
 
-export const CoachList = ({ teamId }: CoachListProps) => {
+export const CoachList = ({ teamId, coaches }: CoachListProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCoach, setEditingCoach] = useState<Coach | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -21,21 +21,10 @@ export const CoachList = ({ teamId }: CoachListProps) => {
 
   const queryClient = useQueryClient();
 
-  const {
-    data: allCoaches = [],
-    isLoading,
-    error,
-  } = useQuery<Coach[]>({
-    queryKey: ["coaches"],
-    queryFn: () => coachesApiService.getCoaches(),
-  });
-
-  const coaches = allCoaches.filter((c) => c.team_id === teamId);
-
   const deleteMutation = useMutation({
     mutationFn: (id: number) => coachesApiService.deleteCoach(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["coaches"] });
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] });
       setDeleteDialogOpen(false);
     },
   });
@@ -49,9 +38,6 @@ export const CoachList = ({ teamId }: CoachListProps) => {
     setCoachToDelete(id);
     setDeleteDialogOpen(true);
   };
-
-  if (isLoading) return <Loading />;
-  if (error) return <div className="text-destructive">Error al cargar entrenadores</div>;
 
   return (
     <div className="space-y-4">
