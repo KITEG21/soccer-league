@@ -1,4 +1,4 @@
-﻿-- Team CRUD
+-- Team CRUD
 -- name: CreateTeam :one
 INSERT INTO Team (name, province, mascot, color, championships_played, championships_won)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -148,19 +148,53 @@ DELETE FROM Coach WHERE footballer_id = $1;
 
 -- Match CRUD
 -- name: CreateMatch :one
-INSERT INTO Match (home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO Match (home_team_id, away_team_id, season_id, stadium_id, match_date, attendance, disputed)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id;
 
 -- name: GetMatch :one
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-WHERE id = $1;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+WHERE m.id = $1;
 
 -- name: ListMatches :many
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-ORDER BY match_date, id;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+ORDER BY m.match_date, m.id;
 
 -- name: UpdateMatch :exec
 UPDATE Match
@@ -169,37 +203,104 @@ SET home_team_id = $2,
     season_id = $4,
     stadium_id = $5,
     match_date = $6,
-    home_goals = $7,
-    away_goals = $8,
-    attendance = $9
+    attendance = $7,
+    disputed = $8
 WHERE id = $1;
 
 -- name: DeleteMatch :exec
 DELETE FROM Match WHERE id = $1;
 
 -- name: ListMatchesByTeam :many
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-WHERE home_team_id = $1 OR away_team_id = $1
-ORDER BY match_date, id;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+WHERE m.home_team_id = $1 OR m.away_team_id = $1
+ORDER BY m.match_date, m.id;
 
 -- name: ListMatchesByDate :many
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-WHERE match_date = $1
-ORDER BY id;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+WHERE m.match_date = $1
+ORDER BY m.id;
 
 -- name: ListMatchesByDateAndStadium :many
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-WHERE match_date = $1 AND stadium_id = $2
-ORDER BY id;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+WHERE m.match_date = $1 AND m.stadium_id = $2
+ORDER BY m.id;
 
 -- name: ListMatchesBySeason :many
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-WHERE season_id = $1
-ORDER BY match_date, id;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+WHERE m.season_id = $1
+ORDER BY m.match_date, m.id;
 
 -- PlayerStats CRUD
 -- name: CreatePlayerStat :one
@@ -254,14 +355,28 @@ SELECT
     t.name,
     COALESCE(SUM(
         CASE
-            WHEN m.home_team_id = t.id AND m.home_goals > m.away_goals THEN 3
-            WHEN m.away_team_id = t.id AND m.away_goals > m.home_goals THEN 3
-            WHEN m.home_goals = m.away_goals THEN 1
+            WHEN m.home_team_id = t.id AND COALESCE(hg.total, 0) > COALESCE(ag.total, 0) THEN 3
+            WHEN m.away_team_id = t.id AND COALESCE(ag.total, 0) > COALESCE(hg.total, 0) THEN 3
+            WHEN COALESCE(hg.total, 0) = COALESCE(ag.total, 0) AND m.id IS NOT NULL THEN 1
             ELSE 0
         END
     ), 0) AS points
 FROM Team t
 LEFT JOIN Match m ON (m.home_team_id = t.id OR m.away_team_id = t.id) AND m.season_id = $1
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
 GROUP BY t.id, t.name
 ORDER BY points DESC, t.name;
 
@@ -273,8 +388,8 @@ SELECT
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
-    m.home_goals,
-    m.away_goals,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals,
     COALESCE((
         SELECT SUM(ps.assists)
         FROM PlayerStats ps
@@ -293,6 +408,20 @@ FROM Match m
 JOIN Team ht ON m.home_team_id = ht.id
 JOIN Team at ON m.away_team_id = at.id
 JOIN Stadium s ON m.stadium_id = s.id
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
 WHERE ((m.home_team_id = $1 AND m.away_team_id = $2) OR (m.home_team_id = $2 AND m.away_team_id = $1))
   AND m.season_id = $3
 ORDER BY m.match_date, m.id;
@@ -304,8 +433,8 @@ SELECT
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
-    m.home_goals,
-    m.away_goals,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals,
     COALESCE((
         SELECT SUM(ps.assists)
         FROM PlayerStats ps
@@ -324,6 +453,20 @@ FROM Match m
 JOIN Team ht ON m.home_team_id = ht.id
 JOIN Team at ON m.away_team_id = at.id
 JOIN Stadium s ON m.stadium_id = s.id
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
 WHERE (m.home_team_id = $1 AND m.away_team_id = $2) OR (m.home_team_id = $2 AND m.away_team_id = $1)
 ORDER BY m.match_date, m.id;
 
@@ -335,13 +478,27 @@ SELECT
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
-    m.home_goals,
-    m.away_goals,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals,
     m.attendance
 FROM Match m
 JOIN Team ht ON m.home_team_id = ht.id
 JOIN Team at ON m.away_team_id = at.id
 JOIN Stadium s ON m.stadium_id = s.id
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
 WHERE m.match_date = $1
 ORDER BY m.id;
 
@@ -352,13 +509,27 @@ SELECT
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
-    m.home_goals,
-    m.away_goals,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals,
     m.attendance
 FROM Match m
 JOIN Team ht ON m.home_team_id = ht.id
 JOIN Team at ON m.away_team_id = at.id
 JOIN Stadium s ON m.stadium_id = s.id
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
 WHERE m.match_date = $1
   AND m.stadium_id = $2
 ORDER BY m.id;
@@ -386,8 +557,8 @@ SELECT
     COUNT(m.id) AS total_matches,
     CASE
         WHEN COALESCE(s.capacity, 0) > 0 AND COUNT(m.id) > 0
-        THEN ROUND(((COALESCE(SUM(m.attendance), 0)::numeric / (COUNT(m.id) * s.capacity)::numeric) * 100)::numeric, 2)
-        ELSE 0
+        THEN CAST(ROUND(((COALESCE(SUM(m.attendance), 0)::numeric / (COUNT(m.id) * s.capacity)::numeric) * 100)::numeric, 2) AS FLOAT8)
+        ELSE 0.0
     END AS attendance_percentage
 FROM Stadium s
 LEFT JOIN Match m ON s.id = m.stadium_id AND m.season_id = $1
@@ -396,20 +567,44 @@ ORDER BY attendance_percentage DESC, s.name;
 
 -- Report 6: team status
 -- name: GetTeamStatus :one
+WITH match_scores AS (
+    SELECT
+        m.id,
+        m.home_team_id,
+        m.away_team_id,
+        CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+        CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+    FROM Match m
+    LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+        FROM PlayerStats ps
+        JOIN Player p ON p.footballer_id = ps.player_id
+        JOIN Footballer f ON f.id = p.footballer_id
+        WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    ) hg ON true
+    LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+        FROM PlayerStats ps
+        JOIN Player p ON p.footballer_id = ps.player_id
+        JOIN Footballer f ON f.id = p.footballer_id
+        WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    ) ag ON true
+    WHERE m.season_id = $2
+)
 SELECT
     t.id AS team_id,
     t.name,
-    COUNT(CASE WHEN m.home_team_id = t.id AND m.home_goals > m.away_goals THEN 1 END) AS home_wins,
-    COUNT(CASE WHEN m.home_team_id = t.id AND m.home_goals = m.away_goals THEN 1 END) AS home_draws,
-    COUNT(CASE WHEN m.home_team_id = t.id AND m.home_goals < m.away_goals THEN 1 END) AS home_losses,
-    COUNT(CASE WHEN m.away_team_id = t.id AND m.away_goals > m.home_goals THEN 1 END) AS away_wins,
-    COUNT(CASE WHEN m.away_team_id = t.id AND m.away_goals = m.home_goals THEN 1 END) AS away_draws,
-    COUNT(CASE WHEN m.away_team_id = t.id AND m.away_goals < m.home_goals THEN 1 END) AS away_losses,
-    COUNT(CASE WHEN (m.home_team_id = t.id AND m.home_goals > m.away_goals) OR (m.away_team_id = t.id AND m.away_goals > m.home_goals) THEN 1 END) AS total_wins,
-    COUNT(CASE WHEN m.home_goals = m.away_goals AND (m.home_team_id = t.id OR m.away_team_id = t.id) THEN 1 END) AS total_draws,
-    COUNT(CASE WHEN (m.home_team_id = t.id AND m.home_goals < m.away_goals) OR (m.away_team_id = t.id AND m.away_goals < m.home_goals) THEN 1 END) AS total_losses
+    COUNT(CASE WHEN ms.home_team_id = t.id AND ms.home_goals > ms.away_goals THEN 1 END) AS home_wins,
+    COUNT(CASE WHEN ms.home_team_id = t.id AND ms.home_goals = ms.away_goals THEN 1 END) AS home_draws,
+    COUNT(CASE WHEN ms.home_team_id = t.id AND ms.home_goals < ms.away_goals THEN 1 END) AS home_losses,
+    COUNT(CASE WHEN ms.away_team_id = t.id AND ms.away_goals > ms.home_goals THEN 1 END) AS away_wins,
+    COUNT(CASE WHEN ms.away_team_id = t.id AND ms.away_goals = ms.home_goals THEN 1 END) AS away_draws,
+    COUNT(CASE WHEN ms.away_team_id = t.id AND ms.away_goals < ms.home_goals THEN 1 END) AS away_losses,
+    COUNT(CASE WHEN (ms.home_team_id = t.id AND ms.home_goals > ms.away_goals) OR (ms.away_team_id = t.id AND ms.away_goals > ms.home_goals) THEN 1 END) AS total_wins,
+    COUNT(CASE WHEN ms.home_goals = ms.away_goals AND (ms.home_team_id = t.id OR ms.away_team_id = t.id) THEN 1 END) AS total_draws,
+    COUNT(CASE WHEN (ms.home_team_id = t.id AND ms.home_goals < ms.away_goals) OR (ms.away_team_id = t.id AND ms.away_goals < ms.home_goals) THEN 1 END) AS total_losses
 FROM Team t
-LEFT JOIN Match m ON (m.home_team_id = t.id OR m.away_team_id = t.id) AND m.season_id = $2
+LEFT JOIN match_scores ms ON ms.home_team_id = t.id OR ms.away_team_id = t.id
 WHERE t.id = $1
 GROUP BY t.id, t.name;
 
@@ -526,13 +721,47 @@ WHERE team_id = $1
 ORDER BY id;
 
 -- name: GetMatchesByHomeTeam :many
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-WHERE home_team_id = $1
-ORDER BY match_date, id;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+WHERE m.home_team_id = $1
+ORDER BY m.match_date, m.id;
 
 -- name: GetMatchesByAwayTeam :many
-SELECT id, home_team_id, away_team_id, season_id, stadium_id, match_date, home_goals, away_goals, attendance
-FROM Match
-WHERE away_team_id = $1
-ORDER BY match_date, id;
+SELECT
+    m.id, m.home_team_id, m.away_team_id, m.season_id, m.stadium_id, m.match_date, m.attendance, m.disputed,
+    CAST(COALESCE(hg.total, 0) AS INT) AS home_goals,
+    CAST(COALESCE(ag.total, 0) AS INT) AS away_goals
+FROM Match m
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+) hg ON true
+LEFT JOIN LATERAL (
+    SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
+    FROM PlayerStats ps
+    JOIN Player p ON p.footballer_id = ps.player_id
+    JOIN Footballer f ON f.id = p.footballer_id
+    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+) ag ON true
+WHERE m.away_team_id = $1
+ORDER BY m.match_date, m.id;

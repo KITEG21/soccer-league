@@ -150,8 +150,8 @@ export const MatchDetailContainer = () => {
                 <span className="text-white/30 text-4xl md:text-6xl">-</span>
                 <span>{match.away_goals}</span>
               </div>
-              <div className="px-4 py-1 bg-primary/20 rounded-full text-primary-foreground text-sm font-bold uppercase tracking-widest border border-primary/30">
-                Finalizado
+              <div className={`px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest border ${match.disputed ? "bg-primary/20 text-primary-foreground border-primary/30" : "bg-muted/20 text-muted-foreground border-muted/30"}`}>
+                {match.disputed ? "Finalizado" : "Pendiente"}
               </div>
               <div className="text-white/60 text-xs md:text-sm font-medium mt-2 flex flex-col items-center">
                 <span>{match.match_date ? format(new Date(match.match_date), "PPP", { locale: es }) : ""}</span>
@@ -181,7 +181,7 @@ export const MatchDetailContainer = () => {
           <CardTitle className="text-xl font-bold flex items-center gap-2 text-primary">
             <Trophy size={20} /> Estadísticas de Jugadores
           </CardTitle>
-          <Button onClick={handleAddStat} size="sm" className="font-bold flex items-center gap-2 rounded-lg">
+          <Button onClick={handleAddStat} size="sm" className="font-bold flex items-center gap-2 rounded-lg" disabled={!match.disputed} title={!match.disputed ? "Debe marcar el partido como disputado para agregar estadísticas" : ""}>
             <Plus size={16} /> Agregar Estadísticas
           </Button>
         </CardHeader>
@@ -204,7 +204,7 @@ export const MatchDetailContainer = () => {
                 {matchStats.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-12 text-muted-foreground italic">
-                      No hay estadísticas registradas para este partido
+                      {match.disputed ? "No hay estadísticas registradas para este partido" : "El partido aún no se ha disputado. Marca el partido como disputado para poder agregar estadísticas."}
                     </TableCell>
                   </TableRow>
                 ) : (

@@ -12,6 +12,7 @@ export interface Match {
   home_goals: number;
   away_goals: number;
   attendance?: number;
+  disputed: boolean;
   
   // Relations (optional depending on API response)
   home_team?: Team;
@@ -26,9 +27,8 @@ export interface CreateMatchRequest {
   season_id: number;
   stadium_id: number;
   match_date: string;
-  home_goals: number;
-  away_goals: number;
   attendance?: number;
+  disputed?: boolean;
 }
 
 export interface UpdateMatchRequest extends CreateMatchRequest {}

@@ -187,8 +187,8 @@ func (s *ReportsService) MatchesBetweenTeams(ctx context.Context, team1ID, team2
 				StadiumName:  row.StadiumName,
 				HomeTeamName: row.HomeTeamName,
 				AwayTeamName: row.AwayTeamName,
-				HomeGoals:    fromNullInt32(row.HomeGoals),
-				AwayGoals:    fromNullInt32(row.AwayGoals),
+				HomeGoals:    row.HomeGoals,
+				AwayGoals:    row.AwayGoals,
 				HomeAssists:  anyToInt64(row.HomeAssists),
 				AwayAssists:  anyToInt64(row.AwayAssists),
 			})
@@ -206,8 +206,8 @@ func (s *ReportsService) MatchesBetweenTeams(ctx context.Context, team1ID, team2
 			StadiumName:  row.StadiumName,
 			HomeTeamName: row.HomeTeamName,
 			AwayTeamName: row.AwayTeamName,
-			HomeGoals:    fromNullInt32(row.HomeGoals),
-			AwayGoals:    fromNullInt32(row.AwayGoals),
+			HomeGoals:    row.HomeGoals,
+			AwayGoals:    row.AwayGoals,
 			HomeAssists:  anyToInt64(row.HomeAssists),
 			AwayAssists:  anyToInt64(row.AwayAssists),
 		})
@@ -236,8 +236,8 @@ func (s *ReportsService) MatchesByDate(ctx context.Context, date string, stadium
 				StadiumName:  row.StadiumName,
 				HomeTeamName: row.HomeTeamName,
 				AwayTeamName: row.AwayTeamName,
-				HomeGoals:    fromNullInt32(row.HomeGoals),
-				AwayGoals:    fromNullInt32(row.AwayGoals),
+				HomeGoals:    row.HomeGoals,
+				AwayGoals:    row.AwayGoals,
 				Attendance:   fromNullInt32(row.Attendance),
 			})
 		}
@@ -255,8 +255,8 @@ func (s *ReportsService) MatchesByDate(ctx context.Context, date string, stadium
 			StadiumName:  row.StadiumName,
 			HomeTeamName: row.HomeTeamName,
 			AwayTeamName: row.AwayTeamName,
-			HomeGoals:    fromNullInt32(row.HomeGoals),
-			AwayGoals:    fromNullInt32(row.AwayGoals),
+			HomeGoals:    row.HomeGoals,
+			AwayGoals:    row.AwayGoals,
 			Attendance:   fromNullInt32(row.Attendance),
 		})
 	}

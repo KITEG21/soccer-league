@@ -113,7 +113,7 @@ for ($i=0; $i -lt $dates.Count; $i++) {
     $awayId = $createdTeams[((($i+1) % $createdTeams.Count))].id
     $stadiumId = $createdStadiums[($i % $createdStadiums.Count)].id
     try {
-        $match = PostJson "$base/matches" @{home_team_id=$homeId; away_team_id=$awayId; season_id=$season.id; stadium_id=$stadiumId; match_date=$dates[$i]; home_goals=(Get-Random -Minimum 0 -Maximum 4); away_goals=(Get-Random -Minimum 0 -Maximum 4); attendance=(Get-Random -Minimum 5000 -Maximum 20000)}
+        $match = PostJson "$base/matches" @{home_team_id=$homeId; away_team_id=$awayId; season_id=$season.id; stadium_id=$stadiumId; match_date=$dates[$i]; attendance=(Get-Random -Minimum 5000 -Maximum 20000); disputed=$true}
         $matches += $match
     } catch {
         Write-Error "Failed to create match on $($dates[$i]): $_"

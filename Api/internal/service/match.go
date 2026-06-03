@@ -26,6 +26,7 @@ type Match struct {
 	HomeGoals  int32  `json:"home_goals"`
 	AwayGoals  int32  `json:"away_goals"`
 	Attendance int32  `json:"attendance"`
+	Disputed   bool   `json:"disputed"`
 }
 
 type CreateMatchRequest struct {
@@ -34,9 +35,8 @@ type CreateMatchRequest struct {
 	SeasonID   int64  `json:"season_id"`
 	StadiumID  int64  `json:"stadium_id"`
 	MatchDate  string `json:"match_date"`
-	HomeGoals  int32  `json:"home_goals"`
-	AwayGoals  int32  `json:"away_goals"`
 	Attendance int32  `json:"attendance"`
+	Disputed   bool   `json:"disputed"`
 }
 
 type UpdateMatchRequest = CreateMatchRequest
@@ -48,7 +48,7 @@ func parseMatchDate(value string) (time.Time, error) {
 	return time.Parse("2006-01-02", value)
 }
 
-func matchFromStore(row store.Match) *Match {
+func matchFromStore(row store.GetMatchRow) *Match {
 	return &Match{
 		ID:         row.ID,
 		HomeTeamID: fromNullInt64(row.HomeTeamID),
@@ -56,9 +56,10 @@ func matchFromStore(row store.Match) *Match {
 		SeasonID:   fromNullInt64(row.SeasonID),
 		StadiumID:  fromNullInt64(row.StadiumID),
 		MatchDate:  row.MatchDate.Format("2006-01-02"),
-		HomeGoals:  fromNullInt32(row.HomeGoals),
-		AwayGoals:  fromNullInt32(row.AwayGoals),
+		HomeGoals:  row.HomeGoals,
+		AwayGoals:  row.AwayGoals,
 		Attendance: fromNullInt32(row.Attendance),
+		Disputed:   row.Disputed,
 	}
 }
 
@@ -74,9 +75,8 @@ func (s *MatchService) Create(ctx context.Context, req CreateMatchRequest) (*Mat
 		SeasonID:   int64ToNullInt64(req.SeasonID),
 		StadiumID:  int64ToNullInt64(req.StadiumID),
 		MatchDate:  matchDate,
-		HomeGoals:  int32ToNullInt32(req.HomeGoals),
-		AwayGoals:  int32ToNullInt32(req.AwayGoals),
 		Attendance: int32ToNullInt32(req.Attendance),
+		Disputed:   req.Disputed,
 	})
 	if err != nil {
 		return nil, err
@@ -103,7 +103,18 @@ func (s *MatchService) List(ctx context.Context, limit, offset int) ([]*Match, e
 	}
 	var matches []*Match
 	for _, row := range rows {
-		matches = append(matches, matchFromStore(row))
+		matches = append(matches, &Match{
+			ID:         row.ID,
+			HomeTeamID: fromNullInt64(row.HomeTeamID),
+			AwayTeamID: fromNullInt64(row.AwayTeamID),
+			SeasonID:   fromNullInt64(row.SeasonID),
+			StadiumID:  fromNullInt64(row.StadiumID),
+			MatchDate:  row.MatchDate.Format("2006-01-02"),
+			HomeGoals:  row.HomeGoals,
+			AwayGoals:  row.AwayGoals,
+			Attendance: fromNullInt32(row.Attendance),
+			Disputed:   row.Disputed,
+		})
 	}
 	return paginateSlice(matches, limit, offset), nil
 }
@@ -120,9 +131,8 @@ func (s *MatchService) Update(ctx context.Context, id int64, req UpdateMatchRequ
 		SeasonID:   int64ToNullInt64(req.SeasonID),
 		StadiumID:  int64ToNullInt64(req.StadiumID),
 		MatchDate:  matchDate,
-		HomeGoals:  int32ToNullInt32(req.HomeGoals),
-		AwayGoals:  int32ToNullInt32(req.AwayGoals),
 		Attendance: int32ToNullInt32(req.Attendance),
+		Disputed:   req.Disputed,
 	}); err != nil {
 		return nil, err
 	}
@@ -130,5 +140,8 @@ func (s *MatchService) Update(ctx context.Context, id int64, req UpdateMatchRequ
 }
 
 func (s *MatchService) Delete(ctx context.Context, id int64) error {
+	if err := ValidateMatchCanBeDeleted(ctx, s.store, id); err != nil {
+		return err
+	}
 	return s.store.DeleteMatch(ctx, id)
 }

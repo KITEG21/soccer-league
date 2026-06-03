@@ -85,9 +85,8 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
         season_id: match.season_id,
         stadium_id: match.stadium_id,
         match_date: new Date(match.match_date),
-        home_goals: match.home_goals,
-        away_goals: match.away_goals,
         attendance: match.attendance,
+        disputed: match.disputed,
       });
     } else {
       reset({
@@ -96,9 +95,8 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
         season_id: 0,
         stadium_id: 0,
         match_date: undefined as any,
-        home_goals: 0,
-        away_goals: 0,
         attendance: 0,
+        disputed: false,
       });
     }
   }, [match, isOpen, reset]);
@@ -305,31 +303,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="home_goals">Goles Local</Label>
-              <Input
-                id="home_goals"
-                type="number"
-                min="0"
-                {...register("home_goals")}
-                disabled={isLoading}
-                className="rounded-xl h-12"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="away_goals">Goles Visitante</Label>
-              <Input
-                id="away_goals"
-                type="number"
-                min="0"
-                {...register("away_goals")}
-                disabled={isLoading}
-                className="rounded-xl h-12"
-              />
-            </div>
-
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="attendance">Asistencia</Label>
               <Input
@@ -354,6 +328,21 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
               {errors.attendance && (
                 <p className="text-sm text-destructive text-[10px] font-bold">{errors.attendance.message}</p>
               )}
+            </div>
+
+            <div className="space-y-2 flex flex-col justify-end pb-2">
+              <Label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...register("disputed")}
+                  disabled={isLoading}
+                  className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm font-medium">Partido Disputado</span>
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Marca esta casilla si el partido ya se ha jugado. Solo así se podrán registrar estadísticas de jugadores.
+              </p>
             </div>
           </div>
 

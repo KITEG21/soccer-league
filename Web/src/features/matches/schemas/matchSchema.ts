@@ -8,9 +8,8 @@ export const matchSchema = z.object({
   match_date: z.date({
     message: "Fecha inválida",
   }),
-  home_goals: z.coerce.number().int().min(0, "No puede ser negativo"),
-  away_goals: z.coerce.number().int().min(0, "No puede ser negativo"),
   attendance: z.coerce.number().int().min(0, "No puede ser negativo").optional(),
+  disputed: z.boolean().default(false),
 }).refine(data => data.home_team_id !== data.away_team_id, {
   message: "El equipo local y el visitante no pueden ser el mismo",
   path: ["away_team_id"],
