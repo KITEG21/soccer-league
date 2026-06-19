@@ -51,8 +51,8 @@ export async function apiRequest<T>(
       const errorData: ApiErrorResponse = await response.json();
       throw new ApiError(response.status, errorData.error, errorData.errors || {});
     }
-    const statusText = translateError(response.statusText);
-    throw new Error(`Error API: ${response.status} ${statusText}`);
+    const text = (await response.text()).trim();
+    throw new ApiError(response.status, text || response.statusText);
   }
 
   const contentType = response.headers.get("content-type");

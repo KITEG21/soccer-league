@@ -105,5 +105,8 @@ func (s *StadiumService) Update(ctx context.Context, id int64, req UpdateStadium
 }
 
 func (s *StadiumService) Delete(ctx context.Context, id int64) error {
+	if err := ValidateStadiumCanBeDeleted(ctx, s.store, id); err != nil {
+		return err
+	}
 	return s.store.DeleteStadium(ctx, id)
 }

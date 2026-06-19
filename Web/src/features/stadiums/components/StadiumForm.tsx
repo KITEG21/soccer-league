@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { Stadium } from "../types";
 import { stadiumSchema, type StadiumFormData } from "../schemas/stadiumSchema";
 import { stadiumsApiService } from "../services/api";
+import { ApiError } from "@/shared/utils/api-client";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -86,6 +87,12 @@ export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
   const isLoading =
     isSubmitting || createMutation.isPending || updateMutation.isPending;
 
+  const getErrorMessage = (error: unknown) => {
+    if (error instanceof ApiError) return error.message;
+    if (error instanceof Error) return error.message;
+    return null;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -121,6 +128,12 @@ export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
               </p>
             )}
           </div>
+
+          {(createMutation.isError || updateMutation.isError) && (
+            <p className="text-sm text-destructive font-medium">
+              {getErrorMessage(createMutation.error || updateMutation.error)}
+            </p>
+          )}
 
           <div className="flex justify-end gap-2 pt-4">
             <Button

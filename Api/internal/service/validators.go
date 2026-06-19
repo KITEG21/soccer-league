@@ -161,6 +161,27 @@ func ValidateTeamCanBeDeleted(ctx context.Context, q *store.Queries, teamID int6
 	return nil
 }
 
+// ValidateStadiumCanBeDeleted valida si un estadio puede ser eliminado
+func ValidateStadiumCanBeDeleted(ctx context.Context, q *store.Queries, stadiumID int64) *EntityInUseError {
+	matches, err := q.ListMatches(ctx)
+	if err != nil {
+		return nil
+	}
+
+	count := 0
+	for _, match := range matches {
+		if fromNullInt64(match.StadiumID) == stadiumID {
+			count++
+		}
+	}
+
+	if count > 0 {
+		return NewEntityInUseError("stadium", stadiumID, map[string]int{"match": count})
+	}
+
+	return nil
+}
+
 // ValidateMatchCanBeDeleted valida si un partido puede ser eliminado
 func ValidateMatchCanBeDeleted(ctx context.Context, q *store.Queries, matchID int64) *EntityInUseError {
 	stats, err := q.ListPlayerStats(ctx)

@@ -117,11 +117,21 @@ export const PlayerList = ({ teamId, players }: PlayerListProps) => {
 
       <ConfirmDialog
         isOpen={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          deleteMutation.reset();
+        }}
         onConfirm={() => playerToDelete && deleteMutation.mutate(playerToDelete)}
         title="Eliminar Jugador"
         description="¿Estás seguro de que quieres eliminar este jugador?"
         isLoading={deleteMutation.isPending}
+        error={
+          deleteMutation.isError
+            ? deleteMutation.error instanceof Error
+              ? deleteMutation.error.message
+              : "Error al eliminar"
+            : null
+        }
       />
     </div>
   );

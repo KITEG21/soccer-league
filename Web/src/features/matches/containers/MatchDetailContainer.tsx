@@ -12,6 +12,7 @@ import { playersApiService } from "../../players/services/api";
 import type { PlayerStat, CreatePlayerStatRequest } from "../types/playerStats";
 import type { Team } from "../../teams/types";
 import type { Player } from "../../players/types";
+import { ApiError } from "@/shared/utils/api-client";
 import { Loading } from "@/shared/components/Loading";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -70,6 +71,12 @@ export const MatchDetailContainer = () => {
     queryFn: () => playersApiService.getPlayers(),
   });
 
+  const getErrorMessage = (error: unknown) => {
+    if (error instanceof ApiError) return error.message;
+    if (error instanceof Error) return error.message;
+    return null;
+  };
+
   const matchStats = allStats.filter(s => s.match_id === matchId);
   const homeTeam = teams.find(t => t.id === match?.home_team_id);
   const awayTeam = teams.find(t => t.id === match?.away_team_id);
@@ -105,17 +112,22 @@ export const MatchDetailContainer = () => {
   if (!match) return <div className="p-8 text-center">Partido no encontrado</div>;
 
   const handleAddStat = () => {
+    createStatMutation.reset();
+    updateStatMutation.reset();
     setEditingStat(null);
     setIsStatDialogOpen(true);
   };
 
   const handleEditStat = (stat: PlayerStat) => {
+    createStatMutation.reset();
+    updateStatMutation.reset();
     setEditingStat(stat);
     setIsStatDialogOpen(true);
   };
 
   const handleDeleteStat = (statId: number) => {
     if (confirm("¿Estás seguro de eliminar esta estadística?")) {
+      deleteStatMutation.reset();
       deleteStatMutation.mutate(statId);
     }
   };
@@ -185,6 +197,11 @@ export const MatchDetailContainer = () => {
             <Plus size={16} /> Agregar Estadísticas
           </Button>
         </CardHeader>
+        {deleteStatMutation.isError && (
+          <div className="px-6 pt-4 text-sm text-destructive font-medium">
+            {getErrorMessage(deleteStatMutation.error)}
+          </div>
+        )}
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
@@ -266,6 +283,7 @@ export const MatchDetailContainer = () => {
         }}
         existingPlayerIds={matchStats.map(s => s.player_id).filter(id => id !== editingStat?.player_id)}
         isSubmitting={createStatMutation.isPending || updateStatMutation.isPending}
+        error={getErrorMessage(createStatMutation.error || updateStatMutation.error)}
       />
     </div>
   );
@@ -280,9 +298,10 @@ interface StatFormDialogProps {
   onSubmit: (data: CreatePlayerStatRequest) => void;
   existingPlayerIds: number[];
   isSubmitting: boolean;
+  error?: string | null;
 }
 
-const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, existingPlayerIds, isSubmitting }: StatFormDialogProps) => {
+const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, existingPlayerIds, isSubmitting, error }: StatFormDialogProps) => {
   const [formData, setFormData] = useState({
     player_id: "",
     goals_scored: 0,
@@ -401,6 +420,10 @@ const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, exist
               <Input type="number" min="0" value={formData.interceptions} onChange={(e) => setFormData({ ...formData, interceptions: parseInt(e.target.value) || 0 })} />
             </div>
           </div>
+
+          {error && (
+            <p className="text-sm text-destructive font-medium">{error}</p>
+          )}
 
           <DialogFooter className="pt-6">
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
