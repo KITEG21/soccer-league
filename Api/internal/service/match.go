@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -96,25 +97,52 @@ func (s *MatchService) Get(ctx context.Context, id int64) (*Match, error) {
 	return matchFromStore(row), nil
 }
 
-func (s *MatchService) List(ctx context.Context, limit, offset int) ([]*Match, int, error) {
-	rows, err := s.store.ListMatches(ctx)
-	if err != nil {
-		return nil, 0, err
+type matchRow struct {
+	ID         int64
+	HomeTeamID sql.NullInt64
+	AwayTeamID sql.NullInt64
+	SeasonID   sql.NullInt64
+	StadiumID  sql.NullInt64
+	MatchDate  time.Time
+	Attendance sql.NullInt32
+	Disputed   bool
+	HomeGoals  int32
+	AwayGoals  int32
+}
+
+func newMatch(row matchRow) *Match {
+	return &Match{
+		ID:         row.ID,
+		HomeTeamID: fromNullInt64(row.HomeTeamID),
+		AwayTeamID: fromNullInt64(row.AwayTeamID),
+		SeasonID:   fromNullInt64(row.SeasonID),
+		StadiumID:  fromNullInt64(row.StadiumID),
+		MatchDate:  row.MatchDate.Format("2006-01-02"),
+		HomeGoals:  row.HomeGoals,
+		AwayGoals:  row.AwayGoals,
+		Attendance: fromNullInt32(row.Attendance),
+		Disputed:   row.Disputed,
 	}
+}
+
+func (s *MatchService) List(ctx context.Context, limit, offset int, seasonID *int64) ([]*Match, int, error) {
 	var matches []*Match
-	for _, row := range rows {
-		matches = append(matches, &Match{
-			ID:         row.ID,
-			HomeTeamID: fromNullInt64(row.HomeTeamID),
-			AwayTeamID: fromNullInt64(row.AwayTeamID),
-			SeasonID:   fromNullInt64(row.SeasonID),
-			StadiumID:  fromNullInt64(row.StadiumID),
-			MatchDate:  row.MatchDate.Format("2006-01-02"),
-			HomeGoals:  row.HomeGoals,
-			AwayGoals:  row.AwayGoals,
-			Attendance: fromNullInt32(row.Attendance),
-			Disputed:   row.Disputed,
-		})
+	if seasonID != nil {
+		rows, err := s.store.ListMatchesBySeason(ctx, int64ToNullInt64(*seasonID))
+		if err != nil {
+			return nil, 0, err
+		}
+		for _, row := range rows {
+			matches = append(matches, newMatch(matchRow(row)))
+		}
+	} else {
+		rows, err := s.store.ListMatches(ctx)
+		if err != nil {
+			return nil, 0, err
+		}
+		for _, row := range rows {
+			matches = append(matches, newMatch(matchRow(row)))
+		}
 	}
 	page, total := paginateSlice(matches, limit, offset)
 	return page, total, nil
