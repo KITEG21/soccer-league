@@ -1,6 +1,8 @@
 import type { Match } from "../types";
+import type { Season } from "../../seasons/types";
 import { Button } from "@/shared/components/ui/button";
 import { Pagination } from "@/shared/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { Loading } from "@/shared/components/Loading";
 import {
@@ -11,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +28,20 @@ interface MatchListProps {
   readonly total: number;
   readonly pageSize: number;
   readonly onPageChange: (page: number) => void;
+  readonly seasons: Season[];
+  readonly selectedSeason: string;
+  readonly onSeasonChange: (season: string) => void;
+}
+
+function getSeasonLabel(s: Season) {
+  if (s.start_date && s.end_date) {
+    try {
+      return `${format(parseISO(s.start_date), "dd/MM/yyyy")} - ${format(parseISO(s.end_date), "dd/MM/yyyy")}`;
+    } catch {
+      return `Temporada ${s.id}`;
+    }
+  }
+  return `Temporada ${s.id}`;
 }
 
 export function MatchList({
@@ -39,6 +55,9 @@ export function MatchList({
   total,
   pageSize,
   onPageChange,
+  seasons,
+  selectedSeason,
+  onSeasonChange,
 }: MatchListProps) {
   const navigate = useNavigate();
   if (isLoading) return <Loading />;
@@ -53,10 +72,30 @@ export function MatchList({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Partidos</h1>
-        <Button className="flex items-center gap-2" onClick={onCreate}>
-          <Plus size={16} />
-          Nuevo Partido
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="w-64">
+            <Select
+              value={selectedSeason || "all"}
+              onValueChange={(value) => onSeasonChange(value === "all" ? "" : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Todas las temporadas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las temporadas</SelectItem>
+                {seasons.map((s) => (
+                  <SelectItem key={s.id} value={s.id.toString()}>
+                    {getSeasonLabel(s)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button className="flex items-center gap-2" onClick={onCreate}>
+            <Plus size={16} />
+            Nuevo Partido
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">

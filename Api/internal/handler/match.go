@@ -35,7 +35,16 @@ func (h *MatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *MatchHandler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := parsePagination(r)
-	matches, total, err := h.svc.List(r.Context(), limit, offset)
+	var seasonID *int64
+	if v := r.URL.Query().Get("season_id"); v != "" {
+		id, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			http.Error(w, "invalid season_id", http.StatusBadRequest)
+			return
+		}
+		seasonID = &id
+	}
+	matches, total, err := h.svc.List(r.Context(), limit, offset, seasonID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

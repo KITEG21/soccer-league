@@ -8,9 +8,10 @@ class MatchesApiService {
     return res.data;
   }
 
-  async getMatchesPage(page: number, pageSize: number): Promise<PaginatedResponse<Match>> {
+  async getMatchesPage(page: number, pageSize: number, seasonId?: number): Promise<PaginatedResponse<Match>> {
     const offset = (page - 1) * pageSize;
-    return apiRequest<PaginatedResponse<Match>>(`/matches?limit=${pageSize}&offset=${offset}`);
+    const seasonParam = seasonId ? `&season_id=${seasonId}` : "";
+    return apiRequest<PaginatedResponse<Match>>(`/matches?limit=${pageSize}&offset=${offset}${seasonParam}`);
   }
 
   async getMatch(id: number): Promise<Match> {

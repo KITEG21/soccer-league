@@ -4,6 +4,7 @@ import type { Match } from "../types";
 import { matchesApiService } from "../services/api";
 import { teamsApiService } from "../../teams/services/api";
 import { stadiumsApiService } from "../../stadiums/services/api";
+import { seasonsApiService } from "../../seasons/services/api";
 import { MatchList } from "../components/MatchList";
 import { MatchForm } from "../components/MatchForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
@@ -17,6 +18,7 @@ export const MatchContainer = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [matchToDelete, setMatchToDelete] = useState<number | undefined>();
   const [page, setPage] = useState(1);
+  const [selectedSeason, setSelectedSeason] = useState<string>("");
 
   const queryClient = useQueryClient();
 
@@ -25,13 +27,24 @@ export const MatchContainer = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["matches", page],
-    queryFn: () => matchesApiService.getMatchesPage(page, PAGE_SIZE),
+    queryKey: ["matches", page, selectedSeason],
+    queryFn: () =>
+      matchesApiService.getMatchesPage(
+        page,
+        PAGE_SIZE,
+        selectedSeason ? Number.parseInt(selectedSeason) : undefined
+      ),
     refetchOnWindowFocus: false,
   });
 
   const matches = matchesPage?.data ?? [];
   const total = matchesPage?.total ?? 0;
+
+  const { data: seasons = [] } = useQuery({
+    queryKey: ["seasons"],
+    queryFn: () => seasonsApiService.getSeasons(),
+    refetchOnWindowFocus: false,
+  });
 
   const { data: teams = [] } = useQuery({
     queryKey: ["teams"],
@@ -95,6 +108,11 @@ export const MatchContainer = () => {
     setEditingMatch(undefined);
   };
 
+  const handleSeasonChange = (season: string) => {
+    setSelectedSeason(season);
+    setPage(1);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
       <BreadcrumbNav items={[{ label: "Partidos" }]} />
@@ -109,6 +127,9 @@ export const MatchContainer = () => {
         total={total}
         pageSize={PAGE_SIZE}
         onPageChange={setPage}
+        seasons={seasons}
+        selectedSeason={selectedSeason}
+        onSeasonChange={handleSeasonChange}
       />
       <MatchForm
         match={editingMatch}
