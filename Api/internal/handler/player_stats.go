@@ -34,6 +34,22 @@ func (h *PlayerStatsHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlayerStatsHandler) List(w http.ResponseWriter, r *http.Request) {
+	if matchIDParam := r.URL.Query().Get("match_id"); matchIDParam != "" {
+		matchID, err := strconv.ParseInt(matchIDParam, 10, 64)
+		if err != nil {
+			http.Error(w, "invalid match_id", http.StatusBadRequest)
+			return
+		}
+		stats, err := h.svc.ListByMatch(r.Context(), matchID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(stats)
+		return
+	}
+
 	limit, offset := parsePagination(r)
 	stats, err := h.svc.List(r.Context(), limit, offset)
 	if err != nil {

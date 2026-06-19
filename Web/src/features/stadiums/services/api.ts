@@ -3,7 +3,7 @@ import { apiRequest } from "@/shared/utils/api-client";
 
 class StadiumsApiService {
   async getStadiums(): Promise<Stadium[]> {
-    return apiRequest<Stadium[]>("/stadiums");
+    return apiRequest<Stadium[]>("/stadiums?limit=100");
   }
 
   async getStadium(id: number): Promise<Stadium> {

@@ -109,6 +109,18 @@ func (s *PlayerStatsService) List(ctx context.Context, limit, offset int) ([]*Pl
 	return paginateSlice(stats, limit, offset), nil
 }
 
+func (s *PlayerStatsService) ListByMatch(ctx context.Context, matchID int64) ([]*PlayerStat, error) {
+	rows, err := s.store.ListPlayerStatsByMatch(ctx, int64ToNullInt64(matchID))
+	if err != nil {
+		return nil, err
+	}
+	var stats []*PlayerStat
+	for _, row := range rows {
+		stats = append(stats, playerStatFromStore(row))
+	}
+	return stats, nil
+}
+
 func (s *PlayerStatsService) Update(ctx context.Context, id int64, req UpdatePlayerStatRequest) error {
 	if ve := ValidateMatchDisputed(ctx, s.store, req.MatchID); ve != nil {
 		return ve

@@ -346,6 +346,12 @@ SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_com
 FROM PlayerStats
 ORDER BY id;
 
+-- name: ListPlayerStatsByMatch :many
+SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
+FROM PlayerStats
+WHERE match_id = $1
+ORDER BY id;
+
 -- name: UpdatePlayerStat :exec
 UPDATE PlayerStats
 SET player_id = $2,

@@ -1,4 +1,8 @@
-$base = "http://localhost:8080"
+﻿param(
+    [string]$BaseUrl = "http://localhost:8080"
+)
+
+$base = $BaseUrl
 
 function Wait-ServerReady {
     param($url, $retries = 20)
@@ -16,25 +20,81 @@ function Wait-ServerReady {
     return $false
 }
 
-if (-not (Wait-ServerReady -url $base)) { exit 1 }
-
-# Helper to POST JSON and return parsed object
 function PostJson($url, $body) {
-    return Invoke-RestMethod -Method Post -Uri $url -Body ($body | ConvertTo-Json -Depth 5) -ContentType "application/json"
+    $jsonBytes = [System.Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json -Depth 5))
+    return Invoke-RestMethod -Method Post -Uri $url -Body $jsonBytes -ContentType "application/json; charset=utf-8"
 }
 
-# Create multiple teams
+function PutJson($url, $body) {
+    $jsonBytes = [System.Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json -Depth 5))
+    return Invoke-RestMethod -Method Put -Uri $url -Body $jsonBytes -ContentType "application/json; charset=utf-8"
+}
+
+function Get-StatsForPosition($position) {
+    switch ($position) {
+        "Portero" {
+            return @{
+                goals_scored = 0; assists = 0; shots_on_goal = 0
+                passes_completed = (Get-Random -Minimum 5 -Maximum 25); interceptions = 0
+                tackles = 0; blocks = 0
+                saves = (Get-Random -Minimum 2 -Maximum 11); goals_conceded = (Get-Random -Minimum 0 -Maximum 4)
+            }
+        }
+        "Defensa" {
+            $defGoal = 0
+            if ((Get-Random -Minimum 0 -Maximum 10) -lt 1) { $defGoal = 1 }
+            return @{
+                goals_scored = $defGoal
+                assists = (Get-Random -Minimum 0 -Maximum 2)
+                shots_on_goal = (Get-Random -Minimum 0 -Maximum 2)
+                passes_completed = (Get-Random -Minimum 10 -Maximum 41)
+                interceptions = (Get-Random -Minimum 1 -Maximum 6)
+                tackles = (Get-Random -Minimum 2 -Maximum 9)
+                blocks = (Get-Random -Minimum 1 -Maximum 7)
+                saves = 0; goals_conceded = 0
+            }
+        }
+        "Mediocampo" {
+            return @{
+                goals_scored = (Get-Random -Minimum 0 -Maximum 3)
+                assists = (Get-Random -Minimum 0 -Maximum 4)
+                shots_on_goal = (Get-Random -Minimum 0 -Maximum 4)
+                passes_completed = (Get-Random -Minimum 20 -Maximum 71)
+                interceptions = (Get-Random -Minimum 2 -Maximum 9)
+                tackles = (Get-Random -Minimum 0 -Maximum 4)
+                blocks = (Get-Random -Minimum 0 -Maximum 3)
+                saves = 0; goals_conceded = 0
+            }
+        }
+        "Delantero" {
+            return @{
+                goals_scored = (Get-Random -Minimum 0 -Maximum 4)
+                assists = (Get-Random -Minimum 0 -Maximum 3)
+                shots_on_goal = (Get-Random -Minimum 2 -Maximum 9)
+                passes_completed = (Get-Random -Minimum 5 -Maximum 21)
+                interceptions = (Get-Random -Minimum 0 -Maximum 3)
+                tackles = 0; blocks = 0
+                saves = 0; goals_conceded = 0
+            }
+        }
+    }
+}
+
+if (-not (Wait-ServerReady -url $base)) { exit 1 }
+
+# ---------- Teams ----------
 $teamsData = @(
-    @{name="Red Lions"; province="North"; mascot="Lion"; color="#ff0000"; championships_played=5; championships_won=2},
-    @{name="Blue Hawks"; province="South"; mascot="Hawk"; color="#0000ff"; championships_played=3; championships_won=1},
-    @{name="Green Eagles"; province="East"; mascot="Eagle"; color="#00aa00"; championships_played=2; championships_won=0},
-    @{name="Yellow Tigers"; province="West"; mascot="Tiger"; color="#ffcc00"; championships_played=1; championships_won=0},
-    @{name="Black Bears"; province="Central"; mascot="Bear"; color="#000000"; championships_played=4; championships_won=1},
-    @{name="White Wolves"; province="High"; mascot="Wolf"; color="#ffffff"; championships_played=0; championships_won=0}
+    @{name="Halcones de La Habana"; province="La Habana"; mascot="Halcón"; color="#E65100"; championships_played=15; championships_won=5},
+    @{name="Caimanes de Matanzas"; province="Matanzas"; mascot="Caimán"; color="#2E7D32"; championships_played=12; championships_won=3},
+    @{name="Tabaqueros de Pinar del Río"; province="Pinar del Río"; mascot="Tabaquero"; color="#6D4C41"; championships_played=10; championships_won=2},
+    @{name="Centinelas de Sancti Spíritus"; province="Sancti Spíritus"; mascot="Centinela"; color="#F9A825"; championships_played=8; championships_won=1},
+    @{name="Delfines de Cienfuegos"; province="Cienfuegos"; mascot="Delfín"; color="#0277BD"; championships_played=9; championships_won=2},
+    @{name="Toros de Granma"; province="Granma"; mascot="Toro"; color="#8D6E63"; championships_played=14; championships_won=4},
+    @{name="Soles de Santiago"; province="Santiago de Cuba"; mascot="Sol"; color="#C62828"; championships_played=11; championships_won=3},
+    @{name="Mineros de Holguín"; province="Holguín"; mascot="Minero"; color="#4527A0"; championships_played=7; championships_won=0}
 )
 
-# Fetch existing teams once to avoid duplicates
-$existingTeams = Invoke-RestMethod -Method Get -Uri "$base/teams" -ErrorAction SilentlyContinue
+$existingTeams = Invoke-RestMethod -Method Get -Uri "$base/teams?limit=200" -ErrorAction SilentlyContinue
 $createdTeams = @()
 foreach ($t in $teamsData) {
     $found = $null
@@ -43,28 +103,26 @@ foreach ($t in $teamsData) {
         $createdTeams += $found
     } else {
         try {
-            $res = PostJson "$base/teams" $t
-            $createdTeams += $res
+            $createdTeams += PostJson "$base/teams" $t
         } catch {
-            # If duplicate error happened concurrently, fall back to fetching list and using existing
-            $existingTeams = Invoke-RestMethod -Method Get -Uri "$base/teams" -ErrorAction SilentlyContinue
-            $found2 = $existingTeams | Where-Object { $_.name -eq $t.name }
-            if ($found2) { $createdTeams += $found2 }
-            else { Write-Error "Failed to create or find team $($t.name): $_" }
+            Write-Error "Failed to create team $($t.name): $_"
         }
     }
 }
-Write-Host "Created/Found teams:" ($createdTeams | ForEach-Object { $_.id } )
+Write-Host "Created/Found teams:" ($createdTeams | ForEach-Object { "$($_.id):$($_.name)" })
 
-# Create stadiums
+# ---------- Stadiums ----------
 $stadiumsData = @(
-    @{name="Central Stadium"; capacity=25000},
-    @{name="East Arena"; capacity=18000}
+    @{name="Estadio Nacional de La Habana"; capacity=45000},
+    @{name="Estadio Olímpico de Matanzas"; capacity=22000},
+    @{name="Estadio Provincial de Pinar del Río"; capacity=18000},
+    @{name="Estadio Municipal de Santiago"; capacity=20000},
+    @{name="Estadio Central de Holguín"; capacity=15000}
 )
- # Fetch existing stadiums first
- $existingStadiums = Invoke-RestMethod -Method Get -Uri "$base/stadiums" -ErrorAction SilentlyContinue
- $createdStadiums = @()
- foreach ($s in $stadiumsData) {
+
+$existingStadiums = Invoke-RestMethod -Method Get -Uri "$base/stadiums?limit=200" -ErrorAction SilentlyContinue
+$createdStadiums = @()
+foreach ($s in $stadiumsData) {
     $found = $null
     if ($existingStadiums) { $found = $existingStadiums | Where-Object { $_.name -eq $s.name } }
     if ($found) {
@@ -73,81 +131,174 @@ $stadiumsData = @(
         try {
             $createdStadiums += PostJson "$base/stadiums" $s
         } catch {
-            $existingStadiums = Invoke-RestMethod -Method Get -Uri "$base/stadiums" -ErrorAction SilentlyContinue
-            $found2 = $existingStadiums | Where-Object { $_.name -eq $s.name }
-            if ($found2) { $createdStadiums += $found2 } else { Write-Error "Failed to create or find stadium $($s.name): $_" }
+            Write-Error "Failed to create stadium $($s.name): $_"
         }
     }
- }
- Write-Host "Created/Found stadiums:" ($createdStadiums | ForEach-Object { $_.id })
+}
+Write-Host "Created/Found stadiums:" ($createdStadiums | ForEach-Object { "$($_.id):$($_.name)" })
 
-# Create a season
-$season = PostJson "$base/seasons" @{start_date="2026-01-01"; end_date="2026-12-31"}
-Write-Host "Created season:" $season.id
+# ---------- Seasons ----------
+$existingSeasons = Invoke-RestMethod -Method Get -Uri "$base/seasons?limit=200" -ErrorAction SilentlyContinue
 
-# Create 2 players per team (simple roster)
+$seasonPastDates = @{start_date="2025-01-05"; end_date="2025-11-30"}
+$seasonCurrentDates = @{start_date="2026-01-10"; end_date="2026-12-20"}
+
+$seasonPast = $null
+$seasonCurrent = $null
+if ($existingSeasons) {
+    $seasonPast = $existingSeasons | Where-Object { $_.start_date -eq $seasonPastDates.start_date }
+    $seasonCurrent = $existingSeasons | Where-Object { $_.start_date -eq $seasonCurrentDates.start_date }
+}
+if (-not $seasonPast) { $seasonPast = PostJson "$base/seasons" $seasonPastDates }
+if (-not $seasonCurrent) { $seasonCurrent = PostJson "$base/seasons" $seasonCurrentDates }
+
+Write-Host "Past season: $($seasonPast.id) ($($seasonPast.start_date) - $($seasonPast.end_date))"
+Write-Host "Current season: $($seasonCurrent.id) ($($seasonCurrent.start_date) - $($seasonCurrent.end_date))"
+
+# ---------- Players & Coaches ----------
+$firstNames = @("Carlos","Luis","Manuel","Raúl","Pedro","Jorge","Miguel","Ernesto","Alejandro","Roberto",
+                 "Daniel","Eduardo","Andrés","Fernando","Ricardo","Javier","Osvaldo","Yoel","Reinier","Maikel",
+                 "Yunior","Lázaro","Adrián","Leonel","Rolando","Yasser","Yoandri","Dariel","Frank","Idelfonso")
+$lastNames  = @("Pérez","Hernández","Rodríguez","Gómez","Fernández","Martínez","Díaz","Torres","Castillo","Ramírez",
+                 "Suárez","Morales","Reyes","Flores","Ortiz","Vargas","Soto","Núñez","Acosta","Linares",
+                 "Pacheco","Domínguez","Cabrera","Aguilar","Ibáñez")
+
+$nameCounter = 0
+function Get-NextName {
+    $script:nameCounter++
+    $fn = $firstNames[$script:nameCounter % $firstNames.Count]
+    $ln = $lastNames[($script:nameCounter * 7) % $lastNames.Count]
+    return "$fn $ln"
+}
+
+$rosterTemplate = @(
+    "Portero","Defensa","Defensa","Defensa","Defensa",
+    "Mediocampo","Mediocampo","Mediocampo","Mediocampo",
+    "Delantero","Delantero","Delantero"
+)
+
+$allPlayers = Invoke-RestMethod -Method Get -Uri "$base/players?limit=500" -ErrorAction SilentlyContinue
+$allCoaches = Invoke-RestMethod -Method Get -Uri "$base/coaches?limit=500" -ErrorAction SilentlyContinue
+
 $players = @()
-$num = 1
-foreach ($team in $createdTeams) {
-    $p1 = PostJson "$base/players" @{team_id=$team.id; name="Player_${($team.name)}_A"; number=$num; years_in_team=(Get-Random -Minimum 1 -Maximum 5); position="Forward"; matches_played=0; average_goals_per_match=0}
-    $num++
-    $p2 = PostJson "$base/players" @{team_id=$team.id; name="Player_${($team.name)}_B"; number=$num; years_in_team=(Get-Random -Minimum 1 -Maximum 5); position="Midfielder"; matches_played=0; average_goals_per_match=0}
-    $num++
-    $players += $p1; $players += $p2
-}
-Write-Host "Created players:" ($players | ForEach-Object { $_.id })
-
-# Create coaches for first 4 teams
 $coaches = @()
-foreach ($team in $createdTeams[0..3]) {
-    $c = PostJson "$base/coaches" @{team_id=$team.id; name="Coach_${($team.name)}"; number=(Get-Random -Minimum 1 -Maximum 10); years_in_team=(Get-Random -Minimum 1 -Maximum 10); experience_years=(Get-Random -Minimum 1 -Maximum 20); championships_won=(Get-Random -Minimum 0 -Maximum 3)}
-    $coaches += $c
-}
-Write-Host "Created coaches:" ($coaches | ForEach-Object { $_.id })
+foreach ($team in $createdTeams) {
+    $existingTeamPlayers = @()
+    if ($allPlayers) { $existingTeamPlayers = @($allPlayers | Where-Object { $_.team_id -eq $team.id }) }
 
-# Create multiple matches across dates between various teams
-$matches = @()
-$dates = @("2026-04-15","2026-04-22","2026-05-01","2026-05-08","2026-05-15")
-for ($i=0; $i -lt $dates.Count; $i++) {
-    $homeId = $createdTeams[($i % $createdTeams.Count)].id
-    $awayId = $createdTeams[((($i+1) % $createdTeams.Count))].id
-    $stadiumId = $createdStadiums[($i % $createdStadiums.Count)].id
-    try {
-        $match = PostJson "$base/matches" @{home_team_id=$homeId; away_team_id=$awayId; season_id=$season.id; stadium_id=$stadiumId; match_date=$dates[$i]; attendance=(Get-Random -Minimum 5000 -Maximum 20000); disputed=$true}
-        $matches += $match
-    } catch {
-        Write-Error "Failed to create match on $($dates[$i]): $_"
+    if ($existingTeamPlayers.Count -ge $rosterTemplate.Count) {
+        $players += $existingTeamPlayers
+    } else {
+        $dorsal = 1
+        foreach ($position in $rosterTemplate) {
+            $p = PostJson "$base/players" @{
+                team_id = $team.id
+                name = Get-NextName
+                number = $dorsal
+                years_in_team = (Get-Random -Minimum 1 -Maximum 9)
+                position = $position
+            }
+            $players += $p
+            $dorsal++
+        }
+    }
+
+    $existingTeamCoach = $null
+    if ($allCoaches) { $existingTeamCoach = $allCoaches | Where-Object { $_.team_id -eq $team.id } | Select-Object -First 1 }
+
+    if ($existingTeamCoach) {
+        $coaches += $existingTeamCoach
+    } else {
+        $yearsInTeam = Get-Random -Minimum 2 -Maximum 9
+        $experience = $yearsInTeam + (Get-Random -Minimum 0 -Maximum 13)
+        $c = PostJson "$base/coaches" @{
+            team_id = $team.id
+            name = Get-NextName
+            number = ($rosterTemplate.Count + 1)
+            years_in_team = $yearsInTeam
+            experience_years = $experience
+            championships_won = (Get-Random -Minimum 0 -Maximum 4)
+        }
+        $coaches += $c
     }
 }
-Write-Host "Created matches:" ($matches | ForEach-Object { $_.id })
+Write-Host "Players ready: $($players.Count) | Coaches ready: $($coaches.Count)"
 
-# Create player stats for a subset of matches (first two matches)
-$stats = @()
-foreach ($m in $matches[0..1]) {
-    # pick two players from home and away teams
-    $homePlayers = $players | Where-Object { $_.team_id -eq $m.home_team_id }
-    $awayPlayers = $players | Where-Object { $_.team_id -eq $m.away_team_id }
-    if ($homePlayers.Count -lt 1 -or $awayPlayers.Count -lt 1) { continue }
-    $hp = $homePlayers[0]
-    $ap = $awayPlayers[0]
-    $s1 = PostJson "$base/player-stats" @{player_id=$hp.id; match_id=$m.id; goals_scored=(Get-Random -Minimum 0 -Maximum 3); assists=(Get-Random -Minimum 0 -Maximum 2); shots_on_goal=(Get-Random -Minimum 0 -Maximum 5); passes_completed=(Get-Random -Minimum 10 -Maximum 60); interceptions=(Get-Random -Minimum 0 -Maximum 3); tackles=(Get-Random -Minimum 0 -Maximum 5); blocks=0; saves=0; goals_conceded=0}
-    $s2 = PostJson "$base/player-stats" @{player_id=$ap.id; match_id=$m.id; goals_scored=(Get-Random -Minimum 0 -Maximum 3); assists=(Get-Random -Minimum 0 -Maximum 2); shots_on_goal=(Get-Random -Minimum 0 -Maximum 5); passes_completed=(Get-Random -Minimum 10 -Maximum 60); interceptions=(Get-Random -Minimum 0 -Maximum 3); tackles=(Get-Random -Minimum 0 -Maximum 5); blocks=0; saves=0; goals_conceded=0}
-    $stats += $s1; $stats += $s2
-}
-Write-Host "Created player stats:" ($stats | ForEach-Object { $_.id })
-
-# Print summary JSON with IDs so caller can reuse
-$summary = @{
-    teams = $createdTeams | ForEach-Object { @{ id = $_.id; name = $_.name } }
-    stadiums = $createdStadiums | ForEach-Object { @{ id = $_.id; name = $_.name } }
-    season = @{ id = $season.id; start_date = $season.start_date; end_date = $season.end_date }
-    players = $players | ForEach-Object { @{ id = $_.id; team_id = $_.team_id; name = $_.name } }
-    coaches = $coaches | ForEach-Object { @{ id = $_.id; team_id = $_.team_id; name = $_.name } }
-    matches = $matches | ForEach-Object { @{ id = $_.id; date = $_.match_date; home = $_.home_team_id; away = $_.away_team_id } }
-    player_stats = $stats | ForEach-Object { @{ id = $_.id; player_id = $_.player_id; match_id = $_.match_id } }
+# ---------- Matches ----------
+function New-RoundRobinPairs($teams, $count) {
+    $pairs = @()
+    $n = $teams.Count
+    for ($i = 0; $i -lt $count; $i++) {
+        $round = [math]::Floor($i / $n)
+        $homeTeam = $teams[$i % $n]
+        $awayTeam = $teams[($i + 1 + $round) % $n]
+        if ($homeTeam.id -ne $awayTeam.id) { $pairs += @{home=$homeTeam; away=$awayTeam} }
+    }
+    return $pairs
 }
 
-Write-Host "\n--- Seed Summary ---"
-$summary | ConvertTo-Json -Depth 5 | Write-Host
+$today = Get-Date "2026-06-19"
+$existingMatches = Invoke-RestMethod -Method Get -Uri "$base/matches?limit=500" -ErrorAction SilentlyContinue
 
-Write-Host "\nSeed script finished."
+function Add-MatchWithStats($homeTeam, $awayTeam, $seasonId, $stadium, $matchDate, $disputed, $allPlayers) {
+    $capacity = if ($stadium.capacity -gt 0) { $stadium.capacity } else { 10000 }
+    $attendance = [int]($capacity * (Get-Random -Minimum 40 -Maximum 96) / 100)
+
+    $match = PostJson "$base/matches" @{
+        home_team_id = $homeTeam.id
+        away_team_id = $awayTeam.id
+        season_id = $seasonId
+        stadium_id = $stadium.id
+        match_date = $matchDate
+        attendance = $attendance
+        disputed = $disputed
+    }
+
+    if ($disputed) {
+        $squad = @($allPlayers | Where-Object { $_.team_id -eq $homeTeam.id -or $_.team_id -eq $awayTeam.id })
+        foreach ($player in $squad) {
+            $stats = Get-StatsForPosition $player.position
+            $stats["player_id"] = $player.id
+            $stats["match_id"] = $match.id
+            PostJson "$base/player-stats" $stats | Out-Null
+        }
+    }
+    return $match
+}
+
+$matches = @()
+$existingMatchCount = 0
+if ($existingMatches) { $existingMatchCount = @($existingMatches).Count }
+if ($existingMatchCount -lt 1) {
+    $stadiumIdx = 0
+
+    # Past season: fully disputed matches
+    $pastPairs = New-RoundRobinPairs $createdTeams 8
+    $pastDates = @("2025-03-02","2025-03-16","2025-04-06","2025-04-20","2025-05-11","2025-05-25","2025-06-15","2025-07-06")
+    for ($i = 0; $i -lt $pastPairs.Count; $i++) {
+        $stadium = $createdStadiums[$stadiumIdx % $createdStadiums.Count]
+        $stadiumIdx++
+        $m = Add-MatchWithStats $pastPairs[$i].home $pastPairs[$i].away $seasonPast.id $stadium $pastDates[$i] $true $players
+        $matches += $m
+    }
+
+    # Current season: played matches (before today) + upcoming matches (after today, not disputed)
+    $currentPairs = New-RoundRobinPairs $createdTeams 14
+    $currentDates = @(
+        "2026-02-08","2026-02-22","2026-03-08","2026-03-22","2026-04-12","2026-04-26","2026-05-17",
+        "2026-07-05","2026-07-19","2026-08-09","2026-08-23","2026-09-13","2026-09-27","2026-10-18"
+    )
+    for ($i = 0; $i -lt $currentPairs.Count; $i++) {
+        $stadium = $createdStadiums[$stadiumIdx % $createdStadiums.Count]
+        $stadiumIdx++
+        $matchDate = $currentDates[$i]
+        $disputed = ([datetime]$matchDate) -lt $today
+        $m = Add-MatchWithStats $currentPairs[$i].home $currentPairs[$i].away $seasonCurrent.id $stadium $matchDate $disputed $players
+        $matches += $m
+    }
+} else {
+    Write-Host "Matches already exist, skipping match/stat generation."
+}
+
+Write-Host "Created matches: $($matches.Count)"
+Write-Host "Seed script finished."

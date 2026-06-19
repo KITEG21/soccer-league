@@ -61,9 +61,10 @@ export const MatchDetailContainer = () => {
     queryFn: () => teamsApiService.getTeams(),
   });
 
-  const { data: allStats = [] } = useQuery({
-    queryKey: ["player-stats"],
-    queryFn: () => playerStatsApiService.getPlayerStats(),
+  const { data: matchStats = [] } = useQuery({
+    queryKey: ["player-stats", matchId],
+    queryFn: () => playerStatsApiService.getPlayerStatsByMatch(matchId),
+    enabled: !!matchId,
   });
 
   const { data: allPlayers = [] } = useQuery({
@@ -77,7 +78,6 @@ export const MatchDetailContainer = () => {
     return null;
   };
 
-  const matchStats = allStats.filter(s => s.match_id === matchId);
   const homeTeam = teams.find(t => t.id === match?.home_team_id);
   const awayTeam = teams.find(t => t.id === match?.away_team_id);
 
@@ -89,6 +89,7 @@ export const MatchDetailContainer = () => {
     mutationFn: (data: CreatePlayerStatRequest) => playerStatsApiService.createPlayerStat({ ...data, match_id: matchId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["match", matchId] });
       setIsStatDialogOpen(false);
     },
   });
@@ -97,6 +98,7 @@ export const MatchDetailContainer = () => {
     mutationFn: (data: PlayerStat) => playerStatsApiService.updatePlayerStat(data.id, { ...data, match_id: matchId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["match", matchId] });
       setIsStatDialogOpen(false);
     },
   });
@@ -105,6 +107,7 @@ export const MatchDetailContainer = () => {
     mutationFn: (statId: number) => playerStatsApiService.deletePlayerStat(statId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["match", matchId] });
     },
   });
 
