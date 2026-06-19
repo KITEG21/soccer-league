@@ -332,47 +332,44 @@ func (s *ReportsService) TeamStatus(ctx context.Context, teamID, seasonID int64)
 
 func (s *ReportsService) AllStarTeam(ctx context.Context, seasonID int64) ([]*AllStarRow, error) {
 	var result []*AllStarRow
-	queries := []func() (AllStarRow, error){
-		func() (AllStarRow, error) {
-			row, err := s.store.GetBestForward(ctx, int64ToNullInt64(seasonID))
-			if err != nil {
-				return AllStarRow{}, err
-			}
-			return allStarRowFromForward(row), nil
-		},
-		func() (AllStarRow, error) {
-			row, err := s.store.GetBestMidfielder(ctx, int64ToNullInt64(seasonID))
-			if err != nil {
-				return AllStarRow{}, err
-			}
-			return allStarRowFromMidfielder(row), nil
-		},
-		func() (AllStarRow, error) {
-			row, err := s.store.GetBestDefender(ctx, int64ToNullInt64(seasonID))
-			if err != nil {
-				return AllStarRow{}, err
-			}
-			return allStarRowFromDefender(row), nil
-		},
-		func() (AllStarRow, error) {
-			row, err := s.store.GetBestGoalkeeper(ctx, int64ToNullInt64(seasonID))
-			if err != nil {
-				return AllStarRow{}, err
-			}
-			return allStarRowFromGoalkeeper(row), nil
-		},
-	}
 
-	for _, query := range queries {
-		row, err := query()
-		if err != nil {
-			if err == sql.ErrNoRows {
-				continue
-			}
+	goalkeeper, err := s.store.GetBestGoalkeeper(ctx, int64ToNullInt64(seasonID))
+	if err != nil {
+		if err != sql.ErrNoRows {
 			return nil, err
 		}
+	} else {
+		row := allStarRowFromGoalkeeper(goalkeeper)
 		result = append(result, &row)
 	}
+
+	defenders, err := s.store.GetBestDefender(ctx, int64ToNullInt64(seasonID))
+	if err != nil {
+		return nil, err
+	}
+	for _, d := range defenders {
+		row := allStarRowFromDefender(d)
+		result = append(result, &row)
+	}
+
+	midfielders, err := s.store.GetBestMidfielder(ctx, int64ToNullInt64(seasonID))
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range midfielders {
+		row := allStarRowFromMidfielder(m)
+		result = append(result, &row)
+	}
+
+	forwards, err := s.store.GetBestForward(ctx, int64ToNullInt64(seasonID))
+	if err != nil {
+		return nil, err
+	}
+	for _, f := range forwards {
+		row := allStarRowFromForward(f)
+		result = append(result, &row)
+	}
+
 	return result, nil
 }
 

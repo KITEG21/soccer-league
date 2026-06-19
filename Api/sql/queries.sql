@@ -630,8 +630,8 @@ LEFT JOIN match_scores ms ON ms.home_team_id = t.id OR ms.away_team_id = t.id
 WHERE t.id = $1
 GROUP BY t.id, t.name;
 
--- Report 7: all-star team
--- name: GetBestForward :one
+-- Report 7: all-star team (1 portero, 4 defensas, 3 mediocampistas, 3 delanteros)
+-- name: GetBestForward :many
 SELECT
     'Delantero' AS position,
     f.name AS player_name,
@@ -655,11 +655,11 @@ LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Delantero' AND m.season_id = $1
 GROUP BY f.id, f.name, t.name
 ORDER BY metric_value DESC, goals_scored DESC, assists DESC, f.name
-LIMIT 1;
+LIMIT 3;
 
--- name: GetBestMidfielder :one
+-- name: GetBestMidfielder :many
 SELECT
-    'Mediocampista' AS position,
+    'Mediocampo' AS position,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'passes_completed_plus_interceptions' AS metric_name,
@@ -678,12 +678,12 @@ JOIN Player p ON p.footballer_id = f.id
 JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
-WHERE p.position = 'Mediocampista' AND m.season_id = $1
+WHERE p.position = 'Mediocampo' AND m.season_id = $1
 GROUP BY f.id, f.name, t.name
 ORDER BY metric_value DESC, passes_completed DESC, interceptions DESC, f.name
-LIMIT 1;
+LIMIT 3;
 
--- name: GetBestDefender :one
+-- name: GetBestDefender :many
 SELECT
     'Defensa' AS position,
     f.name AS player_name,
@@ -707,7 +707,7 @@ LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Defensa' AND m.season_id = $1
 GROUP BY f.id, f.name, t.name
 ORDER BY metric_value DESC, tackles DESC, blocks DESC, f.name
-LIMIT 1;
+LIMIT 4;
 
 -- name: GetBestGoalkeeper :one
 SELECT
