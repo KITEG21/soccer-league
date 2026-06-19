@@ -329,7 +329,7 @@ func (q *Queries) DeleteTeam(ctx context.Context, id int64) error {
 	return err
 }
 
-const getBestDefender = `-- name: GetBestDefender :one
+const getBestDefender = `-- name: GetBestDefender :many
 SELECT
     'Defensa' AS position,
     f.name AS player_name,
@@ -353,7 +353,7 @@ LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Defensa' AND m.season_id = $1
 GROUP BY f.id, f.name, t.name
 ORDER BY metric_value DESC, tackles DESC, blocks DESC, f.name
-LIMIT 1
+LIMIT 4
 `
 
 type GetBestDefenderRow struct {
@@ -373,29 +373,45 @@ type GetBestDefenderRow struct {
 	GoalsConceded   interface{}
 }
 
-func (q *Queries) GetBestDefender(ctx context.Context, seasonID sql.NullInt64) (GetBestDefenderRow, error) {
-	row := q.db.QueryRowContext(ctx, getBestDefender, seasonID)
-	var i GetBestDefenderRow
-	err := row.Scan(
-		&i.Position,
-		&i.PlayerName,
-		&i.TeamName,
-		&i.MetricName,
-		&i.MetricValue,
-		&i.GoalsScored,
-		&i.Assists,
-		&i.ShotsOnGoal,
-		&i.PassesCompleted,
-		&i.Interceptions,
-		&i.Tackles,
-		&i.Blocks,
-		&i.Saves,
-		&i.GoalsConceded,
-	)
-	return i, err
+func (q *Queries) GetBestDefender(ctx context.Context, seasonID sql.NullInt64) ([]GetBestDefenderRow, error) {
+	rows, err := q.db.QueryContext(ctx, getBestDefender, seasonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBestDefenderRow
+	for rows.Next() {
+		var i GetBestDefenderRow
+		if err := rows.Scan(
+			&i.Position,
+			&i.PlayerName,
+			&i.TeamName,
+			&i.MetricName,
+			&i.MetricValue,
+			&i.GoalsScored,
+			&i.Assists,
+			&i.ShotsOnGoal,
+			&i.PassesCompleted,
+			&i.Interceptions,
+			&i.Tackles,
+			&i.Blocks,
+			&i.Saves,
+			&i.GoalsConceded,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-const getBestForward = `-- name: GetBestForward :one
+const getBestForward = `-- name: GetBestForward :many
 SELECT
     'Delantero' AS position,
     f.name AS player_name,
@@ -419,7 +435,7 @@ LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Delantero' AND m.season_id = $1
 GROUP BY f.id, f.name, t.name
 ORDER BY metric_value DESC, goals_scored DESC, assists DESC, f.name
-LIMIT 1
+LIMIT 3
 `
 
 type GetBestForwardRow struct {
@@ -440,26 +456,42 @@ type GetBestForwardRow struct {
 }
 
 // Report 7: all-star team
-func (q *Queries) GetBestForward(ctx context.Context, seasonID sql.NullInt64) (GetBestForwardRow, error) {
-	row := q.db.QueryRowContext(ctx, getBestForward, seasonID)
-	var i GetBestForwardRow
-	err := row.Scan(
-		&i.Position,
-		&i.PlayerName,
-		&i.TeamName,
-		&i.MetricName,
-		&i.MetricValue,
-		&i.GoalsScored,
-		&i.Assists,
-		&i.ShotsOnGoal,
-		&i.PassesCompleted,
-		&i.Interceptions,
-		&i.Tackles,
-		&i.Blocks,
-		&i.Saves,
-		&i.GoalsConceded,
-	)
-	return i, err
+func (q *Queries) GetBestForward(ctx context.Context, seasonID sql.NullInt64) ([]GetBestForwardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getBestForward, seasonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBestForwardRow
+	for rows.Next() {
+		var i GetBestForwardRow
+		if err := rows.Scan(
+			&i.Position,
+			&i.PlayerName,
+			&i.TeamName,
+			&i.MetricName,
+			&i.MetricValue,
+			&i.GoalsScored,
+			&i.Assists,
+			&i.ShotsOnGoal,
+			&i.PassesCompleted,
+			&i.Interceptions,
+			&i.Tackles,
+			&i.Blocks,
+			&i.Saves,
+			&i.GoalsConceded,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getBestGoalkeeper = `-- name: GetBestGoalkeeper :one
@@ -528,9 +560,9 @@ func (q *Queries) GetBestGoalkeeper(ctx context.Context, seasonID sql.NullInt64)
 	return i, err
 }
 
-const getBestMidfielder = `-- name: GetBestMidfielder :one
+const getBestMidfielder = `-- name: GetBestMidfielder :many
 SELECT
-    'Mediocampista' AS position,
+    'Mediocampo' AS position,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'passes_completed_plus_interceptions' AS metric_name,
@@ -549,10 +581,10 @@ JOIN Player p ON p.footballer_id = f.id
 JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
-WHERE p.position = 'Mediocampista' AND m.season_id = $1
+WHERE p.position = 'Mediocampo' AND m.season_id = $1
 GROUP BY f.id, f.name, t.name
 ORDER BY metric_value DESC, passes_completed DESC, interceptions DESC, f.name
-LIMIT 1
+LIMIT 3
 `
 
 type GetBestMidfielderRow struct {
@@ -572,26 +604,42 @@ type GetBestMidfielderRow struct {
 	GoalsConceded   interface{}
 }
 
-func (q *Queries) GetBestMidfielder(ctx context.Context, seasonID sql.NullInt64) (GetBestMidfielderRow, error) {
-	row := q.db.QueryRowContext(ctx, getBestMidfielder, seasonID)
-	var i GetBestMidfielderRow
-	err := row.Scan(
-		&i.Position,
-		&i.PlayerName,
-		&i.TeamName,
-		&i.MetricName,
-		&i.MetricValue,
-		&i.GoalsScored,
-		&i.Assists,
-		&i.ShotsOnGoal,
-		&i.PassesCompleted,
-		&i.Interceptions,
-		&i.Tackles,
-		&i.Blocks,
-		&i.Saves,
-		&i.GoalsConceded,
-	)
-	return i, err
+func (q *Queries) GetBestMidfielder(ctx context.Context, seasonID sql.NullInt64) ([]GetBestMidfielderRow, error) {
+	rows, err := q.db.QueryContext(ctx, getBestMidfielder, seasonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBestMidfielderRow
+	for rows.Next() {
+		var i GetBestMidfielderRow
+		if err := rows.Scan(
+			&i.Position,
+			&i.PlayerName,
+			&i.TeamName,
+			&i.MetricName,
+			&i.MetricValue,
+			&i.GoalsScored,
+			&i.Assists,
+			&i.ShotsOnGoal,
+			&i.PassesCompleted,
+			&i.Interceptions,
+			&i.Tackles,
+			&i.Blocks,
+			&i.Saves,
+			&i.GoalsConceded,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getCoach = `-- name: GetCoach :one
