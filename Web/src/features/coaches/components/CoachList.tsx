@@ -129,11 +129,21 @@ export const CoachList = ({ teamId, coaches }: CoachListProps) => {
 
       <ConfirmDialog
         isOpen={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          deleteMutation.reset();
+        }}
         onConfirm={() => coachToDelete && deleteMutation.mutate(coachToDelete)}
         title="Eliminar Entrenador"
         description="¿Estás seguro de que quieres eliminar este entrenador?"
         isLoading={deleteMutation.isPending}
+        error={
+          deleteMutation.isError
+            ? deleteMutation.error instanceof Error
+              ? deleteMutation.error.message
+              : "Error al eliminar"
+            : null
+        }
       />
     </div>
   );

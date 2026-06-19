@@ -1960,6 +1960,49 @@ func (q *Queries) ListPlayerStats(ctx context.Context) ([]Playerstat, error) {
 	return items, nil
 }
 
+const listPlayerStatsByMatch = `-- name: ListPlayerStatsByMatch :many
+SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
+FROM PlayerStats
+WHERE match_id = $1
+ORDER BY id
+`
+
+func (q *Queries) ListPlayerStatsByMatch(ctx context.Context, matchID sql.NullInt64) ([]Playerstat, error) {
+	rows, err := q.db.QueryContext(ctx, listPlayerStatsByMatch, matchID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Playerstat
+	for rows.Next() {
+		var i Playerstat
+		if err := rows.Scan(
+			&i.ID,
+			&i.PlayerID,
+			&i.MatchID,
+			&i.GoalsScored,
+			&i.Assists,
+			&i.ShotsOnGoal,
+			&i.PassesCompleted,
+			&i.Interceptions,
+			&i.Tackles,
+			&i.Blocks,
+			&i.Saves,
+			&i.GoalsConceded,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPlayers = `-- name: ListPlayers :many
 SELECT f.id, f.team_id, f.name, f.number, f.years_in_team,
        p.position

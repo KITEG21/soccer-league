@@ -6,6 +6,10 @@ class PlayerStatsApiService {
     return apiRequest<PlayerStat[]>("/player-stats");
   }
 
+  async getPlayerStatsByMatch(matchId: number): Promise<PlayerStat[]> {
+    return apiRequest<PlayerStat[]>(`/player-stats?match_id=${matchId}`);
+  }
+
   async getPlayerStat(id: number): Promise<PlayerStat> {
     return apiRequest<PlayerStat>(`/player-stats/${id}`);
   }

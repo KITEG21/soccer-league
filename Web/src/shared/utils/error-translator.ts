@@ -5,6 +5,12 @@ export const errorTranslations: Record<string, string> = {
   "resource not found": "Recurso no encontrado",
   "invalid request": "Solicitud inválida",
   "internal server error": "Error interno del servidor",
+  "not found": "No encontrado",
+  "invalid id": "ID inválido",
+  "name already exists": "Ya existe un registro con ese nombre",
+  conflict: "Conflicto",
+  "bad request": "Solicitud inválida",
+  "no validation errors": "Sin errores de validación",
 
   name: "Nombre",
   start_date: "Fecha de inicio",
@@ -20,9 +26,15 @@ export const errorTranslations: Record<string, string> = {
   "because it is referenced by": "porque tiene referencias en",
   "match(es)": "partido(s)",
   "footballer(s)": "futbolista(s)",
+  "player_stats(s)": "estadística(s) de jugador",
   "is already used in this team by": "ya está siendo usado en este equipo por",
   "cannot be less than": "no puede ser menor que",
   "falls outside new date range": "cae fuera del nuevo rango de fechas",
+  "cannot change season dates: match on": "no se pueden cambiar las fechas de la temporada: el partido del",
+  "invalid date format, use yyyy-mm-dd": "formato de fecha inválido, use AAAA-MM-DD",
+  "experience years": "años de experiencia",
+  "years in team": "años en el equipo",
+  "jersey number": "número de dorsal",
 };
 
 export function translateError(message: string): string {

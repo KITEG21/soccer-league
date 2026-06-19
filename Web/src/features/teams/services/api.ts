@@ -3,7 +3,7 @@ import { apiRequest } from "@/shared/utils/api-client";
 
 class TeamsApiService {
   async getTeams(): Promise<Team[]> {
-    return apiRequest<Team[]>("/teams");
+    return apiRequest<Team[]>("/teams?limit=100");
   }
 
   async getTeam(id: number): Promise<Team> {
