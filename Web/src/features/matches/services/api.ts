@@ -1,9 +1,16 @@
 import type { Match, CreateMatchRequest, UpdateMatchRequest } from "../types";
+import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 
 class MatchesApiService {
   async getMatches(): Promise<Match[]> {
-    return apiRequest<Match[]>("/matches?limit=100");
+    const res = await apiRequest<PaginatedResponse<Match>>("/matches?limit=100");
+    return res.data;
+  }
+
+  async getMatchesPage(page: number, pageSize: number): Promise<PaginatedResponse<Match>> {
+    const offset = (page - 1) * pageSize;
+    return apiRequest<PaginatedResponse<Match>>(`/matches?limit=${pageSize}&offset=${offset}`);
   }
 
   async getMatch(id: number): Promise<Match> {

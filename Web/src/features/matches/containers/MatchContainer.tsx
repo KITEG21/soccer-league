@@ -9,23 +9,29 @@ import { MatchForm } from "../components/MatchForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
+const PAGE_SIZE = 10;
+
 export const MatchContainer = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMatch, setEditingMatch] = useState<Match | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [matchToDelete, setMatchToDelete] = useState<number | undefined>();
+  const [page, setPage] = useState(1);
 
   const queryClient = useQueryClient();
 
   const {
-    data: matches = [],
+    data: matchesPage,
     isLoading,
     error,
-  } = useQuery<Match[]>({
-    queryKey: ["matches"],
-    queryFn: () => matchesApiService.getMatches(),
+  } = useQuery({
+    queryKey: ["matches", page],
+    queryFn: () => matchesApiService.getMatchesPage(page, PAGE_SIZE),
     refetchOnWindowFocus: false,
   });
+
+  const matches = matchesPage?.data ?? [];
+  const total = matchesPage?.total ?? 0;
 
   const { data: teams = [] } = useQuery({
     queryKey: ["teams"],
@@ -50,6 +56,9 @@ export const MatchContainer = () => {
     mutationFn: (id: number) => matchesApiService.deleteMatch(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
+      if (matches.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+      }
       setDeleteDialogOpen(false);
       setMatchToDelete(undefined);
     },
@@ -96,6 +105,10 @@ export const MatchContainer = () => {
         onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        page={page}
+        total={total}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
       />
       <MatchForm
         match={editingMatch}

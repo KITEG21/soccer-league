@@ -40,13 +40,13 @@ func (h *TeamHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *TeamHandler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := parsePagination(r)
-	teams, err := h.svc.List(r.Context(), limit, offset)
+	teams, total, err := h.svc.List(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(teams)
+	json.NewEncoder(w).Encode(newPagedResponse(teams, total, limit, offset))
 }
 
 func (h *TeamHandler) Get(w http.ResponseWriter, r *http.Request) {

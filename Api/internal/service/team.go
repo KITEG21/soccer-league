@@ -150,21 +150,21 @@ func (s *TeamService) Get(ctx context.Context, id int64) (*Team, error) {
 	}, nil
 }
 
-func (s *TeamService) List(ctx context.Context, limit, offset int) ([]*Team, error) {
+func (s *TeamService) List(ctx context.Context, limit, offset int) ([]*Team, int, error) {
 	rows, err := s.store.ListTeams(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var teams []*Team
 	for _, t := range rows {
 		players, err := s.fetchPlayersByTeam(ctx, t.ID)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		coaches, err := s.fetchCoachesByTeam(ctx, t.ID)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		teams = append(teams, &Team{
 			ID:                  t.ID,
@@ -178,7 +178,8 @@ func (s *TeamService) List(ctx context.Context, limit, offset int) ([]*Team, err
 			Coaches:             coaches,
 		})
 	}
-	return paginateSlice(teams, limit, offset), nil
+	page, total := paginateSlice(teams, limit, offset)
+	return page, total, nil
 }
 
 func (s *TeamService) Update(ctx context.Context, id int64, req UpdateTeamRequest) (*Team, error) {

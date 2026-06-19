@@ -35,13 +35,13 @@ func (h *MatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *MatchHandler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := parsePagination(r)
-	matches, err := h.svc.List(r.Context(), limit, offset)
+	matches, total, err := h.svc.List(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(matches)
+	json.NewEncoder(w).Encode(newPagedResponse(matches, total, limit, offset))
 }
 
 func (h *MatchHandler) Get(w http.ResponseWriter, r *http.Request) {

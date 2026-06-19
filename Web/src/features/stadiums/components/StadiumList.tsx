@@ -1,6 +1,7 @@
 import { Landmark, Plus, Edit, Trash2, Users } from "lucide-react";
 import type { Stadium } from "../types";
 import { Button } from "@/shared/components/ui/button";
+import { Pagination } from "@/shared/components/ui/pagination";
 import { Loading } from "@/shared/components/Loading";
 
 interface StadiumListProps {
@@ -10,6 +11,10 @@ interface StadiumListProps {
   readonly onCreate: () => void;
   readonly onEdit: (stadium: Stadium) => void;
   readonly onDelete: (id: number) => void;
+  readonly page: number;
+  readonly total: number;
+  readonly pageSize: number;
+  readonly onPageChange: (page: number) => void;
 }
 
 export function StadiumList({
@@ -19,6 +24,10 @@ export function StadiumList({
   onCreate,
   onEdit,
   onDelete,
+  page,
+  total,
+  pageSize,
+  onPageChange,
 }: StadiumListProps) {
   if (isLoading) return <Loading />;
   if (error)
@@ -93,6 +102,8 @@ export function StadiumList({
           ))
         )}
       </div>
+
+      <Pagination page={page} total={total} pageSize={pageSize} onPageChange={onPageChange} />
     </div>
   );
 }

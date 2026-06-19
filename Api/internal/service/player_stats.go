@@ -106,7 +106,8 @@ func (s *PlayerStatsService) List(ctx context.Context, limit, offset int) ([]*Pl
 	for _, row := range rows {
 		stats = append(stats, playerStatFromStore(row))
 	}
-	return paginateSlice(stats, limit, offset), nil
+	page, _ := paginateSlice(stats, limit, offset)
+	return page, nil
 }
 
 func (s *PlayerStatsService) ListByMatch(ctx context.Context, matchID int64) ([]*PlayerStat, error) {
