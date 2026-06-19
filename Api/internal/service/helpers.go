@@ -89,16 +89,17 @@ func normalizePagination(limit, offset int) (int, int) {
 	return limit, offset
 }
 
-func paginateSlice[T any](items []T, limit, offset int) []T {
+func paginateSlice[T any](items []T, limit, offset int) ([]T, int) {
+	total := len(items)
 	limit, offset = normalizePagination(limit, offset)
-	if offset >= len(items) {
-		return []T{}
+	if offset >= total {
+		return []T{}, total
 	}
 	end := offset + limit
-	if end > len(items) {
-		end = len(items)
+	if end > total {
+		end = total
 	}
-	return items[offset:end]
+	return items[offset:end], total
 }
 
 func normalizeName(name string) string {

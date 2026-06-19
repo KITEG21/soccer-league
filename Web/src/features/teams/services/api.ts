@@ -1,9 +1,16 @@
 import type { Team, CreateTeamRequest, UpdateTeamRequest } from "../types";
+import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 
 class TeamsApiService {
   async getTeams(): Promise<Team[]> {
-    return apiRequest<Team[]>("/teams?limit=100");
+    const res = await apiRequest<PaginatedResponse<Team>>("/teams?limit=100");
+    return res.data;
+  }
+
+  async getTeamsPage(page: number, pageSize: number): Promise<PaginatedResponse<Team>> {
+    const offset = (page - 1) * pageSize;
+    return apiRequest<PaginatedResponse<Team>>(`/teams?limit=${pageSize}&offset=${offset}`);
   }
 
   async getTeam(id: number): Promise<Team> {

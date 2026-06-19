@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
 import { Loading } from "@/shared/components/Loading";
 import { playersApiService } from "../services/api";
 import { teamsApiService } from "../../teams/services/api";
-import type { Player } from "../types";
+import { Pagination } from "@/shared/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -13,15 +14,22 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 
+const PAGE_SIZE = 10;
+
 export const PlayerGlobalList = () => {
+  const [page, setPage] = useState(1);
+
   const {
-    data: players = [],
+    data: playersPage,
     isLoading: isLoadingPlayers,
     error: playerError,
-  } = useQuery<Player[]>({
-    queryKey: ["players"],
-    queryFn: () => playersApiService.getPlayers(),
+  } = useQuery({
+    queryKey: ["players", page],
+    queryFn: () => playersApiService.getPlayersPage(page, PAGE_SIZE),
   });
+
+  const players = playersPage?.data ?? [];
+  const total = playersPage?.total ?? 0;
 
   const {
     data: teams = [],
@@ -89,6 +97,8 @@ export const PlayerGlobalList = () => {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination page={page} total={total} pageSize={PAGE_SIZE} onPageChange={setPage} />
     </div>
   );
 };

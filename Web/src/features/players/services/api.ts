@@ -1,9 +1,16 @@
 import type { Player, CreatePlayerRequest, UpdatePlayerRequest } from "../types";
+import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 
 class PlayersApiService {
   async getPlayers(): Promise<Player[]> {
-    return apiRequest<Player[]>("/players?limit=100");
+    const res = await apiRequest<PaginatedResponse<Player>>("/players?limit=100");
+    return res.data;
+  }
+
+  async getPlayersPage(page: number, pageSize: number): Promise<PaginatedResponse<Player>> {
+    const offset = (page - 1) * pageSize;
+    return apiRequest<PaginatedResponse<Player>>(`/players?limit=${pageSize}&offset=${offset}`);
   }
 
   async getPlayer(id: number): Promise<Player> {

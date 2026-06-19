@@ -7,25 +7,31 @@ import { TeamForm } from "../components/TeamForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
+const PAGE_SIZE = 9;
+
 export const TeamContainer = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<number | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [page, setPage] = useState(1);
 
   const queryClient = useQueryClient();
 
   const {
-    data: teams = [],
+    data: teamsPage,
     isLoading,
     error,
     refetch,
-  } = useQuery<Team[]>({
-    queryKey: ["teams", refreshKey],
-    queryFn: () => teamsApiService.getTeams(),
+  } = useQuery({
+    queryKey: ["teams", page, refreshKey],
+    queryFn: () => teamsApiService.getTeamsPage(page, PAGE_SIZE),
     refetchOnWindowFocus: false,
   });
+
+  const teams = teamsPage?.data ?? [];
+  const total = teamsPage?.total ?? 0;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => teamsApiService.deleteTeam(id),
@@ -35,6 +41,9 @@ export const TeamContainer = () => {
         refetchType: "active",
       });
       await refetch();
+      if (teams.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+      }
       setRefreshKey((prev) => prev + 1);
       setDeleteDialogOpen(false);
       setTeamToDelete(undefined);
@@ -87,6 +96,10 @@ export const TeamContainer = () => {
         onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        page={page}
+        total={total}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
       />
       <TeamForm
         team={editingTeam}

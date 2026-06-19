@@ -40,13 +40,13 @@ func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 
 func (h *PlayerHandler) ListPlayers(w http.ResponseWriter, r *http.Request) {
 	limit, offset := parsePagination(r)
-	players, err := h.svc.ListPlayers(r.Context(), limit, offset)
+	players, total, err := h.svc.ListPlayers(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(players)
+	json.NewEncoder(w).Encode(newPagedResponse(players, total, limit, offset))
 }
 
 func (h *PlayerHandler) GetPlayer(w http.ResponseWriter, r *http.Request) {
@@ -122,13 +122,13 @@ func (h *PlayerHandler) CreateCoach(w http.ResponseWriter, r *http.Request) {
 
 func (h *PlayerHandler) ListCoaches(w http.ResponseWriter, r *http.Request) {
 	limit, offset := parsePagination(r)
-	coaches, err := h.svc.ListCoaches(r.Context(), limit, offset)
+	coaches, total, err := h.svc.ListCoaches(r.Context(), limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(coaches)
+	json.NewEncoder(w).Encode(newPagedResponse(coaches, total, limit, offset))
 }
 
 func (h *PlayerHandler) GetCoach(w http.ResponseWriter, r *http.Request) {

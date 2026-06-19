@@ -96,10 +96,10 @@ func (s *MatchService) Get(ctx context.Context, id int64) (*Match, error) {
 	return matchFromStore(row), nil
 }
 
-func (s *MatchService) List(ctx context.Context, limit, offset int) ([]*Match, error) {
+func (s *MatchService) List(ctx context.Context, limit, offset int) ([]*Match, int, error) {
 	rows, err := s.store.ListMatches(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	var matches []*Match
 	for _, row := range rows {
@@ -116,7 +116,8 @@ func (s *MatchService) List(ctx context.Context, limit, offset int) ([]*Match, e
 			Disputed:   row.Disputed,
 		})
 	}
-	return paginateSlice(matches, limit, offset), nil
+	page, total := paginateSlice(matches, limit, offset)
+	return page, total, nil
 }
 
 func (s *MatchService) Update(ctx context.Context, id int64, req UpdateMatchRequest) (*Match, error) {

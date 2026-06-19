@@ -1,9 +1,16 @@
 import type { Stadium, CreateStadiumRequest, UpdateStadiumRequest } from "../types";
+import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 
 class StadiumsApiService {
   async getStadiums(): Promise<Stadium[]> {
-    return apiRequest<Stadium[]>("/stadiums?limit=100");
+    const res = await apiRequest<PaginatedResponse<Stadium>>("/stadiums?limit=100");
+    return res.data;
+  }
+
+  async getStadiumsPage(page: number, pageSize: number): Promise<PaginatedResponse<Stadium>> {
+    const offset = (page - 1) * pageSize;
+    return apiRequest<PaginatedResponse<Stadium>>(`/stadiums?limit=${pageSize}&offset=${offset}`);
   }
 
   async getStadium(id: number): Promise<Stadium> {

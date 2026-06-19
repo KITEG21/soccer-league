@@ -7,28 +7,37 @@ import { StadiumForm } from "../components/StadiumForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
+const PAGE_SIZE = 9;
+
 export const StadiumContainer = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStadium, setEditingStadium] = useState<Stadium | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [stadiumToDelete, setStadiumToDelete] = useState<number | undefined>();
+  const [page, setPage] = useState(1);
 
   const queryClient = useQueryClient();
 
   const {
-    data: stadiums = [],
+    data: stadiumsPage,
     isLoading,
     error,
-  } = useQuery<Stadium[]>({
-    queryKey: ["stadiums"],
-    queryFn: () => stadiumsApiService.getStadiums(),
+  } = useQuery({
+    queryKey: ["stadiums", page],
+    queryFn: () => stadiumsApiService.getStadiumsPage(page, PAGE_SIZE),
     refetchOnWindowFocus: false,
   });
+
+  const stadiums = stadiumsPage?.data ?? [];
+  const total = stadiumsPage?.total ?? 0;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => stadiumsApiService.deleteStadium(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stadiums"] });
+      if (stadiums.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+      }
       setDeleteDialogOpen(false);
       setStadiumToDelete(undefined);
     },
@@ -75,6 +84,10 @@ export const StadiumContainer = () => {
         onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        page={page}
+        total={total}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
       />
       <StadiumForm
         stadium={editingStadium}

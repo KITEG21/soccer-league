@@ -1,5 +1,6 @@
 import type { Match } from "../types";
 import { Button } from "@/shared/components/ui/button";
+import { Pagination } from "@/shared/components/ui/pagination";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { Loading } from "@/shared/components/Loading";
 import {
@@ -21,6 +22,10 @@ interface MatchListProps {
   readonly onCreate: () => void;
   readonly onEdit: (match: Match) => void;
   readonly onDelete: (id: number) => void;
+  readonly page: number;
+  readonly total: number;
+  readonly pageSize: number;
+  readonly onPageChange: (page: number) => void;
 }
 
 export function MatchList({
@@ -30,6 +35,10 @@ export function MatchList({
   onCreate,
   onEdit,
   onDelete,
+  page,
+  total,
+  pageSize,
+  onPageChange,
 }: MatchListProps) {
   const navigate = useNavigate();
   if (isLoading) return <Loading />;
@@ -119,6 +128,10 @@ export function MatchList({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="mt-6">
+        <Pagination page={page} total={total} pageSize={pageSize} onPageChange={onPageChange} />
       </div>
     </div>
   );
