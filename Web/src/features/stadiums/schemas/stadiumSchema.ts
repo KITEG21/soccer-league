@@ -5,4 +5,5 @@ export const stadiumSchema = z.object({
   capacity: z.coerce.number().int("Debe ser un número entero").min(0, "No puede ser negativo").optional(),
 });
 
-export type StadiumFormData = z.infer<typeof stadiumSchema>;
+export type StadiumFormInput = z.input<typeof stadiumSchema>;
+export type StadiumFormData = z.output<typeof stadiumSchema>;

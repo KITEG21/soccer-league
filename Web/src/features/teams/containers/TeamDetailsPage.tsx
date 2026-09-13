@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Trophy } from "lucide-react";
 import { teamsApiService } from "../../teams/services/api";
@@ -10,7 +10,7 @@ import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
 export const TeamDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const teamId = Number(id);
 
   const {
@@ -28,7 +28,7 @@ export const TeamDetailsPage = () => {
     return (
       <div className="container py-8 text-center">
         <p className="text-destructive mb-4">Error al cargar el equipo</p>
-        <Button onClick={() => navigate("/teams")}>Volver a equipos</Button>
+        <Button onClick={() => router.push("/teams")}>Volver a equipos</Button>
       </div>
     );
 

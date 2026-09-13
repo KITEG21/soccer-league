@@ -1,12 +1,16 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { AlertCircle } from "lucide-react";
 
 import type { Match } from "../types";
-import { matchSchema, type MatchFormData } from "../schemas/matchSchema";
+import {
+  matchSchema,
+  type MatchFormData,
+  type MatchFormInput,
+} from "../schemas/matchSchema";
 import { matchesApiService } from "../services/api";
 import { teamsApiService } from "../../teams/services/api";
 import { seasonsApiService } from "../../seasons/services/api";
@@ -64,16 +68,19 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
     register,
     handleSubmit: handleFormSubmit,
     reset,
+    resetField,
     setValue,
-    watch,
     control,
     formState: { errors, isSubmitting },
-  } = useForm<MatchFormData>({
-    resolver: zodResolver(matchSchema) as any,
+  } = useForm<MatchFormInput, unknown, MatchFormData>({
+    resolver: zodResolver(matchSchema),
   });
 
-  const selectedSeasonId = watch("season_id");
-  const selectedStadiumId = watch("stadium_id");
+  const homeTeamId = useWatch({ control, name: "home_team_id" });
+  const awayTeamId = useWatch({ control, name: "away_team_id" });
+  const selectedSeasonId = useWatch({ control, name: "season_id" });
+  const selectedStadiumId = useWatch({ control, name: "stadium_id" });
+  const currentAttendance = useWatch({ control, name: "attendance" });
   const selectedSeason = seasons.find((s) => s.id === selectedSeasonId);
   const selectedStadium = stadiums.find((st) => st.id === selectedStadiumId);
 
@@ -94,7 +101,6 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
         away_team_id: 0,
         season_id: 0,
         stadium_id: 0,
-        match_date: undefined as any,
         attendance: 0,
         disputed: false,
       });
@@ -108,7 +114,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
         return matchesApiService.createMatch({
             ...data,
             match_date: formattedDate
-        } as any);
+        });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
@@ -123,7 +129,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
         return matchesApiService.updateMatch(data.id, {
             ...data.match,
             match_date: formattedDate
-        } as any);
+        });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
@@ -167,7 +173,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
             <div className="space-y-2">
               <Label>Equipo Local *</Label>
               <Select
-                value={watch("home_team_id")?.toString() || ""}
+                value={homeTeamId?.toString() || ""}
                 onValueChange={(v) => setValue("home_team_id", parseInt(v), { shouldValidate: true })}
                 disabled={isLoading}
               >
@@ -191,7 +197,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
             <div className="space-y-2">
               <Label>Equipo Visitante *</Label>
               <Select
-                value={watch("away_team_id")?.toString() || ""}
+                value={awayTeamId?.toString() || ""}
                 onValueChange={(v) => setValue("away_team_id", parseInt(v), { shouldValidate: true })}
                 disabled={isLoading}
               >
@@ -217,10 +223,10 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
             <div className="space-y-2">
               <Label>Temporada *</Label>
               <Select
-                value={watch("season_id")?.toString() || ""}
+                value={selectedSeasonId?.toString() || ""}
                 onValueChange={(v) => {
                     setValue("season_id", parseInt(v), { shouldValidate: true });
-                    setValue("match_date", undefined as any);
+                    resetField("match_date", { defaultValue: undefined });
                 }}
                 disabled={isLoading}
               >
@@ -244,12 +250,11 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
             <div className="space-y-2">
               <Label>Estadio *</Label>
               <Select
-                value={watch("stadium_id")?.toString() || ""}
+                value={selectedStadiumId?.toString() || ""}
                 onValueChange={(v) => {
                     setValue("stadium_id", parseInt(v), { shouldValidate: true });
                     const st = stadiums.find(s => s.id === parseInt(v));
-                    const currentAttendance = watch("attendance") || 0;
-                    if (st && currentAttendance > (st.capacity || 0)) {
+                    if (st && Number(currentAttendance || 0) > (st.capacity || 0)) {
                         setValue("attendance", st.capacity);
                     }
                 }}
@@ -314,7 +319,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
                 {...register("attendance", {
                     validate: (val) => {
                         if (!selectedStadiumId) return "Selecciona estadio";
-                        const attendanceVal = val || 0;
+                        const attendanceVal = Number(val || 0);
                         if (selectedStadium && attendanceVal > (selectedStadium.capacity || 0)) {
                             return `Máx ${selectedStadium.capacity}`;
                         }

@@ -27,4 +27,4 @@ export interface CreatePlayerStatRequest {
   goals_conceded: number;
 }
 
-export interface UpdatePlayerStatRequest extends CreatePlayerStatRequest {}
+export type UpdatePlayerStatRequest = CreatePlayerStatRequest;

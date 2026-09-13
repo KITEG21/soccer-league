@@ -9,7 +9,8 @@ import {
   Megaphone,
 } from "lucide-react";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
-import { Link, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/utils";
@@ -17,7 +18,7 @@ import { t } from "@/shared/translations";
 
 export const Navbar = () => {
   const { isAuthenticated, logout } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname();
 
   if (!isAuthenticated) return null;
 
@@ -34,7 +35,7 @@ export const Navbar = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md transition-all duration-300">
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center gap-4 lg:gap-8 min-w-0">
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
             <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
               <Trophy className="w-6 h-6 text-primary transition-transform duration-300 group-hover:scale-110" />
             </div>
@@ -46,11 +47,11 @@ export const Navbar = () => {
         <nav className="hidden md:flex items-center gap-0.5 lg:gap-1">
           {navLinks.map((link) => {
             const Icon = link.icon;
-            const isActive = location.pathname === link.to;
+            const isActive = pathname === link.to;
             return (
               <Link
                 key={link.to}
-                to={link.to}
+                href={link.to}
                 className={cn(
                   "relative group flex items-center gap-2 px-2 py-2 rounded-md text-sm font-medium transition-colors shrink-0",
                   "lg:px-3",

@@ -15,7 +15,7 @@ import {
 } from "@/shared/components/ui/table";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 interface MatchListProps {
   readonly matches: Match[];
@@ -59,7 +59,7 @@ export function MatchList({
   selectedSeason,
   onSeasonChange,
 }: MatchListProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   if (isLoading) return <Loading />;
   if (error)
     return (
@@ -140,7 +140,7 @@ export function MatchList({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate(`/matches/${match.id}`)}
+                        onClick={() => router.push(`/matches/${match.id}`)}
                         title="Ver detalles y estadísticas"
                       >
                         <Plus size={14} className="text-primary" />

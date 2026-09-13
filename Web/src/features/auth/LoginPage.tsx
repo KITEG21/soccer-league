@@ -4,7 +4,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Trophy, Lock, Eye, EyeOff } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 
 export const LoginPage = () => {
@@ -13,12 +13,13 @@ export const LoginPage = () => {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(user, pass)) {
-      navigate("/");
+    setError(false);
+    if (await login(user, pass)) {
+      router.replace("/");
     } else {
       setError(true);
     }

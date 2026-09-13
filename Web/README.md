@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+# Soccer League — Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend de la Liga de Fútbol: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 y TanStack Query.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 22+
+- pnpm
 
-## React Compiler
+## Configuración
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Variable | Ámbito | Descripción |
+| --- | --- | --- |
+| `API_URL` | Servidor | URL base de la API (Go) |
+| `ADMIN_USER` | Servidor | Usuario del portal |
+| `ADMIN_PASS` | Servidor | Contraseña del portal |
+| `AUTH_SECRET` | Servidor | Clave HMAC-SHA256 para firmar la cookie de sesión |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Genera `AUTH_SECRET` con:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
+## Scripts
+
+```bash
+pnpm dev     # desarrollo en http://localhost:3000
+pnpm build   # build de producción
+pnpm start   # sirve el build de producción
+pnpm lint    # ESLint
+```
+
+## Estructura
+
+```
+src/
+  proxy.ts             # gate de sesión, previo al renderizado
+  app/                 # rutas del App Router
+    layout.tsx         # lee la cookie de sesión y monta los providers
+    api/auth/          # login y logout
+    api/backend/       # reenvía las llamadas a la API de Go
+    globals.css        # tema Tailwind (claro/oscuro vía clase .dark)
+  features/            # módulos por dominio
+  shared/              # UI reutilizable, contextos, utilidades y traducciones
+```
+
+## Autenticación
+
+Las credenciales se validan en `src/app/api/auth/login`, que responde con una cookie `httpOnly`
+firmada con `AUTH_SECRET`. `src/proxy.ts` verifica la firma y redirige a `/login` las rutas no públicas.

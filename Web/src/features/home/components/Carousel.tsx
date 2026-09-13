@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { t } from "@/shared/translations";
 
 export interface CarouselSlide {
@@ -107,7 +107,7 @@ export const Carousel = ({
                 )}
                 {slide.link && (
                   <Link
-                    to={slide.link}
+                    href={slide.link}
                     className="inline-flex z-10 items-center text-white gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm hover:scale-105 px-4 py-2 rounded-full font-semibold transition-all"
                   >
                     {t.common.viewMore}

@@ -14,13 +14,19 @@ const queryClient = new QueryClient({
 
 interface AppProvidersProps {
   readonly children: ReactNode;
+  readonly isAuthenticated: boolean;
 }
 
-export const AppProviders = ({ children }: AppProvidersProps) => {
+export const AppProviders = ({
+  children,
+  isAuthenticated,
+}: AppProvidersProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider isAuthenticated={isAuthenticated}>
+          {children}
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

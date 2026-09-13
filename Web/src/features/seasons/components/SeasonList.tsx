@@ -34,7 +34,7 @@ export function SeasonList({
     if (!dateStr) return "N/A";
     try {
       return format(parseISO(dateStr), "dd/MM/yyyy");
-    } catch (e) {
+    } catch {
       return "N/A";
     }
   };
@@ -47,7 +47,7 @@ export function SeasonList({
       const startStr = format(start, "MMM/yy", { locale: es });
       const endStr = format(end, "MMM/yy", { locale: es });
       return `${startStr} - ${endStr}`;
-    } catch (e) {
+    } catch {
       return `Temporada ${season.id}`;
     }
   };

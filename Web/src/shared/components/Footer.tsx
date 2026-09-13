@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Globe, Trophy } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { useAuth } from "@/shared/contexts/AuthContext";
 
 const creators = [
@@ -81,7 +81,7 @@ export const Footer = () => {
               <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.to} className="text-muted-foreground hover:text-primary text-sm transition-colors flex items-center gap-2 group">
+                    <Link href={link.to} className="text-muted-foreground hover:text-primary text-sm transition-colors flex items-center gap-2 group">
                       <span className="w-1.5 h-1.5 rounded-full bg-primary/0 group-hover:bg-primary transition-all" />
                       {link.label}
                     </Link>

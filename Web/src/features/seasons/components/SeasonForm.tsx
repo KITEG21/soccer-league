@@ -203,7 +203,7 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
           {(createMutation.isError || updateMutation.isError) && (
             <div className="space-y-1">
               <p className="text-sm text-destructive font-semibold">
-                {(createMutation.error as any)?.message || (updateMutation.error as any)?.message || "Error en la temporada"}
+                {createMutation.error?.message || updateMutation.error?.message || "Error en la temporada"}
               </p>
               {(createMutation.error instanceof ApiError && createMutation.error.errors.date_range) && (
                 <p className="text-xs text-destructive/80 italic">

@@ -3,7 +3,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Stadium } from "../types";
-import { stadiumSchema, type StadiumFormData } from "../schemas/stadiumSchema";
+import {
+  stadiumSchema,
+  type StadiumFormData,
+  type StadiumFormInput,
+} from "../schemas/stadiumSchema";
 import { stadiumsApiService } from "../services/api";
 import { ApiError } from "@/shared/utils/api-client";
 import { Button } from "@/shared/components/ui/button";
@@ -26,8 +30,8 @@ interface StadiumFormProps {
 export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
   const queryClient = useQueryClient();
 
-  const formMethods = useForm<StadiumFormData>({
-    resolver: zodResolver(stadiumSchema) as any,
+  const formMethods = useForm<StadiumFormInput, unknown, StadiumFormData>({
+    resolver: zodResolver(stadiumSchema),
     defaultValues: {
       name: "",
     },

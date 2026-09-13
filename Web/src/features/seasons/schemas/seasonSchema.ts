@@ -9,7 +9,7 @@ export const seasonSchema = z.object({
     const start = parseISO(data.start_date);
     const end = parseISO(data.end_date);
     return isAfter(end, start);
-  } catch (e) {
+  } catch {
     return false;
   }
 }, {

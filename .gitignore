@@ -22,9 +22,10 @@ coverage.txt
 
 # Web dependencies and build output
 Web/node_modules/
-Web/dist/
-Web/dist-ssr/
-Web/.vite/
+Web/.next/
+Web/out/
+Web/next-env.d.ts
+Web/*.tsbuildinfo
 
 # Logs
 *.log

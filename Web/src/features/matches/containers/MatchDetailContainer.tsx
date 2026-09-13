@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Trophy, Shield, ArrowLeft, Plus, Trash2, Edit } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { matchesApiService } from "../services/api";
 import { playerStatsApiService } from "../services/playerStatsApi";
@@ -43,7 +43,7 @@ import {
 
 export const MatchDetailContainer = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [isStatDialogOpen, setIsStatDialogOpen] = useState(false);
   const [editingStat, setEditingStat] = useState<PlayerStat | null>(null);
@@ -137,7 +137,7 @@ export const MatchDetailContainer = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-500">
-      <Button variant="ghost" onClick={() => navigate("/matches")} className="flex items-center gap-2">
+      <Button variant="ghost" onClick={() => router.push("/matches")} className="flex items-center gap-2">
         <ArrowLeft size={16} /> Volver a Partidos
       </Button>
 
@@ -272,6 +272,7 @@ export const MatchDetailContainer = () => {
 
       {/* Stat Dialog */}
       <StatFormDialog 
+        key={`${isStatDialogOpen}-${editingStat?.id ?? "new"}`}
         isOpen={isStatDialogOpen}
         onClose={() => setIsStatDialogOpen(false)}
         players={allMatchPlayers}
@@ -304,49 +305,21 @@ interface StatFormDialogProps {
   error?: string | null;
 }
 
-const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, existingPlayerIds, isSubmitting, error }: StatFormDialogProps) => {
-  const [formData, setFormData] = useState({
-    player_id: "",
-    goals_scored: 0,
-    assists: 0,
-    shots_on_goal: 0,
-    passes_completed: 0,
-    interceptions: 0,
-    tackles: 0,
-    blocks: 0,
-    saves: 0,
-    goals_conceded: 0,
-  });
+const buildStatFormState = (stat: PlayerStat | null) => ({
+  player_id: stat ? stat.player_id.toString() : "",
+  goals_scored: stat?.goals_scored ?? 0,
+  assists: stat?.assists ?? 0,
+  shots_on_goal: stat?.shots_on_goal ?? 0,
+  passes_completed: stat?.passes_completed ?? 0,
+  interceptions: stat?.interceptions ?? 0,
+  tackles: stat?.tackles ?? 0,
+  blocks: stat?.blocks ?? 0,
+  saves: stat?.saves ?? 0,
+  goals_conceded: stat?.goals_conceded ?? 0,
+});
 
-  useEffect(() => {
-    if (stat) {
-      setFormData({
-        player_id: stat.player_id.toString(),
-        goals_scored: stat.goals_scored,
-        assists: stat.assists,
-        shots_on_goal: stat.shots_on_goal,
-        passes_completed: stat.passes_completed,
-        interceptions: stat.interceptions,
-        tackles: stat.tackles,
-        blocks: stat.blocks,
-        saves: stat.saves,
-        goals_conceded: stat.goals_conceded,
-      });
-    } else {
-      setFormData({
-        player_id: "",
-        goals_scored: 0,
-        assists: 0,
-        shots_on_goal: 0,
-        passes_completed: 0,
-        interceptions: 0,
-        tackles: 0,
-        blocks: 0,
-        saves: 0,
-        goals_conceded: 0,
-      });
-    }
-  }, [stat, isOpen]);
+const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, existingPlayerIds, isSubmitting, error }: StatFormDialogProps) => {
+  const [formData, setFormData] = useState(() => buildStatFormState(stat));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

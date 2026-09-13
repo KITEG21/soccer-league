@@ -3,7 +3,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Pagination } from "@/shared/components/ui/pagination";
 import { Plus, Edit, Trash2, ChevronRight } from "lucide-react";
 import { Loading } from "@/shared/components/Loading";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 interface TeamListProps {
   readonly teams: Team[];
@@ -30,7 +30,7 @@ export function TeamList({
   pageSize,
   onPageChange,
 }: TeamListProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   if (isLoading) return <Loading />;
   if (error)
@@ -55,7 +55,7 @@ export function TeamList({
           <div
             key={team.id}
             className="bg-card text-card-foreground rounded-lg shadow-md p-6 border group hover:border-primary/50 transition-all cursor-pointer"
-            onClick={() => navigate(`/teams/${team.id}`)}
+            onClick={() => router.push(`/teams/${team.id}`)}
           >
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-2">

@@ -14,4 +14,4 @@ export interface CreatePlayerRequest {
   position: string;
 }
 
-export interface UpdatePlayerRequest extends CreatePlayerRequest {}
+export type UpdatePlayerRequest = CreatePlayerRequest;

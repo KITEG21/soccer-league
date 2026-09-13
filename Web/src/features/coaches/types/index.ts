@@ -16,4 +16,4 @@ export interface CreateCoachRequest {
   championships_won?: number;
 }
 
-export interface UpdateCoachRequest extends CreateCoachRequest {}
+export type UpdateCoachRequest = CreateCoachRequest;

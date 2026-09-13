@@ -15,4 +15,5 @@ export const matchSchema = z.object({
   path: ["away_team_id"],
 });
 
-export type MatchFormData = z.infer<typeof matchSchema>;
+export type MatchFormInput = z.input<typeof matchSchema>;
+export type MatchFormData = z.output<typeof matchSchema>;

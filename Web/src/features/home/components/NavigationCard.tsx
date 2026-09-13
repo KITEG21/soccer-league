@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 interface NavigationCardProps {
   icon: LucideIcon;
@@ -17,7 +17,7 @@ export const NavigationCard = ({
 }: NavigationCardProps) => {
   return (
     <Link
-      to={to}
+      href={to}
       className="group relative overflow-hidden bg-card hover:bg-accent/5 rounded-2xl p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 border border-border/50"
     >
       <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -42,7 +42,7 @@ export const BreadcrumbNav = ({ items = [] }: BreadcrumbNavProps) => {
                   </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild className="flex items-center gap-1">
-                    <Link to={item.to || "#"}>
+                    <Link href={item.to || "#"}>
                       {item.icon && <item.icon size={14} />}
                       {item.label}
                     </Link>

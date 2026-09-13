@@ -1,13 +1,28 @@
+"use client";
+
 import React, {
   createContext,
   useContext,
   useEffect,
-  useState,
   useMemo,
   useCallback,
+  useSyncExternalStore,
 } from "react";
+import { createClientStore } from "@/shared/utils/client-store";
 
 type Theme = "light" | "dark";
+
+const THEME_KEY = "theme";
+
+const readTheme = (): Theme => {
+  const saved = localStorage.getItem(THEME_KEY) as Theme | null;
+  if (saved) return saved;
+  return globalThis.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
+const themeStore = createClientStore<Theme>(readTheme, "light");
 
 interface ThemeContextType {
   theme: Theme;
@@ -29,50 +44,25 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Check localStorage first, then system preference
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
-    if (savedTheme) {
-      return savedTheme;
-    }
-    // Check system preference
-    return globalThis.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  });
+  const theme = useSyncExternalStore(
+    themeStore.subscribe,
+    themeStore.getSnapshot,
+    themeStore.getServerSnapshot,
+  );
 
   useEffect(() => {
-    // Update localStorage when theme changes
-    localStorage.setItem("theme", theme);
-
-    // Update document class for Tailwind
-    console.log("Current theme:", theme);
-    console.log("Document element:", document.documentElement);
-    console.log("Current classes:", document.documentElement.className);
-
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-      console.log(
-        "Added .dark class. New classes:",
-        document.documentElement.className,
-      );
-    } else {
-      document.documentElement.classList.remove("dark");
-      console.log(
-        "Removed .dark class. New classes:",
-        document.documentElement.className,
-      );
-    }
+    document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    localStorage.setItem(
+      THEME_KEY,
+      readTheme() === "dark" ? "light" : "dark",
+    );
+    themeStore.emit();
   }, []);
 
-  const contextValue = useMemo(
-    () => ({ theme, toggleTheme }),
-    [theme, toggleTheme],
-  );
+  const contextValue = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
 
   return (
     <ThemeContext.Provider value={contextValue}>

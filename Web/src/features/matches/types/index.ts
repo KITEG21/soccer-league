@@ -31,4 +31,4 @@ export interface CreateMatchRequest {
   disputed?: boolean;
 }
 
-export interface UpdateMatchRequest extends CreateMatchRequest {}
+export type UpdateMatchRequest = CreateMatchRequest;
