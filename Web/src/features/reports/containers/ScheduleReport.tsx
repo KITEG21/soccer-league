@@ -96,7 +96,7 @@ export const ScheduleReport = () => {
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => setSelectedDate(date)}
-                initialFocus
+                autoFocus
                 locale={es}
               />
             </PopoverContent>

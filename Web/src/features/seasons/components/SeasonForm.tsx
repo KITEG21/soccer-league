@@ -145,7 +145,7 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
                       onSelect={(date) =>
                         field.onChange(date ? format(date, "yyyy-MM-dd") : "")
                       }
-                      initialFocus
+                      autoFocus
                       locale={es}
                     />
                   </PopoverContent>
@@ -188,7 +188,7 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
                       onSelect={(date) =>
                         field.onChange(date ? format(date, "yyyy-MM-dd") : "")
                       }
-                      initialFocus
+                      autoFocus
                       locale={es}
                     />
                   </PopoverContent>

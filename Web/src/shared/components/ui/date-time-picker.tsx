@@ -94,7 +94,7 @@ export function DateTimePicker({ date, setDate, disabled, minDate, maxDate }: Da
                 return false;
               }}
               locale={es}
-              initialFocus
+              autoFocus
             />
           </PopoverContent>
         </Popover>
