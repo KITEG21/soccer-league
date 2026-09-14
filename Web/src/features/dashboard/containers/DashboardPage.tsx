@@ -6,6 +6,7 @@ import { es } from "date-fns/locale";
 import Link from "next/link";
 import { ArrowRight, Calendar, Flag, Trophy, Users } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -222,9 +223,12 @@ export const DashboardPage = () => {
                     ) : (
                       <span className="size-4 shrink-0" />
                     )}
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                    <AppLink
+                      href={`/teams/${row.team_id}`}
+                      className="min-w-0 flex-1 truncate text-sm font-medium"
+                    >
                       {row.name}
-                    </span>
+                    </AppLink>
                     <Badge
                       variant={index === 0 ? "default" : "secondary"}
                       className="tabular-nums"

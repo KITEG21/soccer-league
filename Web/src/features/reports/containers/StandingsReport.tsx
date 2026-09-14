@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Trophy } from "lucide-react";
 import { cn } from "@/shared/utils";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
 import { Field } from "@/shared/components/Field";
 import { DataTable } from "@/shared/components/DataTable";
 import { Badge } from "@/shared/components/ui/badge";
@@ -99,7 +100,7 @@ export const StandingsReport = () => {
               </TableCell>
               <TableCell className="font-medium">
                 <span className="flex items-center gap-2">
-                  {row.name}
+                  <AppLink href={`/teams/${row.team_id}`}>{row.name}</AppLink>
                   {index === 0 && (
                     <Trophy className="size-4 shrink-0 text-amber-500" />
                   )}

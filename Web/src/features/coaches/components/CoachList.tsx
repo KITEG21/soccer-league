@@ -21,10 +21,17 @@ import type { Coach } from "../types";
 interface CoachListProps {
   readonly teamId: number;
   readonly coaches: Coach[];
+  readonly autoCreate?: boolean;
+  readonly onFormClose?: () => void;
 }
 
-export const CoachList = ({ teamId, coaches }: CoachListProps) => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+export const CoachList = ({
+  teamId,
+  coaches,
+  autoCreate = false,
+  onFormClose,
+}: CoachListProps) => {
+  const [isFormOpen, setIsFormOpen] = useState(autoCreate);
   const [editingCoach, setEditingCoach] = useState<Coach | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [coachToDelete, setCoachToDelete] = useState<number | undefined>();
@@ -120,7 +127,10 @@ export const CoachList = ({ teamId, coaches }: CoachListProps) => {
         teamId={teamId}
         coach={editingCoach}
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {
+          setIsFormOpen(false);
+          onFormClose?.();
+        }}
       />
 
       <ConfirmDialog

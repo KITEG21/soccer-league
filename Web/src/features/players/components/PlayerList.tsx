@@ -22,10 +22,17 @@ import type { Player } from "../types";
 interface PlayerListProps {
   readonly teamId: number;
   readonly players: Player[];
+  readonly autoCreate?: boolean;
+  readonly onFormClose?: () => void;
 }
 
-export const PlayerList = ({ teamId, players }: PlayerListProps) => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+export const PlayerList = ({
+  teamId,
+  players,
+  autoCreate = false,
+  onFormClose,
+}: PlayerListProps) => {
+  const [isFormOpen, setIsFormOpen] = useState(autoCreate);
   const [editingPlayer, setEditingPlayer] = useState<Player | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [playerToDelete, setPlayerToDelete] = useState<number | undefined>();
@@ -123,7 +130,10 @@ export const PlayerList = ({ teamId, players }: PlayerListProps) => {
         teamId={teamId}
         player={editingPlayer}
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {
+          setIsFormOpen(false);
+          onFormClose?.();
+        }}
       />
 
       <ConfirmDialog

@@ -15,6 +15,7 @@ import type { Player } from "../../players/types";
 import { ApiError } from "@/shared/utils/api-client";
 import { Loading } from "@/shared/components/Loading";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
 import { RowActions } from "@/shared/components/RowActions";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { Badge } from "@/shared/components/ui/badge";
@@ -166,9 +167,12 @@ export const MatchDetailContainer = () => {
               className="size-10 rounded-full ring-1 ring-border"
               style={{ backgroundColor: homeTeam?.color || "var(--color-muted)" }}
             />
-            <span className="text-center font-medium sm:text-right">
+            <AppLink
+              href={`/teams/${match.home_team_id}`}
+              className="text-center font-medium sm:text-right"
+            >
               {homeTeam?.name || "Local"}
-            </span>
+            </AppLink>
           </div>
 
           <div className="flex flex-col items-center gap-2">
@@ -187,9 +191,12 @@ export const MatchDetailContainer = () => {
               className="size-10 rounded-full ring-1 ring-border"
               style={{ backgroundColor: awayTeam?.color || "var(--color-muted)" }}
             />
-            <span className="text-center font-medium sm:text-left">
+            <AppLink
+              href={`/teams/${match.away_team_id}`}
+              className="text-center font-medium sm:text-left"
+            >
               {awayTeam?.name || "Visitante"}
-            </span>
+            </AppLink>
           </div>
         </CardContent>
       </Card>
@@ -251,7 +258,13 @@ export const MatchDetailContainer = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: playerTeam?.color || "#666" }} />
-                             <span className="text-xs font-medium">{playerTeam?.name}</span>
+                             {playerTeam ? (
+                               <AppLink href={`/teams/${playerTeam.id}`} className="text-xs font-medium">
+                                 {playerTeam.name}
+                               </AppLink>
+                             ) : (
+                               <span className="text-xs text-muted-foreground">—</span>
+                             )}
                           </div>
                         </TableCell>
                         <TableCell className="text-center font-mono font-bold text-lg">{stat.goals_scored}</TableCell>

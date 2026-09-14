@@ -1,4 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
 import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -160,7 +161,9 @@ export const HeadToHeadReport = () => {
                   matches.map((match) => (
                     <TableRow key={match.id}>
                       <TableCell className="font-mono text-sm">
-                        {format(parseISO(match.match_date), "dd/MM/yyyy")}
+                        <AppLink href={`/matches/${match.id}`}>
+                          {format(parseISO(match.match_date), "dd/MM/yyyy")}
+                        </AppLink>
                       </TableCell>
                       <TableCell>{match.stadium_name}</TableCell>
                       <TableCell className="font-medium">

@@ -5,6 +5,7 @@ import { es } from "date-fns/locale";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
 import { Field } from "@/shared/components/Field";
 import { DataTable } from "@/shared/components/DataTable";
 import { RowActions } from "@/shared/components/RowActions";
@@ -129,7 +130,9 @@ export function MatchList({
               </Link>
             </TableCell>
             <TableCell className="font-medium">
-              {match.home_team?.name || `Equipo ${match.home_team_id}`}
+              <AppLink href={`/teams/${match.home_team_id}`}>
+                {match.home_team?.name || `Equipo ${match.home_team_id}`}
+              </AppLink>
             </TableCell>
             <TableCell>
               <Badge variant="secondary" className="font-mono tabular-nums">
@@ -137,7 +140,9 @@ export function MatchList({
               </Badge>
             </TableCell>
             <TableCell className="font-medium">
-              {match.away_team?.name || `Equipo ${match.away_team_id}`}
+              <AppLink href={`/teams/${match.away_team_id}`}>
+                {match.away_team?.name || `Equipo ${match.away_team_id}`}
+              </AppLink>
             </TableCell>
             <TableCell className="text-muted-foreground">
               {match.stadium?.name || `Estadio ${match.stadium_id}`}

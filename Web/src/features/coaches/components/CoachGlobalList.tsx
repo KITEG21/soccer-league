@@ -1,13 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
 import { DataTable } from "@/shared/components/DataTable";
 import { Pagination } from "@/shared/components/ui/pagination";
 import { TableCell, TableRow } from "@/shared/components/ui/table";
 import { coachesApiService } from "../services/api";
 import { teamsApiService } from "@/features/teams/services/api";
+import { TeamPickerDialog } from "@/features/teams/components/TeamPickerDialog";
+import { Button } from "@/shared/components/ui/button";
 
 const PAGE_SIZE = 10;
 const COLUMNS = [
@@ -20,6 +25,8 @@ const COLUMNS = [
 
 export const CoachGlobalList = () => {
   const [page, setPage] = useState(1);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const router = useRouter();
 
   const {
     data: coachesPage,
@@ -48,6 +55,20 @@ export const CoachGlobalList = () => {
       <PageHeader
         title="Entrenadores"
         description="Listado global de entrenadores registrados en la liga"
+        actions={
+          <Button onClick={() => setIsPickerOpen(true)}>
+            <Plus />
+            Nuevo entrenador
+          </Button>
+        }
+      />
+
+      <TeamPickerDialog
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={(teamId) => router.push(`/teams/${teamId}?create=coach`)}
+        title="Elige el equipo"
+        description="Un entrenador pertenece a un equipo. Selecciona uno para continuar con el alta."
       />
 
       <DataTable
@@ -69,8 +90,14 @@ export const CoachGlobalList = () => {
         {rows.map((coach) => (
           <TableRow key={coach.id}>
             <TableCell className="font-medium">{coach.name}</TableCell>
-            <TableCell className="text-muted-foreground">
-              {coach.team?.name ?? `Equipo ${coach.team_id}`}
+            <TableCell>
+              {coach.team_id ? (
+                <AppLink href={`/teams/${coach.team_id}`}>
+                  {coach.team?.name ?? `Equipo ${coach.team_id}`}
+                </AppLink>
+              ) : (
+                <span className="text-muted-foreground">Sin equipo</span>
+              )}
             </TableCell>
             <TableCell className="tabular-nums">
               {coach.experience_years ?? 0} años

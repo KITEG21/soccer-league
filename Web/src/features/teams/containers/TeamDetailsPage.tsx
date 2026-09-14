@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { Loading } from "@/shared/components/Loading";
@@ -13,7 +13,13 @@ import { PlayerList } from "@/features/players/components/PlayerList";
 export const TeamDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const teamId = Number(id);
+  const createIntent = searchParams.get("create");
+
+  const clearCreateIntent = () => {
+    if (createIntent) router.replace(`/teams/${teamId}`);
+  };
 
   const {
     data: team,
@@ -82,13 +88,23 @@ export const TeamDetailsPage = () => {
 
       <Card>
         <CardContent className="p-6">
-          <CoachList teamId={teamId} coaches={team.coaches ?? []} />
+          <CoachList
+            teamId={teamId}
+            coaches={team.coaches ?? []}
+            autoCreate={createIntent === "coach"}
+            onFormClose={clearCreateIntent}
+          />
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="p-6">
-          <PlayerList teamId={teamId} players={team.players ?? []} />
+          <PlayerList
+            teamId={teamId}
+            players={team.players ?? []}
+            autoCreate={createIntent === "player"}
+            onFormClose={clearCreateIntent}
+          />
         </CardContent>
       </Card>
     </>

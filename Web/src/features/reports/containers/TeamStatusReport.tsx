@@ -1,4 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
 import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -99,7 +100,9 @@ export const TeamStatusReport = () => {
       ) : status ? (
         <Card>
           <CardHeader>
-            <CardTitle>{status.name}</CardTitle>
+            <CardTitle>
+              <AppLink href={`/teams/${status.team_id}`}>{status.name}</AppLink>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
