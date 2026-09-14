@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { isPublicRoute } from "@/shared/auth/routes";
 import { AppFooter } from "./AppFooter";
 import { AppHeader } from "./AppHeader";
 import { AppSidebar } from "./AppSidebar";
@@ -12,9 +13,9 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
-  const { isAuthenticated } = useAuth();
+  const pathname = usePathname();
 
-  if (!isAuthenticated) {
+  if (isPublicRoute(pathname)) {
     return <div className="min-h-screen bg-background">{children}</div>;
   }
 
