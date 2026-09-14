@@ -16,7 +16,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const pathname = usePathname();
 
   if (isPublicRoute(pathname)) {
-    return <div className="min-h-screen bg-background">{children}</div>;
+    return (
+      <div className="animate-page-in min-h-screen bg-background">
+        {children}
+      </div>
+    );
   }
 
   return (
@@ -24,7 +28,12 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       <AppSidebar />
       <SidebarInset className="min-w-0">
         <AppHeader />
-        <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">{children}</div>
+        <div
+          key={pathname}
+          className="animate-page-in flex flex-1 flex-col gap-6 p-4 md:p-6"
+        >
+          {children}
+        </div>
         <AppFooter />
       </SidebarInset>
     </SidebarProvider>
