@@ -133,7 +133,12 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="player-name">Nombre *</Label>
-            <Input id="player-name" {...register("name")} disabled={isLoading} />
+            <Input
+              id="player-name"
+              placeholder="Nombre completo del jugador"
+              {...register("name")}
+              disabled={isLoading}
+            />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
@@ -152,6 +157,7 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
                 id="player-number"
                 type="number"
                 min="0"
+                placeholder="Ej. 10"
                 {...register("number", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -201,6 +207,7 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
               id="player-years"
               type="number"
               min="0"
+              placeholder="Ej. 3"
               {...register("years_in_team", { valueAsNumber: true })}
               disabled={isLoading}
             />

@@ -111,7 +111,12 @@ export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nombre *</Label>
-            <Input id="name" {...register("name")} disabled={isLoading} />
+            <Input
+              id="name"
+              placeholder="Nombre del estadio"
+              {...register("name")}
+              disabled={isLoading}
+            />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
@@ -123,6 +128,7 @@ export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
               id="capacity"
               type="number"
               min="0"
+              placeholder="Ej. 25000"
               {...register("capacity")}
               disabled={isLoading}
             />

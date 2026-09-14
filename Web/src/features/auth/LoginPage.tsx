@@ -62,6 +62,7 @@ export const LoginPage = () => {
               <Label htmlFor="user">Usuario</Label>
               <Input
                 id="user"
+                placeholder="Nombre de usuario"
                 autoComplete="username"
                 value={user}
                 onChange={(event) => setUser(event.target.value)}
@@ -75,6 +76,7 @@ export const LoginPage = () => {
                 <Input
                   id="pass"
                   type={showPass ? "text" : "password"}
+                  placeholder="Tu contraseña"
                   autoComplete="current-password"
                   className="pr-10"
                   value={pass}

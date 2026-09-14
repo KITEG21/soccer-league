@@ -393,27 +393,27 @@ const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, exist
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Goles</Label>
-              <Input type="number" min="0" value={formData.goals_scored} onChange={(e) => setFormData({ ...formData, goals_scored: parseInt(e.target.value) || 0 })} />
+              <Input type="number" min="0" placeholder="0" value={formData.goals_scored} onChange={(e) => setFormData({ ...formData, goals_scored: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
               <Label>Asistencias</Label>
-              <Input type="number" min="0" value={formData.assists} onChange={(e) => setFormData({ ...formData, assists: parseInt(e.target.value) || 0 })} />
+              <Input type="number" min="0" placeholder="0" value={formData.assists} onChange={(e) => setFormData({ ...formData, assists: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
               <Label>Remates</Label>
-              <Input type="number" min="0" value={formData.shots_on_goal} onChange={(e) => setFormData({ ...formData, shots_on_goal: parseInt(e.target.value) || 0 })} />
+              <Input type="number" min="0" placeholder="0" value={formData.shots_on_goal} onChange={(e) => setFormData({ ...formData, shots_on_goal: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
               <Label>Pases Completados</Label>
-              <Input type="number" min="0" value={formData.passes_completed} onChange={(e) => setFormData({ ...formData, passes_completed: parseInt(e.target.value) || 0 })} />
+              <Input type="number" min="0" placeholder="0" value={formData.passes_completed} onChange={(e) => setFormData({ ...formData, passes_completed: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
               <Label>Entradas (Tackles)</Label>
-              <Input type="number" min="0" value={formData.tackles} onChange={(e) => setFormData({ ...formData, tackles: parseInt(e.target.value) || 0 })} />
+              <Input type="number" min="0" placeholder="0" value={formData.tackles} onChange={(e) => setFormData({ ...formData, tackles: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
               <Label>Intercepciones</Label>
-              <Input type="number" min="0" value={formData.interceptions} onChange={(e) => setFormData({ ...formData, interceptions: parseInt(e.target.value) || 0 })} />
+              <Input type="number" min="0" placeholder="0" value={formData.interceptions} onChange={(e) => setFormData({ ...formData, interceptions: parseInt(e.target.value) || 0 })} />
             </div>
           </div>
 

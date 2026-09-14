@@ -117,7 +117,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="coach-name">Nombre *</Label>
-            <Input id="coach-name" {...register("name")} disabled={isLoading} />
+            <Input
+              id="coach-name"
+              placeholder="Nombre completo del entrenador"
+              {...register("name")}
+              disabled={isLoading}
+            />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
@@ -133,6 +138,7 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
                 id="coach-number"
                 type="number"
                 min="0"
+                placeholder="Ej. 12"
                 {...register("number", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -146,6 +152,7 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
                 id="coach-years"
                 type="number"
                 min="0"
+                placeholder="Ej. 3"
                 {...register("years_in_team", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -159,6 +166,7 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
                 id="coach-experience"
                 type="number"
                 min="0"
+                placeholder="Ej. 10"
                 {...register("experience_years", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -175,6 +183,7 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
                 id="coach-won"
                 type="number"
                 min="0"
+                placeholder="Ej. 2"
                 {...register("championships_won", { valueAsNumber: true })}
                 disabled={isLoading}
               />

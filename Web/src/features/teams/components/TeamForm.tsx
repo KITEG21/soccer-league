@@ -118,7 +118,12 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nombre *</Label>
-            <Input id="name" {...register("name")} disabled={isLoading} />
+            <Input
+              id="name"
+              placeholder="Nombre del equipo"
+              {...register("name")}
+              disabled={isLoading}
+            />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
@@ -128,6 +133,7 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
             <Label htmlFor="province">Provincia</Label>
             <Input
               id="province"
+              placeholder="Ej. La Habana"
               {...register("province")}
               disabled={isLoading}
             />
@@ -140,7 +146,12 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="mascot">Mascota</Label>
-            <Input id="mascot" {...register("mascot")} disabled={isLoading} />
+            <Input
+              id="mascot"
+              placeholder="Ej. Leones"
+              {...register("mascot")}
+              disabled={isLoading}
+            />
             {errors.mascot && (
               <p className="text-sm text-destructive">
                 {errors.mascot.message}
@@ -169,6 +180,7 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
                 id="championships_played"
                 type="number"
                 min="0"
+                placeholder="Ej. 5"
                 {...register("championships_played", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -185,6 +197,7 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
                 id="championships_won"
                 type="number"
                 min="0"
+                placeholder="Ej. 2"
                 {...register("championships_won", { valueAsNumber: true })}
                 disabled={isLoading}
               />
