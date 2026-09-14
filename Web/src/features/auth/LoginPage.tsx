@@ -1,98 +1,111 @@
+"use client";
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Trophy } from "lucide-react";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { Trophy, Lock, Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ThemeToggle } from "@/shared/components/ThemeToggle";
 
 export const LoginPage = () => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError(false);
+    setIsSubmitting(true);
+
     if (await login(user, pass)) {
       router.replace("/");
-    } else {
-      setError(true);
+      return;
     }
+
+    setError(true);
+    setIsSubmitting(false);
   };
 
   return (
-    <div className="min-h-[88vh] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-2xl border border-border/50 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-500">
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-        
-        <div className="text-center space-y-2 relative z-10">
-          <div className="inline-flex p-4 bg-primary/10 rounded-2xl mb-4 transition-transform hover:scale-110 duration-300">
-            <Trophy className="w-10 h-10 text-primary" />
-          </div>
-          <h1 className="text-3xl font-black tracking-tighter text-foreground">
-            SOCCER<span className="text-primary">LEAGUE</span>
-          </h1>
-          <p className="text-muted-foreground text-sm font-medium">
-            ADMINISTRATION PORTAL
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-          <div className="space-y-2">
-            <Label htmlFor="user">Usuario</Label>
-            <Input
-              id="user"
-              type="text"
-              placeholder="Nombre de usuario"
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
-              className="bg-background/50 h-11"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="pass">Contraseña</Label>
-            <div className="relative">
-              <Input
-                id="pass"
-                type={showPass ? "text" : "password"}
-                placeholder="••••••••"
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                className="bg-background/50 h-11 pr-10"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {error && (
-            <div className="text-destructive text-xs font-medium bg-destructive/10 p-3 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-              <Lock size={14} />
-              Credenciales incorrectas. Intenta de nuevo.
-            </div>
-          )}
-
-          <Button type="submit" className="w-full h-12 text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
-            Iniciar Sesión
-          </Button>
-        </form>
-      </div>
-      
-      <div className="fixed bottom-6 right-6 z-50">
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+      <div className="fixed right-4 top-4">
         <ThemeToggle />
       </div>
+
+      <Card className="w-full max-w-sm">
+        <CardHeader className="items-center space-y-3 text-center">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Trophy className="size-6" />
+          </div>
+          <div className="space-y-1">
+            <CardTitle className="text-xl">SoccerLeague</CardTitle>
+            <CardDescription>Panel administrativo</CardDescription>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="user">Usuario</Label>
+              <Input
+                id="user"
+                autoComplete="username"
+                value={user}
+                onChange={(event) => setUser(event.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pass">Contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="pass"
+                  type={showPass ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="pr-10"
+                  value={pass}
+                  onChange={(event) => setPass(event.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  aria-label={
+                    showPass ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                Credenciales incorrectas. Intenta de nuevo.
+              </p>
+            )}
+
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Entrando…" : "Iniciar sesión"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

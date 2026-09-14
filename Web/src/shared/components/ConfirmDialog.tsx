@@ -1,12 +1,17 @@
+"use client";
+
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Button } from "@/shared/components/ui/button";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/components/ui/alert-dialog";
+import { buttonVariants } from "@/shared/components/ui/button";
+import { cn } from "@/shared/utils";
 
 interface ConfirmDialogProps {
   readonly isOpen: boolean;
@@ -32,36 +37,33 @@ export const ConfirmDialog = ({
   error = null,
 }: ConfirmDialogProps) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+
         {error && (
-          <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm font-medium">
+          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
             {error}
-          </div>
+          </p>
         )}
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
+
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
+          <AlertDialogAction
             disabled={isLoading}
+            onClick={(event) => {
+              event.preventDefault();
+              onConfirm();
+            }}
+            className={cn(buttonVariants({ variant: "destructive" }))}
           >
-            {cancelText}
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isLoading}
-          >
-            {isLoading ? "Procesando..." : confirmText}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            {isLoading ? "Procesando…" : confirmText}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };

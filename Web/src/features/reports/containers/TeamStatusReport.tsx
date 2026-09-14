@@ -1,20 +1,20 @@
+import { PageHeader } from "@/shared/components/PageHeader";
+import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ClipboardCheck } from "lucide-react";
-import { format, parseISO } from "date-fns";
 import { reportsApiService } from "../services/api";
-import { seasonsApiService } from "../../seasons/services/api";
-import { teamsApiService } from "../../teams/services/api";
+import { seasonsApiService } from "@/features/seasons/services/api";
+import { getSeasonLabel } from "@/features/seasons/utils";
+import { teamsApiService } from "@/features/teams/services/api";
 import { Loading } from "@/shared/components/Loading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 import { t } from "@/shared/translations";
 
 export const TeamStatusReport = () => {
-  const [selectedTeam, setSelectedTeam] = useState<string>("");
-  const [selectedSeason, setSelectedSeason] = useState<string>("");
+  const [teamChoice, setTeamChoice] = useState<string>();
+  const [seasonChoice, setSeasonChoice] = useState<string>();
 
   const { data: teamsData } = useQuery({
     queryKey: ["teams"],
@@ -28,22 +28,14 @@ export const TeamStatusReport = () => {
   });
   const seasons = seasonsData ?? [];
 
+  const selectedTeam = teamChoice ?? teams[0]?.id.toString() ?? "";
+  const selectedSeason = seasonChoice ?? seasons[0]?.id.toString() ?? "";
+
   const { data: status, isLoading, isError } = useQuery({
     queryKey: ["reports", "team-status", selectedTeam, selectedSeason],
     queryFn: () => reportsApiService.getTeamStatus(parseInt(selectedTeam), parseInt(selectedSeason)),
     enabled: !!selectedTeam && !!selectedSeason,
   });
-
-  const getSeasonLabel = (s: { id: number; start_date?: string; end_date?: string }) => {
-    if (s.start_date && s.end_date) {
-      try {
-        return `${format(parseISO(s.start_date), "dd/MM/yyyy")} - ${format(parseISO(s.end_date), "dd/MM/yyyy")}`;
-      } catch {
-        return `Temporada ${s.id}`;
-      }
-    }
-    return `Temporada ${s.id}`;
-  };
 
   const statRow = (label: string, local: number, visitante: number, total: number) => (
     <TableRow>
@@ -55,16 +47,13 @@ export const TeamStatusReport = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <BreadcrumbNav items={[{ label: t.common.reports, to: "/" }, { label: t.teamStatus.title }]} />
+    <div className="space-y-6">
       
-      <h1 className="text-3xl font-bold flex items-center gap-2">
-        <ClipboardCheck className="text-primary" /> {t.teamStatus.title}
-      </h1>
+      <PageHeader title={t.teamStatus.title} />
 
-      <div className="flex flex-wrap gap-4">
-        <div className="w-64">
-          <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+      <div className="flex flex-wrap items-end gap-4">
+        <Field label={t.common.team} className="w-64">
+          <Select value={selectedTeam} onValueChange={setTeamChoice}>
             <SelectTrigger>
               <SelectValue placeholder={t.common.selectTeam} />
             </SelectTrigger>
@@ -76,9 +65,9 @@ export const TeamStatusReport = () => {
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="w-64">
-          <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+        </Field>
+        <Field label={t.common.season} className="w-64">
+          <Select value={selectedSeason} onValueChange={setSeasonChoice}>
             <SelectTrigger>
               <SelectValue placeholder={t.common.selectSeason} />
             </SelectTrigger>
@@ -90,7 +79,7 @@ export const TeamStatusReport = () => {
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Field>
       </div>
 
       {!selectedTeam || !selectedSeason ? (

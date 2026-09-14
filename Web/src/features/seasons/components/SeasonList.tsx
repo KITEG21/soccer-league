@@ -1,9 +1,36 @@
-import type { Season } from "../types";
-import { Button } from "@/shared/components/ui/button";
-import { Plus, Edit, Trash2, Calendar as CalendarIcon } from "lucide-react";
-import { Loading } from "@/shared/components/Loading";
+"use client";
+
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { Plus } from "lucide-react";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { DataTable } from "@/shared/components/DataTable";
+import { RowActions } from "@/shared/components/RowActions";
+import { Button } from "@/shared/components/ui/button";
+import { TableCell, TableRow } from "@/shared/components/ui/table";
+import type { Season } from "../types";
+
+const COLUMNS = ["Temporada", "Inicio", "Fin", ""];
+
+const formatDate = (value?: string) => {
+  if (!value) return "—";
+  try {
+    return format(parseISO(value), "dd/MM/yyyy");
+  } catch {
+    return "—";
+  }
+};
+
+const getSeasonTitle = (season: Season) => {
+  if (!season.start_date || !season.end_date) return `Temporada ${season.id}`;
+  try {
+    const start = format(parseISO(season.start_date), "MMM/yy", { locale: es });
+    const end = format(parseISO(season.end_date), "MMM/yy", { locale: es });
+    return `${start} - ${end}`;
+  } catch {
+    return `Temporada ${season.id}`;
+  }
+};
 
 interface SeasonListProps {
   readonly seasons: Season[];
@@ -22,102 +49,52 @@ export function SeasonList({
   onEdit,
   onDelete,
 }: SeasonListProps) {
-  if (isLoading) return <Loading />;
-  if (error)
-    return (
-      <div className="text-center py-8 text-destructive">
-        Error al cargar temporadas
-      </div>
-    );
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "N/A";
-    try {
-      return format(parseISO(dateStr), "dd/MM/yyyy");
-    } catch {
-      return "N/A";
-    }
-  };
-
-  const getSeasonTitle = (season: Season) => {
-    if (!season.start_date || !season.end_date) return `Temporada ${season.id}`;
-    try {
-      const start = parseISO(season.start_date);
-      const end = parseISO(season.end_date);
-      const startStr = format(start, "MMM/yy", { locale: es });
-      const endStr = format(end, "MMM/yy", { locale: es });
-      return `${startStr} - ${endStr}`;
-    } catch {
-      return `Temporada ${season.id}`;
-    }
-  };
-
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Temporadas</h1>
-        <Button className="flex items-center gap-2" onClick={onCreate}>
-          <Plus size={16} />
-          Nueva Temporada
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        title="Temporadas"
+        description="Define los periodos de competición de la liga"
+        actions={
+          <Button onClick={onCreate}>
+            <Plus />
+            Nueva temporada
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {seasons.map((season: Season) => (
-          <div
-            key={season.id}
-            className="bg-card text-card-foreground rounded-lg shadow-md p-6 border transition-all hover:shadow-lg"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-full text-primary">
-                  <CalendarIcon size={20} />
-                </div>
-                <h3 className="text-xl font-semibold capitalize">
-                  {getSeasonTitle(season)}
-                </h3>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(season)}
-                  title="Editar temporada"
-                >
-                  <Edit size={14} />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => onDelete(season.id)}
-                  title="Eliminar temporada"
-                >
-                  <Trash2 size={14} />
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-3 mt-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground font-medium">Inicio:</span>
-                <span className="font-semibold">{formatDate(season.start_date)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground font-medium">Fin:</span>
-                <span className="font-semibold">{formatDate(season.end_date)}</span>
-              </div>
-            </div>
-          </div>
+      <DataTable
+        columns={COLUMNS}
+        isLoading={isLoading}
+        error={error}
+        errorMessage="Error al cargar temporadas"
+        isEmpty={seasons.length === 0}
+        emptyMessage="No hay temporadas registradas"
+        emptyAction={
+          <Button size="sm" onClick={onCreate}>
+            Crear primera temporada
+          </Button>
+        }
+      >
+        {seasons.map((season) => (
+          <TableRow key={season.id}>
+            <TableCell className="font-medium capitalize">
+              {getSeasonTitle(season)}
+            </TableCell>
+            <TableCell className="tabular-nums text-muted-foreground">
+              {formatDate(season.start_date)}
+            </TableCell>
+            <TableCell className="tabular-nums text-muted-foreground">
+              {formatDate(season.end_date)}
+            </TableCell>
+            <TableCell className="text-right">
+              <RowActions
+                onEdit={() => onEdit(season)}
+                onDelete={() => onDelete(season.id)}
+              />
+            </TableCell>
+          </TableRow>
         ))}
-      </div>
-
-      {seasons.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground animate-in fade-in duration-300">
-          <p className="text-lg mb-4">No hay temporadas registradas</p>
-          <Button onClick={onCreate}>Crear primera temporada</Button>
-        </div>
-      )}
-    </div>
+      </DataTable>
+    </>
   );
 }

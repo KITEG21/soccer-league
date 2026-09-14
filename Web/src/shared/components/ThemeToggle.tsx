@@ -1,32 +1,21 @@
-import React from 'react';
-import { Moon, Sun } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+"use client";
 
-export const ThemeToggle: React.FC = () => {
+import { Moon, Sun } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { useTheme } from "@/shared/contexts/ThemeContext";
+
+export const ThemeToggle = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={toggleTheme}
-      className="relative p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out transform hover:scale-110 active:scale-95"
-      aria-label="Toggle theme"
+      aria-label={theme === "dark" ? "Activar tema claro" : "Activar tema oscuro"}
     >
-      <div className="relative w-5 h-5">
-        <Sun
-          className={`absolute inset-0 w-5 h-5 text-yellow-500 transition-all duration-300 ${
-            theme === 'light' 
-              ? 'opacity-100 rotate-0 scale-100' 
-              : 'opacity-0 rotate-90 scale-0'
-          }`}
-        />
-        <Moon
-          className={`absolute inset-0 w-5 h-5 text-blue-400 transition-all duration-300 ${
-            theme === 'dark' 
-              ? 'opacity-100 rotate-0 scale-100' 
-              : 'opacity-0 -rotate-90 scale-0'
-          }`}
-        />
-      </div>
-    </button>
+      <Sun className="size-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute size-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+    </Button>
   );
 };

@@ -1,12 +1,23 @@
+"use client";
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Users } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { RowActions } from "@/shared/components/RowActions";
 import { playersApiService } from "../services/api";
 import { PlayerForm } from "./PlayerForm";
 import type { Player } from "../types";
-
 
 interface PlayerListProps {
   readonly teamId: number;
@@ -29,6 +40,11 @@ export const PlayerList = ({ teamId, players }: PlayerListProps) => {
     },
   });
 
+  const handleCreate = () => {
+    setEditingPlayer(undefined);
+    setIsFormOpen(true);
+  };
+
   const handleEdit = (player: Player) => {
     setEditingPlayer(player);
     setIsFormOpen(true);
@@ -41,71 +57,66 @@ export const PlayerList = ({ teamId, players }: PlayerListProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <Users className="text-primary" size={20} />
-          Jugadores
-        </h2>
-        <Button size="sm" onClick={() => { setEditingPlayer(undefined); setIsFormOpen(true); }} className="flex gap-2">
-          <Plus size={16} />
-          Nuevo Jugador
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold">Jugadores</h2>
+          <p className="text-sm text-muted-foreground">
+            {players.length} en plantilla
+          </p>
+        </div>
+        <Button size="sm" onClick={handleCreate}>
+          <Plus />
+          Nuevo jugador
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {players.length === 0 ? (
-          <div className="col-span-full text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-            No hay jugadores registrados para este equipo.
-          </div>
-        ) : (
-          players.map((player) => (
-            <div
-              key={player.id}
-              className="bg-card border rounded-xl p-4 flex flex-col gap-3 relative group overflow-hidden"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                    {player.number}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground">{player.name}</h3>
-                    <p className="text-xs text-muted-foreground uppercase font-semibold">
-                      {player.position}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleEdit(player)}
-                  >
-                    <Edit size={14} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(player.id)}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-muted/50 p-2 rounded-lg">
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold">
-                    Años en equipo
-                  </p>
-                  <p className="font-semibold">{player.years_in_team || 0}</p>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+      <div className="overflow-x-auto rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="w-16">#</TableHead>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Posición</TableHead>
+              <TableHead>Años en equipo</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {players.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  No hay jugadores en este equipo
+                </TableCell>
+              </TableRow>
+            ) : (
+              players.map((player) => (
+                <TableRow key={player.id}>
+                  <TableCell>
+                    <Badge variant="secondary" className="font-mono">
+                      {player.number ?? "—"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-medium">{player.name}</TableCell>
+                  <TableCell className="text-xs font-semibold uppercase text-primary">
+                    {player.position}
+                  </TableCell>
+                  <TableCell className="tabular-nums">
+                    {player.years_in_team ?? 0}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <RowActions
+                      onEdit={() => handleEdit(player)}
+                      onDelete={() => handleDelete(player.id)}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       <PlayerForm
@@ -122,8 +133,9 @@ export const PlayerList = ({ teamId, players }: PlayerListProps) => {
           deleteMutation.reset();
         }}
         onConfirm={() => playerToDelete && deleteMutation.mutate(playerToDelete)}
-        title="Eliminar Jugador"
-        description="¿Estás seguro de que quieres eliminar este jugador?"
+        title="Eliminar jugador"
+        description="¿Seguro que quieres eliminar este jugador? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError
@@ -136,4 +148,3 @@ export const PlayerList = ({ teamId, players }: PlayerListProps) => {
     </div>
   );
 };
-

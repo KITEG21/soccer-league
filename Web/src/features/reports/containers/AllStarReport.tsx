@@ -1,14 +1,14 @@
+import { PageHeader } from "@/shared/components/PageHeader";
+import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Star } from "lucide-react";
-import { format, parseISO } from "date-fns";
 import { reportsApiService } from "../services/api";
-import { seasonsApiService } from "../../seasons/services/api";
+import { seasonsApiService } from "@/features/seasons/services/api";
+import { getSeasonLabel } from "@/features/seasons/utils";
 import { Loading } from "@/shared/components/Loading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 import { t } from "@/shared/translations";
 
 const METRIC_LABELS: Record<string, string> = t.allStar.metricLabels;
@@ -19,13 +19,15 @@ const ALL_STATS = Object.entries(t.allStar.statLabels).map(([key, label]) => ({
 })) as readonly { key: string; label: string }[];
 
 export const AllStarReport = () => {
-  const [selectedSeason, setSelectedSeason] = useState<string>("");
+  const [seasonChoice, setSeasonChoice] = useState<string>();
 
   const { data: seasonsData } = useQuery({
     queryKey: ["seasons"],
     queryFn: () => seasonsApiService.getSeasons(),
   });
   const seasons = seasonsData ?? [];
+
+  const selectedSeason = seasonChoice ?? seasons[0]?.id.toString() ?? "";
 
   const { data: playersData, isLoading, isError } = useQuery({
     queryKey: ["reports", "all-star", selectedSeason],
@@ -34,41 +36,28 @@ export const AllStarReport = () => {
   });
   const players = playersData ?? [];
 
-  const getSeasonLabel = (s: { id: number; start_date?: string; end_date?: string }) => {
-    if (s.start_date && s.end_date) {
-      try {
-        return `${format(parseISO(s.start_date), "dd/MM/yyyy")} - ${format(parseISO(s.end_date), "dd/MM/yyyy")}`;
-      } catch {
-        return `Temporada ${s.id}`;
-      }
-    }
-    return `Temporada ${s.id}`;
-  };
-
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <BreadcrumbNav items={[{ label: t.common.reports, to: "/" }, { label: t.allStar.breadcrumb }]} />
+    <div className="space-y-6">
       
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Star className="text-primary" /> {t.allStar.title}
-        </h1>
-        
-        <div className="w-64">
-          <Select value={selectedSeason} onValueChange={setSelectedSeason}>
-            <SelectTrigger>
-              <SelectValue placeholder={t.common.selectSeason} />
-            </SelectTrigger>
-            <SelectContent>
-              {seasons.map((s) => (
-                <SelectItem key={s.id} value={s.id.toString()}>
-                  {getSeasonLabel(s)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <PageHeader
+        title={t.allStar.title}
+        actions={
+          <Field label={t.common.season}>
+            <Select value={selectedSeason} onValueChange={setSeasonChoice}>
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder={t.common.selectSeason} />
+              </SelectTrigger>
+              <SelectContent>
+                {seasons.map((s) => (
+                  <SelectItem key={s.id} value={s.id.toString()}>
+                    {getSeasonLabel(s)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        }
+      />
 
       {!selectedSeason ? (
         <Card className="bg-muted/50 border-dashed">

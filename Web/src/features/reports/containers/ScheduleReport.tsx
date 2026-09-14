@@ -1,10 +1,13 @@
+import { PageHeader } from "@/shared/components/PageHeader";
+import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { reportsApiService } from "../services/api";
-import { stadiumsApiService } from "../../stadiums/services/api";
+import { stadiumsApiService } from "@/features/stadiums/services/api";
+import { useLatestMatch } from "@/features/matches/hooks/useLatestMatch";
 import { Loading } from "@/shared/components/Loading";
 import {
   Select,
@@ -22,7 +25,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
 import {
@@ -34,7 +36,7 @@ import { cn } from "@/shared/utils";
 import { t } from "@/shared/translations";
 
 export const ScheduleReport = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [dateChoice, setDateChoice] = useState<Date>();
   const [selectedStadium, setSelectedStadium] = useState<string>("");
 
   const { data: stadiumsData } = useQuery({
@@ -42,6 +44,13 @@ export const ScheduleReport = () => {
     queryFn: () => stadiumsApiService.getStadiums(),
   });
   const stadiums = stadiumsData ?? [];
+
+  const { match: latestMatch, isPending: isResolvingDefaults } = useLatestMatch();
+
+  const selectedDate =
+    dateChoice ??
+    (latestMatch ? new Date(latestMatch.match_date) : undefined);
+
 
   const dateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
 
@@ -57,23 +66,12 @@ export const ScheduleReport = () => {
   const matches = matchesData ?? [];
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <BreadcrumbNav
-        items={[
-          { label: t.common.reports, to: "/" },
-          { label: t.schedule.title },
-        ]}
-      />
+    <div className="space-y-6">
 
-      <h1 className="text-3xl font-bold flex items-center gap-2">
-        <CalendarDays className="text-primary" /> {t.schedule.title}
-      </h1>
+      <PageHeader title={t.schedule.title} />
 
       <div className="flex flex-wrap gap-4 items-end">
-        <div className="w-64">
-          <label className="block text-sm font-medium text-muted-foreground mb-1">
-            {t.common.date}
-          </label>
+        <Field label={t.common.date} className="w-64">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -95,14 +93,14 @@ export const ScheduleReport = () => {
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                onSelect={(date) => setSelectedDate(date)}
+                onSelect={setDateChoice}
                 autoFocus
                 locale={es}
               />
             </PopoverContent>
           </Popover>
-        </div>
-        <div className="w-64">
+        </Field>
+        <Field label={t.common.stadium} className="w-64">
           <Select
             value={selectedStadium || "all"}
             onValueChange={(v) =>
@@ -121,10 +119,12 @@ export const ScheduleReport = () => {
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Field>
       </div>
 
-      {!selectedDate ? (
+      {isResolvingDefaults ? (
+        <Loading />
+      ) : !selectedDate ? (
         <Card className="bg-muted/50 border-dashed">
           <CardContent className="py-12 text-center text-muted-foreground">
             {t.schedule.empty}

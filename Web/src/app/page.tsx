@@ -1,7 +1,7 @@
 "use client";
 
-import { HomePage } from "@/features/home";
+import { DashboardPage } from "@/features/dashboard/containers/DashboardPage";
 
 export default function Page() {
-  return <HomePage />;
+  return <DashboardPage />;
 }

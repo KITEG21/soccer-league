@@ -1,20 +1,22 @@
+"use client";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { UserCheck } from "lucide-react";
-import { Loading } from "@/shared/components/Loading";
-import { coachesApiService } from "../services/api";
-import { teamsApiService } from "../../teams/services/api";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { DataTable } from "@/shared/components/DataTable";
 import { Pagination } from "@/shared/components/ui/pagination";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table";
+import { TableCell, TableRow } from "@/shared/components/ui/table";
+import { coachesApiService } from "../services/api";
+import { teamsApiService } from "@/features/teams/services/api";
 
 const PAGE_SIZE = 10;
+const COLUMNS = [
+  "Nombre",
+  "Equipo",
+  "Experiencia",
+  "Campeonatos",
+  "Años en equipo",
+];
 
 export const CoachGlobalList = () => {
   const [page, setPage] = useState(1);
@@ -22,77 +24,66 @@ export const CoachGlobalList = () => {
   const {
     data: coachesPage,
     isLoading: isLoadingCoaches,
-    error: coachError,
+    error,
   } = useQuery({
     queryKey: ["coaches", page],
     queryFn: () => coachesApiService.getCoachesPage(page, PAGE_SIZE),
   });
 
-  const coaches = coachesPage?.data ?? [];
-  const total = coachesPage?.total ?? 0;
-
-  const {
-    data: teams = [],
-    isLoading: isLoadingTeams,
-  } = useQuery({
+  const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
     queryKey: ["teams"],
     queryFn: () => teamsApiService.getTeams(),
   });
 
-  const isLoading = isLoadingCoaches || isLoadingTeams;
-  const error = coachError;
+  const coaches = coachesPage?.data ?? [];
+  const total = coachesPage?.total ?? 0;
 
-  const coachesWithTeams = coaches.map(coach => ({
+  const rows = coaches.map((coach) => ({
     ...coach,
-    team: coach.team || teams.find(t => t.id === coach.team_id)
+    team: coach.team ?? teams.find((team) => team.id === coach.team_id),
   }));
 
-  if (isLoading) return <Loading />;
-  if (error) return <div className="text-destructive">Error al cargar entrenadores</div>;
-
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <UserCheck className="text-primary" size={24} />
-          Listado Global de Entrenadores
-        </h2>
-      </div>
+    <>
+      <PageHeader
+        title="Entrenadores"
+        description="Listado global de entrenadores registrados en la liga"
+      />
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Equipo</TableHead>
-              <TableHead>Experiencia</TableHead>
-              <TableHead>Campeonatos</TableHead>
-              <TableHead>Años en Equipo</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {coaches.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                  No hay entrenadores registrados.
-                </TableCell>
-              </TableRow>
-            ) : (
-              coachesWithTeams.map((coach) => (
-                <TableRow key={coach.id}>
-                  <TableCell className="font-medium">{coach.name}</TableCell>
-                  <TableCell>{coach.team?.name || `Equipo ${coach.team_id}`}</TableCell>
-                  <TableCell>{coach.experience_years} años</TableCell>
-                  <TableCell>{coach.championships_won}</TableCell>
-                  <TableCell>{coach.years_in_team || 0}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <Pagination page={page} total={total} pageSize={PAGE_SIZE} onPageChange={setPage} />
-    </div>
+      <DataTable
+        columns={COLUMNS}
+        isLoading={isLoadingCoaches || isLoadingTeams}
+        error={error}
+        errorMessage="Error al cargar entrenadores"
+        isEmpty={rows.length === 0}
+        emptyMessage="No hay entrenadores registrados"
+        footer={
+          <Pagination
+            page={page}
+            total={total}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
+        }
+      >
+        {rows.map((coach) => (
+          <TableRow key={coach.id}>
+            <TableCell className="font-medium">{coach.name}</TableCell>
+            <TableCell className="text-muted-foreground">
+              {coach.team?.name ?? `Equipo ${coach.team_id}`}
+            </TableCell>
+            <TableCell className="tabular-nums">
+              {coach.experience_years ?? 0} años
+            </TableCell>
+            <TableCell className="tabular-nums">
+              {coach.championships_won ?? 0}
+            </TableCell>
+            <TableCell className="tabular-nums">
+              {coach.years_in_team ?? 0}
+            </TableCell>
+          </TableRow>
+        ))}
+      </DataTable>
+    </>
   );
 };

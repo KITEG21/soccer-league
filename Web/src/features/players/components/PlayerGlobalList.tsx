@@ -1,20 +1,17 @@
+"use client";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users } from "lucide-react";
-import { Loading } from "@/shared/components/Loading";
-import { playersApiService } from "../services/api";
-import { teamsApiService } from "../../teams/services/api";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { DataTable } from "@/shared/components/DataTable";
+import { Badge } from "@/shared/components/ui/badge";
 import { Pagination } from "@/shared/components/ui/pagination";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table";
+import { TableCell, TableRow } from "@/shared/components/ui/table";
+import { playersApiService } from "../services/api";
+import { teamsApiService } from "@/features/teams/services/api";
 
 const PAGE_SIZE = 10;
+const COLUMNS = ["#", "Nombre", "Equipo", "Posición", "Años en equipo"];
 
 export const PlayerGlobalList = () => {
   const [page, setPage] = useState(1);
@@ -22,83 +19,70 @@ export const PlayerGlobalList = () => {
   const {
     data: playersPage,
     isLoading: isLoadingPlayers,
-    error: playerError,
+    error,
   } = useQuery({
     queryKey: ["players", page],
     queryFn: () => playersApiService.getPlayersPage(page, PAGE_SIZE),
   });
 
-  const players = playersPage?.data ?? [];
-  const total = playersPage?.total ?? 0;
-
-  const {
-    data: teams = [],
-    isLoading: isLoadingTeams,
-  } = useQuery({
+  const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
     queryKey: ["teams"],
     queryFn: () => teamsApiService.getTeams(),
   });
 
-  const isLoading = isLoadingPlayers || isLoadingTeams;
-  const error = playerError;
+  const players = playersPage?.data ?? [];
+  const total = playersPage?.total ?? 0;
 
-  const playersWithTeams = players.map(player => ({
+  const rows = players.map((player) => ({
     ...player,
-    team: player.team || teams.find(t => t.id === player.team_id)
+    team: player.team ?? teams.find((team) => team.id === player.team_id),
   }));
 
-  if (isLoading) return <Loading />;
-  if (error) return <div className="text-destructive">Error al cargar jugadores</div>;
-
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Users className="text-primary" size={24} />
-          Listado Global de Jugadores
-        </h2>
-      </div>
+    <>
+      <PageHeader
+        title="Jugadores"
+        description="Listado global de jugadores registrados en la liga"
+      />
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">#</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Equipo</TableHead>
-              <TableHead>Posición</TableHead>
-              <TableHead>Años en Equipo</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {players.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                  No hay jugadores registrados.
-                </TableCell>
-              </TableRow>
-            ) : (
-              playersWithTeams.map((player) => (
-                <TableRow key={player.id}>
-                  <TableCell className="font-medium">
-                    <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded">
-                      #{player.number}
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-medium">{player.name}</TableCell>
-                  <TableCell>{player.team?.name || `Equipo ${player.team_id}`}</TableCell>
-                  <TableCell className="uppercase text-xs font-semibold text-primary">
-                    {player.position}
-                  </TableCell>
-                  <TableCell>{player.years_in_team || 0}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <Pagination page={page} total={total} pageSize={PAGE_SIZE} onPageChange={setPage} />
-    </div>
+      <DataTable
+        columns={COLUMNS}
+        isLoading={isLoadingPlayers || isLoadingTeams}
+        error={error}
+        errorMessage="Error al cargar jugadores"
+        isEmpty={rows.length === 0}
+        emptyMessage="No hay jugadores registrados"
+        footer={
+          <Pagination
+            page={page}
+            total={total}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+          />
+        }
+      >
+        {rows.map((player) => (
+          <TableRow key={player.id}>
+            <TableCell>
+              <Badge variant="secondary" className="font-mono">
+                {player.number ?? "—"}
+              </Badge>
+            </TableCell>
+            <TableCell className="font-medium">{player.name}</TableCell>
+            <TableCell className="text-muted-foreground">
+              {player.team?.name ?? `Equipo ${player.team_id}`}
+            </TableCell>
+            <TableCell>
+              <span className="text-xs font-semibold uppercase text-primary">
+                {player.position}
+              </span>
+            </TableCell>
+            <TableCell className="tabular-nums">
+              {player.years_in_team ?? 0}
+            </TableCell>
+          </TableRow>
+        ))}
+      </DataTable>
+    </>
   );
 };

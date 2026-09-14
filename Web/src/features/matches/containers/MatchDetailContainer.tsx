@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Trophy, Shield, ArrowLeft, Plus, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { matchesApiService } from "../services/api";
@@ -14,6 +14,10 @@ import type { Team } from "../../teams/types";
 import type { Player } from "../../players/types";
 import { ApiError } from "@/shared/utils/api-client";
 import { Loading } from "@/shared/components/Loading";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { RowActions } from "@/shared/components/RowActions";
+import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
@@ -47,6 +51,7 @@ export const MatchDetailContainer = () => {
   const queryClient = useQueryClient();
   const [isStatDialogOpen, setIsStatDialogOpen] = useState(false);
   const [editingStat, setEditingStat] = useState<PlayerStat | null>(null);
+  const [statToDelete, setStatToDelete] = useState<number | undefined>();
 
   const matchId = parseInt(id || "0");
 
@@ -108,6 +113,7 @@ export const MatchDetailContainer = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player-stats"] });
       queryClient.invalidateQueries({ queryKey: ["match", matchId] });
+      setStatToDelete(undefined);
     },
   });
 
@@ -129,75 +135,78 @@ export const MatchDetailContainer = () => {
   };
 
   const handleDeleteStat = (statId: number) => {
-    if (confirm("¿Estás seguro de eliminar esta estadística?")) {
-      deleteStatMutation.reset();
-      deleteStatMutation.mutate(statId);
-    }
+    deleteStatMutation.reset();
+    setStatToDelete(statId);
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-500">
-      <Button variant="ghost" onClick={() => router.push("/matches")} className="flex items-center gap-2">
-        <ArrowLeft size={16} /> Volver a Partidos
-      </Button>
+    <div className="space-y-6">
+      <PageHeader
+        title={`${homeTeam?.name || "Local"} vs ${awayTeam?.name || "Visitante"}`}
+        description={[
+          match.match_date
+            ? format(new Date(match.match_date), "PPP p", { locale: es })
+            : null,
+          match.stadium?.name,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        actions={
+          <Button variant="outline" onClick={() => router.push("/matches")}>
+            <ArrowLeft />
+            Volver a partidos
+          </Button>
+        }
+      />
 
-      {/* Header Container (FIFA Style) */}
-      <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-        <CardContent className="p-0">
-          <div className="flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8">
-            {/* Home Team */}
-            <div className="flex flex-col items-center gap-4 flex-1">
-              <div 
-                className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white/20 flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: homeTeam?.color || "#666" }}
-              >
-                <Shield size={48} className="text-white drop-shadow-md" />
-              </div>
-              <h2 className="text-2xl md:text-4xl font-black text-center uppercase tracking-tighter">
-                {homeTeam?.name || "Local"}
-              </h2>
-            </div>
+      <Card>
+        <CardContent className="flex flex-col items-center gap-6 p-6 sm:flex-row sm:justify-center sm:gap-12">
+          <div className="flex flex-1 flex-col items-center gap-3 sm:items-end">
+            <span
+              className="size-10 rounded-full ring-1 ring-border"
+              style={{ backgroundColor: homeTeam?.color || "var(--color-muted)" }}
+            />
+            <span className="text-center font-medium sm:text-right">
+              {homeTeam?.name || "Local"}
+            </span>
+          </div>
 
-            {/* Score */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-6xl md:text-8xl font-black flex items-center gap-4 font-mono">
-                <span>{match.home_goals}</span>
-                <span className="text-white/30 text-4xl md:text-6xl">-</span>
-                <span>{match.away_goals}</span>
-              </div>
-              <div className={`px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest border ${match.disputed ? "bg-primary/20 text-primary-foreground border-primary/30" : "bg-muted/20 text-muted-foreground border-muted/30"}`}>
-                {match.disputed ? "Finalizado" : "Pendiente"}
-              </div>
-              <div className="text-white/60 text-xs md:text-sm font-medium mt-2 flex flex-col items-center">
-                <span>{match.match_date ? format(new Date(match.match_date), "PPP", { locale: es }) : ""}</span>
-                <span>{match.stadium?.name}</span>
-              </div>
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-baseline gap-3 font-mono text-5xl font-semibold tabular-nums">
+              <span>{match.home_goals}</span>
+              <span className="text-2xl text-muted-foreground">-</span>
+              <span>{match.away_goals}</span>
             </div>
+            <Badge variant={match.disputed ? "default" : "secondary"}>
+              {match.disputed ? "Finalizado" : "Pendiente"}
+            </Badge>
+          </div>
 
-            {/* Away Team */}
-            <div className="flex flex-col items-center gap-4 flex-1">
-              <div 
-                className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white/20 flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: awayTeam?.color || "#666" }}
-              >
-                <Shield size={48} className="text-white drop-shadow-md" />
-              </div>
-              <h2 className="text-2xl md:text-4xl font-black text-center uppercase tracking-tighter">
-                {awayTeam?.name || "Visitante"}
-              </h2>
-            </div>
+          <div className="flex flex-1 flex-col items-center gap-3 sm:items-start">
+            <span
+              className="size-10 rounded-full ring-1 ring-border"
+              style={{ backgroundColor: awayTeam?.color || "var(--color-muted)" }}
+            />
+            <span className="text-center font-medium sm:text-left">
+              {awayTeam?.name || "Visitante"}
+            </span>
           </div>
         </CardContent>
       </Card>
 
-      {/* Stats Container */}
-      <Card className="border-none shadow-xl bg-card overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30 px-6 py-4">
-          <CardTitle className="text-xl font-bold flex items-center gap-2 text-primary">
-            <Trophy size={20} /> Estadísticas de Jugadores
-          </CardTitle>
-          <Button onClick={handleAddStat} size="sm" className="font-bold flex items-center gap-2 rounded-lg" disabled={!match.disputed} title={!match.disputed ? "Debe marcar el partido como disputado para agregar estadísticas" : ""}>
-            <Plus size={16} /> Agregar Estadísticas
+      <Card className="overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b px-6 py-4">
+          <div className="space-y-1">
+            <CardTitle>Estadísticas de jugadores</CardTitle>
+            {!match.disputed && (
+              <p className="text-sm text-muted-foreground">
+                Marca el partido como disputado para registrar estadísticas
+              </p>
+            )}
+          </div>
+          <Button onClick={handleAddStat} size="sm" disabled={!match.disputed}>
+            <Plus />
+            Agregar
           </Button>
         </CardHeader>
         {deleteStatMutation.isError && (
@@ -251,14 +260,10 @@ export const MatchDetailContainer = () => {
                         <TableCell className="text-center font-mono">{stat.passes_completed}</TableCell>
                         <TableCell className="text-center font-mono">{stat.tackles}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => handleEditStat(stat)} className="h-8 w-8 p-0">
-                              <Edit size={14} />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteStat(stat.id)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                              <Trash2 size={14} />
-                            </Button>
-                          </div>
+                          <RowActions
+                            onEdit={() => handleEditStat(stat)}
+                            onDelete={() => handleDeleteStat(stat.id)}
+                          />
                         </TableCell>
                       </TableRow>
                     );
@@ -270,7 +275,6 @@ export const MatchDetailContainer = () => {
         </CardContent>
       </Card>
 
-      {/* Stat Dialog */}
       <StatFormDialog 
         key={`${isStatDialogOpen}-${editingStat?.id ?? "new"}`}
         isOpen={isStatDialogOpen}
@@ -288,6 +292,22 @@ export const MatchDetailContainer = () => {
         existingPlayerIds={matchStats.map(s => s.player_id).filter(id => id !== editingStat?.player_id)}
         isSubmitting={createStatMutation.isPending || updateStatMutation.isPending}
         error={getErrorMessage(createStatMutation.error || updateStatMutation.error)}
+      />
+
+      <ConfirmDialog
+        isOpen={statToDelete !== undefined}
+        onClose={() => {
+          setStatToDelete(undefined);
+          deleteStatMutation.reset();
+        }}
+        onConfirm={() =>
+          statToDelete !== undefined && deleteStatMutation.mutate(statToDelete)
+        }
+        title="Eliminar estadística"
+        description="¿Seguro que quieres eliminar esta estadística? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        isLoading={deleteStatMutation.isPending}
+        error={getErrorMessage(deleteStatMutation.error)}
       />
     </div>
   );

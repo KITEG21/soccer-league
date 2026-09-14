@@ -8,7 +8,6 @@ import { seasonsApiService } from "../../seasons/services/api";
 import { MatchList } from "../components/MatchList";
 import { MatchForm } from "../components/MatchForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
 const PAGE_SIZE = 10;
 
@@ -114,8 +113,7 @@ export const MatchContainer = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
-      <BreadcrumbNav items={[{ label: "Partidos" }]} />
+    <div className="space-y-6">
       <MatchList
         matches={matchesWithNames}
         isLoading={isLoading}

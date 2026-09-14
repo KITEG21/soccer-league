@@ -5,7 +5,6 @@ import { stadiumsApiService } from "../services/api";
 import { StadiumList } from "../components/StadiumList";
 import { StadiumForm } from "../components/StadiumForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
 const PAGE_SIZE = 9;
 
@@ -75,8 +74,7 @@ export const StadiumContainer = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
-      <BreadcrumbNav items={[{ label: "Estadios" }]} />
+    <div className="space-y-6">
       <StadiumList
         stadiums={stadiums}
         isLoading={isLoading}

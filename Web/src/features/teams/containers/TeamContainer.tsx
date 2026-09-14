@@ -5,7 +5,6 @@ import { teamsApiService } from "../services/api";
 import { TeamList } from "../components/TeamList";
 import { TeamForm } from "../components/TeamForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 
 const PAGE_SIZE = 9;
 
@@ -87,8 +86,7 @@ export const TeamContainer = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
-      <BreadcrumbNav items={[{ label: "Equipos" }]} />
+    <div className="space-y-6">
       <TeamList
         teams={teams}
         isLoading={isLoading}

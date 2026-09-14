@@ -1,10 +1,12 @@
+import { PageHeader } from "@/shared/components/PageHeader";
+import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { History } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { reportsApiService } from "../services/api";
-import { seasonsApiService } from "../../seasons/services/api";
-import { teamsApiService } from "../../teams/services/api";
+import { seasonsApiService } from "@/features/seasons/services/api";
+import { getSeasonLabel } from "@/features/seasons/utils";
+import { teamsApiService } from "@/features/teams/services/api";
 import { Loading } from "@/shared/components/Loading";
 import {
   Select,
@@ -22,12 +24,11 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 import { t } from "@/shared/translations";
 
 export const HeadToHeadReport = () => {
-  const [team1, setTeam1] = useState<string>("");
-  const [team2, setTeam2] = useState<string>("");
+  const [team1Choice, setTeam1] = useState<string>();
+  const [team2Choice, setTeam2] = useState<string>();
   const [selectedSeason, setSelectedSeason] = useState<string>("");
 
   const { data: teamsData } = useQuery({
@@ -35,6 +36,9 @@ export const HeadToHeadReport = () => {
     queryFn: () => teamsApiService.getTeams(),
   });
   const teams = teamsData ?? [];
+
+  const team1 = team1Choice ?? teams[0]?.id.toString() ?? "";
+  const team2 = team2Choice ?? teams[1]?.id.toString() ?? "";
 
   const { data: seasonsData } = useQuery({
     queryKey: ["seasons"],
@@ -54,34 +58,13 @@ export const HeadToHeadReport = () => {
   });
   const matches = matchesData ?? [];
 
-  const getSeasonLabel = (
-    s: { id: number; start_date?: string; end_date?: string },
-  ) => {
-    if (s.start_date && s.end_date) {
-      try {
-        return `${format(parseISO(s.start_date), "dd/MM/yyyy")} - ${format(parseISO(s.end_date), "dd/MM/yyyy")}`;
-      } catch {
-        return `Temporada ${s.id}`;
-      }
-    }
-    return `Temporada ${s.id}`;
-  };
-
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <BreadcrumbNav
-        items={[
-          { label: t.common.reports, to: "/" },
-          { label: t.headToHead.title },
-        ]}
-      />
+    <div className="space-y-6">
 
-      <h1 className="text-3xl font-bold flex items-center gap-2">
-        <History className="text-primary" /> {t.headToHead.title}
-      </h1>
+      <PageHeader title={t.headToHead.title} />
 
-      <div className="flex flex-wrap gap-4">
-        <div className="w-64">
+      <div className="flex flex-wrap items-end gap-4">
+        <Field label={t.headToHead.selectTeam1} className="w-64">
           <Select value={team1} onValueChange={setTeam1}>
             <SelectTrigger>
               <SelectValue placeholder={t.headToHead.selectTeam1} />
@@ -96,8 +79,8 @@ export const HeadToHeadReport = () => {
                 ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="w-64">
+        </Field>
+        <Field label={t.headToHead.selectTeam2} className="w-64">
           <Select value={team2} onValueChange={setTeam2}>
             <SelectTrigger>
               <SelectValue placeholder={t.headToHead.selectTeam2} />
@@ -112,8 +95,8 @@ export const HeadToHeadReport = () => {
                 ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="w-64">
+        </Field>
+        <Field label={t.common.season} className="w-64">
           <Select
             value={selectedSeason || "all"}
             onValueChange={(v) => setSelectedSeason(v === "all" ? "" : v)}
@@ -130,7 +113,7 @@ export const HeadToHeadReport = () => {
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Field>
       </div>
 
       {!team1 || !team2 ? (

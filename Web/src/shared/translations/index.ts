@@ -10,6 +10,8 @@ export const t = {
   },
   common: {
     reports: "Reportes",
+    season: "Temporada",
+    team: "Equipo",
     selectSeason: "Seleccionar temporada",
     selectTeam: "Seleccionar equipo",
     noData: "No hay datos disponibles",

@@ -1,12 +1,22 @@
+"use client";
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, UserCog } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { RowActions } from "@/shared/components/RowActions";
 import { coachesApiService } from "../services/api";
 import { CoachForm } from "./CoachForm";
 import type { Coach } from "../types";
-
 
 interface CoachListProps {
   readonly teamId: number;
@@ -29,6 +39,11 @@ export const CoachList = ({ teamId, coaches }: CoachListProps) => {
     },
   });
 
+  const handleCreate = () => {
+    setEditingCoach(undefined);
+    setIsFormOpen(true);
+  };
+
   const handleEdit = (coach: Coach) => {
     setEditingCoach(coach);
     setIsFormOpen(true);
@@ -41,83 +56,64 @@ export const CoachList = ({ teamId, coaches }: CoachListProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <UserCog className="text-primary" size={20} />
-          Entrenadores
-        </h2>
-        <Button size="sm" onClick={() => { setEditingCoach(undefined); setIsFormOpen(true); }} className="flex gap-2">
-          <Plus size={16} />
-          Nuevo Entrenador
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold">Entrenadores</h2>
+          <p className="text-sm text-muted-foreground">
+            {coaches.length} asignados
+          </p>
+        </div>
+        <Button size="sm" onClick={handleCreate}>
+          <Plus />
+          Nuevo entrenador
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {coaches.length === 0 ? (
-          <div className="col-span-full text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-            No hay entrenadores registrados para este equipo.
-          </div>
-        ) : (
-          coaches.map((coach) => (
-            <div
-              key={coach.id}
-              className="bg-card border rounded-xl p-4 flex flex-col gap-3 relative group overflow-hidden"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                    {coach.number || 0}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground">{coach.name}</h3>
-                    <p className="text-xs text-muted-foreground uppercase font-semibold">
-                      Entrenador
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleEdit(coach)}
-                  >
-                    <Edit size={14} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(coach.id)}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-muted/50 p-2 rounded-lg">
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold">
-                    Años en equipo
-                  </p>
-                  <p className="font-semibold">{coach.years_in_team || 0}</p>
-                </div>
-                <div className="bg-muted/50 p-2 rounded-lg">
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold">
-                    Experiencia
-                  </p>
-                  <p className="font-semibold">{coach.experience_years || 0} años</p>
-                </div>
-                <div className="bg-muted/50 p-2 rounded-lg col-span-2">
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold">
-                    Campeonatos ganados
-                  </p>
-                  <p className="font-semibold">{coach.championships_won || 0}</p>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+      <div className="overflow-x-auto rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead>Nombre</TableHead>
+              <TableHead>Experiencia</TableHead>
+              <TableHead>Campeonatos</TableHead>
+              <TableHead>Años en equipo</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {coaches.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  No hay entrenadores en este equipo
+                </TableCell>
+              </TableRow>
+            ) : (
+              coaches.map((coach) => (
+                <TableRow key={coach.id}>
+                  <TableCell className="font-medium">{coach.name}</TableCell>
+                  <TableCell className="tabular-nums">
+                    {coach.experience_years ?? 0} años
+                  </TableCell>
+                  <TableCell className="tabular-nums">
+                    {coach.championships_won ?? 0}
+                  </TableCell>
+                  <TableCell className="tabular-nums">
+                    {coach.years_in_team ?? 0}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <RowActions
+                      onEdit={() => handleEdit(coach)}
+                      onDelete={() => handleDelete(coach.id)}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       <CoachForm
@@ -134,8 +130,9 @@ export const CoachList = ({ teamId, coaches }: CoachListProps) => {
           deleteMutation.reset();
         }}
         onConfirm={() => coachToDelete && deleteMutation.mutate(coachToDelete)}
-        title="Eliminar Entrenador"
-        description="¿Estás seguro de que quieres eliminar este entrenador?"
+        title="Eliminar entrenador"
+        description="¿Seguro que quieres eliminar este entrenador? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError
@@ -148,4 +145,3 @@ export const CoachList = ({ teamId, coaches }: CoachListProps) => {
     </div>
   );
 };
-

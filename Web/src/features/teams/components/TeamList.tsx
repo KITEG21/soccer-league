@@ -1,9 +1,23 @@
-import type { Team } from "../types";
+"use client";
+
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { DataTable } from "@/shared/components/DataTable";
+import { RowActions } from "@/shared/components/RowActions";
 import { Button } from "@/shared/components/ui/button";
 import { Pagination } from "@/shared/components/ui/pagination";
-import { Plus, Edit, Trash2, ChevronRight } from "lucide-react";
-import { Loading } from "@/shared/components/Loading";
-import { useRouter } from "next/navigation";
+import { TableCell, TableRow } from "@/shared/components/ui/table";
+import type { Team } from "../types";
+
+const COLUMNS = [
+  "Equipo",
+  "Provincia",
+  "Mascota",
+  "Jugadores",
+  "Entrenadores",
+  "",
+];
 
 interface TeamListProps {
   readonly teams: Team[];
@@ -30,106 +44,80 @@ export function TeamList({
   pageSize,
   onPageChange,
 }: TeamListProps) {
-  const router = useRouter();
-
-  if (isLoading) return <Loading />;
-  if (error)
-    return (
-      <div className="text-center py-8 text-destructive">
-        Error al cargar equipos
-      </div>
-    );
-
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Equipos</h1>
-        <Button className="flex items-center gap-2" onClick={onCreate}>
-          <Plus size={16} />
-          Nuevo Equipo
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        title="Equipos"
+        description="Administra los clubes participantes y sus plantillas"
+        actions={
+          <Button onClick={onCreate}>
+            <Plus />
+            Nuevo equipo
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teams.map((team: Team) => (
-          <div
+      <DataTable
+        columns={COLUMNS}
+        isLoading={isLoading}
+        error={error}
+        errorMessage="Error al cargar equipos"
+        isEmpty={teams.length === 0}
+        emptyMessage="No hay equipos registrados"
+        emptyAction={
+          <Button size="sm" onClick={onCreate}>
+            Crear primer equipo
+          </Button>
+        }
+        footer={
+          <Pagination
+            page={page}
+            total={total}
+            pageSize={pageSize}
+            onPageChange={onPageChange}
+          />
+        }
+      >
+        {teams.map((team) => (
+          <TableRow
             key={team.id}
-            className="bg-card text-card-foreground rounded-lg shadow-md p-6 border group hover:border-primary/50 transition-all cursor-pointer"
-            onClick={() => router.push(`/teams/${team.id}`)}
+            className="relative cursor-pointer hover:bg-accent"
           >
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-border items-center justify-center flex">
-                  <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: team.color || "#ccc" }} 
+            <TableCell>
+              <div className="flex items-center gap-3">
+                <span
+                  className="size-3 shrink-0 rounded-full border"
+                  style={{ backgroundColor: team.color || "transparent" }}
                 />
-                </div>
-                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                <Link
+                  href={`/teams/${team.id}`}
+                  className="font-medium after:absolute after:inset-0"
+                >
                   {team.name}
-                </h3>
+                </Link>
               </div>
-              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(team)}
-                >
-                  <Edit size={14} />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => onDelete(team.id)}
-                >
-                  <Trash2 size={14} />
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm text-muted-foreground">
-              {team.province && (
-                <p>
-                  <span className="font-medium text-foreground">Provincia:</span>{" "}
-                  {team.province}
-                </p>
-              )}
-              {team.mascot && (
-                <p>
-                  <span className="font-medium text-foreground">Mascota:</span> {team.mascot}
-                </p>
-              )}
-              <div className="flex gap-4 mt-2">
-                <p>
-                  <span className="font-medium text-foreground">Jugadores:</span>{" "}
-                  {team.players?.length ?? 0}
-                </p>
-                <p>
-                  <span className="font-medium text-foreground">Entrenadores:</span>{" "}
-                  {team.coaches?.length ?? 0}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t flex justify-between items-center text-primary text-sm font-medium">
-              <span>Gestionar plantilla</span>
-              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {team.province || "—"}
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {team.mascot || "—"}
+            </TableCell>
+            <TableCell className="tabular-nums">
+              {team.players?.length ?? 0}
+            </TableCell>
+            <TableCell className="tabular-nums">
+              {team.coaches?.length ?? 0}
+            </TableCell>
+            <TableCell className="relative text-right">
+              <RowActions
+                onEdit={() => onEdit(team)}
+                onDelete={() => onDelete(team.id)}
+              />
+            </TableCell>
+          </TableRow>
         ))}
-      </div>
-
-      {teams.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground animate-in fade-in duration-300">
-          <p className="text-lg mb-4">No hay equipos registrados</p>
-          <Button onClick={onCreate}>Crear primer equipo</Button>
-        </div>
-      )}
-
-      <div className="mt-6">
-        <Pagination page={page} total={total} pageSize={pageSize} onPageChange={onPageChange} />
-      </div>
-    </div>
+      </DataTable>
+    </>
   );
 }

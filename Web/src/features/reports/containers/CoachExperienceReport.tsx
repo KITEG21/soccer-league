@@ -1,10 +1,9 @@
+import { PageHeader } from "@/shared/components/PageHeader";
 import { useQuery } from "@tanstack/react-query";
-import { Award } from "lucide-react";
 import { reportsApiService } from "../services/api";
 import { Loading } from "@/shared/components/Loading";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { BreadcrumbNav } from "@/shared/components/BreadcrumbNav";
 import { t } from "@/shared/translations";
 
 export const CoachExperienceReport = () => {
@@ -15,12 +14,9 @@ export const CoachExperienceReport = () => {
   const coaches = coachesData ?? [];
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <BreadcrumbNav items={[{ label: t.common.reports, to: "/" }, { label: t.coachExperience.breadcrumb }]} />
+    <div className="space-y-6">
       
-      <h1 className="text-3xl font-bold flex items-center gap-2">
-        <Award className="text-primary" /> {t.coachExperience.title}
-      </h1>
+      <PageHeader title={t.coachExperience.title} />
 
       {isLoading ? (
         <Loading />
