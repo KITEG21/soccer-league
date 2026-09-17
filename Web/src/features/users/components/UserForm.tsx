@@ -35,6 +35,7 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
     handleSubmit: handleFormSubmit,
     reset,
     control,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<CreateUserFormData>({
     resolver: zodResolver(createUserSchema),
@@ -47,6 +48,14 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       onClose();
       reset();
+    },
+    onError: (error) => {
+      if (!(error instanceof ApiError)) return;
+      Object.entries(error.errors).forEach(([field, message]) => {
+        if (field === "email" || field === "password" || field === "role") {
+          setError(field, { message });
+        }
+      });
     },
   });
 

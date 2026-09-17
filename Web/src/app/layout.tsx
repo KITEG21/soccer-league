@@ -26,6 +26,7 @@ export default async function RootLayout({
         <RootProviders
           isAuthenticated={Boolean(claims)}
           role={claims?.role ?? null}
+          userId={claims?.sub ?? null}
         >
           {children}
         </RootProviders>

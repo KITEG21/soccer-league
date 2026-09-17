@@ -7,6 +7,7 @@ import { UserForm } from "../components/UserForm";
 import { UserRoleDialog } from "../components/UserRoleDialog";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { ApiError } from "@/shared/utils/api-client";
+import { useAuth } from "@/shared/contexts/AuthContext";
 
 const PAGE_SIZE = 10;
 
@@ -18,6 +19,7 @@ export const UserContainer = () => {
   const [page, setPage] = useState(1);
 
   const queryClient = useQueryClient();
+  const { userId } = useAuth();
 
   const {
     data: usersPage,
@@ -62,6 +64,7 @@ export const UserContainer = () => {
     <div className="space-y-6">
       <UserList
         users={users}
+        currentUserId={userId}
         isLoading={isLoading}
         error={error instanceof Error ? error : null}
         onCreate={handleCreate}

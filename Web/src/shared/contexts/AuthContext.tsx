@@ -15,6 +15,7 @@ import { WEB_API_ROUTES } from "@/shared/config/routes";
 interface AuthContextType {
   isAuthenticated: boolean;
   role: Role | null;
+  userId: number | null;
   login: (user: string, pass: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -25,12 +26,14 @@ interface AuthProviderProps {
   readonly children: ReactNode;
   readonly isAuthenticated: boolean;
   readonly role: Role | null;
+  readonly userId: number | null;
 }
 
 export const AuthProvider = ({
   children,
   isAuthenticated: initialAuthenticated,
   role: initialRole,
+  userId,
 }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(initialAuthenticated);
   const [role, setRole] = useState<Role | null>(initialRole);
@@ -64,8 +67,8 @@ export const AuthProvider = ({
   }, [router]);
 
   const value = useMemo(
-    () => ({ isAuthenticated, role, login, logout }),
-    [isAuthenticated, role, login, logout],
+    () => ({ isAuthenticated, role, userId, login, logout }),
+    [isAuthenticated, role, userId, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

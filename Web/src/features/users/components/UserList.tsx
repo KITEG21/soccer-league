@@ -20,6 +20,7 @@ const ROLE_LABELS: Record<User["role"], string> = {
 
 interface UserListProps {
   readonly users: User[];
+  readonly currentUserId: number | null;
   readonly isLoading: boolean;
   readonly error: Error | null;
   readonly onCreate: () => void;
@@ -33,6 +34,7 @@ interface UserListProps {
 
 export function UserList({
   users,
+  currentUserId,
   isLoading,
   error,
   onCreate,
@@ -72,21 +74,33 @@ export function UserList({
           />
         }
       >
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell className="font-medium">{user.email}</TableCell>
-            <TableCell>
-              <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
-            </TableCell>
-            <TableCell className="text-right">
-              <RowActions
-                onEdit={() => onEdit(user)}
-                onDelete={() => onDelete(user.id)}
-                editLabel="Cambiar rol"
-              />
-            </TableCell>
-          </TableRow>
-        ))}
+        {users.map((user) => {
+          const isCurrentUser = user.id === currentUserId;
+          return (
+            <TableRow key={user.id}>
+              <TableCell className="font-medium">
+                {user.email}
+                {isCurrentUser && (
+                  <Badge variant="outline" className="ml-2">
+                    Tú
+                  </Badge>
+                )}
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                {!isCurrentUser && (
+                  <RowActions
+                    onEdit={() => onEdit(user)}
+                    onDelete={() => onDelete(user.id)}
+                    editLabel="Cambiar rol"
+                  />
+                )}
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </DataTable>
     </>
   );
