@@ -24,9 +24,15 @@ export default async function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body>
         <RootProviders
-          isAuthenticated={Boolean(claims)}
-          role={claims?.role ?? null}
-          userId={claims?.sub ?? null}
+          session={
+            claims
+              ? {
+                  userId: claims.sub,
+                  role: claims.role,
+                  permissions: claims.permissions,
+                }
+              : null
+          }
         >
           {children}
         </RootProviders>

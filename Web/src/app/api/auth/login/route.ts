@@ -6,6 +6,7 @@ import {
   REFRESH_TOKEN_MAX_AGE,
 } from "@/shared/auth/session";
 import type { TokenPair } from "@/shared/auth/tokens";
+import { parsePermissions } from "@/shared/auth/permissions";
 import { getApiUrl } from "@/shared/config/api";
 import { API_ROUTES } from "@/shared/config/routes";
 
@@ -52,7 +53,11 @@ export async function POST(request: Request) {
 
   const tokens = (await apiResponse.json()) as TokenPair;
 
-  const response = NextResponse.json({ ok: true, role: tokens.role });
+  const response = NextResponse.json({
+    ok: true,
+    role: tokens.role,
+    permissions: parsePermissions(tokens.permissions),
+  });
   response.cookies.set(ACCESS_TOKEN_COOKIE, tokens.access_token, {
     httpOnly: true,
     sameSite: "lax",

@@ -6,6 +6,7 @@ export interface TokenPair {
   readonly refresh_token: string;
   readonly role: string;
   readonly email: string;
+  readonly permissions: readonly string[];
 }
 
 /**

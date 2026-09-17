@@ -3,12 +3,15 @@ export const REFRESH_TOKEN_COOKIE = "refresh_token";
 export const ACCESS_TOKEN_MAX_AGE = 60 * 15; // 15 minutos, debe calzar con el TTL emitido por la API Go
 export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 días
 
+import { parsePermissions, type Permission } from "./permissions";
+
 export type Role = "superadmin" | "admin" | "visitante";
 
 export interface SessionClaims {
   readonly sub: number;
   readonly email: string;
   readonly role: Role;
+  readonly permissions: readonly Permission[];
   readonly exp: number;
 }
 
@@ -70,7 +73,10 @@ export const verifyAccessToken = async (
       return null;
     }
 
-    return claims as SessionClaims;
+    return {
+      ...claims,
+      permissions: parsePermissions(claims.permissions),
+    } as SessionClaims;
   } catch {
     return null;
   }

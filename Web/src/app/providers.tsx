@@ -2,23 +2,16 @@
 
 import type { ReactNode } from "react";
 import { AppProviders, AppLayout } from "@/features/layout";
-import type { Role } from "@/shared/auth/session";
+import type { AuthSession } from "@/shared/contexts/AuthContext";
 
 interface RootProvidersProps {
   readonly children: ReactNode;
-  readonly isAuthenticated: boolean;
-  readonly role: Role | null;
-  readonly userId: number | null;
+  readonly session: AuthSession | null;
 }
 
-export const RootProviders = ({
-  children,
-  isAuthenticated,
-  role,
-  userId,
-}: RootProvidersProps) => {
+export const RootProviders = ({ children, session }: RootProvidersProps) => {
   return (
-    <AppProviders isAuthenticated={isAuthenticated} role={role} userId={userId}>
+    <AppProviders session={session}>
       <AppLayout>{children}</AppLayout>
     </AppProviders>
   );
