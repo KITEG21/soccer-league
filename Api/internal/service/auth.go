@@ -44,16 +44,18 @@ type RefreshTokenRequest struct {
 }
 
 type TokenPair struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	Role         string `json:"role"`
-	Email        string `json:"email"`
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	Role         string   `json:"role"`
+	Email        string   `json:"email"`
+	Permissions  []string `json:"permissions"`
 }
 
 type AccessClaims struct {
-	Sub   int64  `json:"sub"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Sub         int64    `json:"sub"`
+	Email       string   `json:"email"`
+	Role        string   `json:"role"`
+	Permissions []string `json:"permissions"`
 	jwt.RegisteredClaims
 }
 
@@ -151,10 +153,12 @@ func (s *AuthService) revokeOnReuse(ctx context.Context, hash string) error {
 
 func (s *AuthService) issueTokens(ctx context.Context, user store.User) (*TokenPair, error) {
 	now := time.Now()
+	permissions := PermissionsForRole(user.Role)
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, AccessClaims{
-		Sub:   user.ID,
-		Email: user.Email,
-		Role:  user.Role,
+		Sub:         user.ID,
+		Email:       user.Email,
+		Role:        user.Role,
+		Permissions: permissions,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(AccessTokenTTL)),
@@ -183,6 +187,7 @@ func (s *AuthService) issueTokens(ctx context.Context, user store.User) (*TokenP
 		RefreshToken: refreshToken,
 		Role:         user.Role,
 		Email:        user.Email,
+		Permissions:  permissions,
 	}, nil
 }
 
