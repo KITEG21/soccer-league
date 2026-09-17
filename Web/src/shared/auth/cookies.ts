@@ -1,4 +1,3 @@
-import type { NextResponse } from "next/server";
 import {
   ACCESS_TOKEN_COOKIE,
   ACCESS_TOKEN_MAX_AGE,
@@ -11,28 +10,44 @@ interface SessionTokens {
   readonly refresh_token: string;
 }
 
-const baseCookieOptions = () => ({
+interface CookieOptions {
+  httpOnly: boolean;
+  sameSite: "lax";
+  secure: boolean;
+  path: string;
+  maxAge: number;
+}
+
+interface CookieWriter {
+  set(name: string, value: string, options: CookieOptions): unknown;
+  delete(name: string): unknown;
+}
+
+const cookieOptions = (maxAge: number): CookieOptions => ({
   httpOnly: true,
-  sameSite: "lax" as const,
+  sameSite: "lax",
   secure: process.env.NODE_ENV === "production",
   path: "/",
+  maxAge,
 });
 
 export const setSessionCookies = (
-  response: NextResponse,
+  cookieStore: CookieWriter,
   tokens: SessionTokens,
 ) => {
-  response.cookies.set(ACCESS_TOKEN_COOKIE, tokens.access_token, {
-    ...baseCookieOptions(),
-    maxAge: ACCESS_TOKEN_MAX_AGE,
-  });
-  response.cookies.set(REFRESH_TOKEN_COOKIE, tokens.refresh_token, {
-    ...baseCookieOptions(),
-    maxAge: REFRESH_TOKEN_MAX_AGE,
-  });
+  cookieStore.set(
+    ACCESS_TOKEN_COOKIE,
+    tokens.access_token,
+    cookieOptions(ACCESS_TOKEN_MAX_AGE),
+  );
+  cookieStore.set(
+    REFRESH_TOKEN_COOKIE,
+    tokens.refresh_token,
+    cookieOptions(REFRESH_TOKEN_MAX_AGE),
+  );
 };
 
-export const clearSessionCookies = (response: NextResponse) => {
-  response.cookies.delete(ACCESS_TOKEN_COOKIE);
-  response.cookies.delete(REFRESH_TOKEN_COOKIE);
+export const clearSessionCookies = (cookieStore: CookieWriter) => {
+  cookieStore.delete(ACCESS_TOKEN_COOKIE);
+  cookieStore.delete(REFRESH_TOKEN_COOKIE);
 };

@@ -50,7 +50,6 @@ export const API_ROUTES = {
 } as const;
 
 export const WEB_API_ROUTES = {
-  login: "/api/auth/login",
   logout: "/api/auth/logout",
   backend: "/api/backend",
 } as const;

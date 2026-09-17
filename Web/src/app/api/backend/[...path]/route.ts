@@ -82,7 +82,7 @@ async function handler(
   }
 
   if (renewedTokens) {
-    setSessionCookies(nextResponse, renewedTokens);
+    setSessionCookies(nextResponse.cookies, renewedTokens);
   }
 
   return nextResponse;

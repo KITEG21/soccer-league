@@ -79,9 +79,9 @@ export async function proxy(request: NextRequest) {
   }
 
   if (renewedTokens) {
-    setSessionCookies(response, renewedTokens);
+    setSessionCookies(response.cookies, renewedTokens);
   } else if (!claims && hadSession) {
-    clearSessionCookies(response);
+    clearSessionCookies(response.cookies);
   }
 
   return response;

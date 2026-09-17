@@ -42,7 +42,7 @@ src/
   proxy.ts             # gate de sesión, previo al renderizado
   app/                 # rutas del App Router
     layout.tsx         # lee la cookie de sesión y monta los providers
-    api/auth/          # login y logout
+    api/auth/          # logout
     api/backend/       # reenvía las llamadas a la API de Go
     globals.css        # tema Tailwind (claro/oscuro vía clase .dark)
   features/            # módulos por dominio
@@ -52,9 +52,11 @@ src/
 ## Autenticación
 
 Los usuarios reales (con rol `superadmin`, `admin` o `visitante`) viven en la base de datos de
-la API Go, no en este proyecto. `src/app/api/auth/login` reenvía las credenciales a
-`POST <API>/auth/login` (la URL resuelta según `API_TARGET`); si son válidas, Go responde con un access token (JWT, ~15 min) y
-un refresh token (opaco, ~7 días), y esta ruta los guarda en dos cookies `httpOnly`.
+la API Go, no en este proyecto. El login es una Server Action (`src/features/auth/actions/login.ts`)
+que reenvía las credenciales a `POST <API>/auth/login` (la URL resuelta según `API_TARGET`); si son
+válidas, Go responde con un access token (JWT, ~15 min) y un refresh token (opaco, ~7 días), y la
+acción los guarda en dos cookies `httpOnly`. Next.js rechaza las Server Actions cuyo `Origin` no
+coincide con el host, lo que protege el login frente a CSRF, y el formulario funciona sin JavaScript.
 
 `src/shared/auth/session.ts` solo **verifica** el JWT (misma `JWT_SECRET` que Go, nunca lo firma
 aquí). `src/proxy.ts` usa esa verificación para redirigir a `/login` las rutas no públicas.

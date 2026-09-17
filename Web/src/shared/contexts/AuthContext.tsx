@@ -29,7 +29,6 @@ interface AuthContextType {
   userId: number | null;
   permissions: readonly Permission[];
   can: (requirement: PermissionRequirement) => boolean;
-  login: (user: string, pass: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
 
@@ -56,27 +55,6 @@ export const AuthProvider = ({ children, session: serverSession }: AuthProviderP
     setSession(serverSession);
   }
 
-  const login = useCallback(
-    async (user: string, pass: string) => {
-      const response = await fetch(WEB_API_ROUTES.login, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user, pass }),
-      });
-
-      if (!response.ok) return false;
-
-      const data = (await response.json()) as {
-        role: Role;
-        permissions: Permission[];
-      };
-      setSession({ userId: null, role: data.role, permissions: data.permissions });
-      router.refresh();
-      return true;
-    },
-    [router],
-  );
-
   const logout = useCallback(async () => {
     await fetch(WEB_API_ROUTES.logout, { method: "POST" });
     setSession(null);
@@ -97,10 +75,9 @@ export const AuthProvider = ({ children, session: serverSession }: AuthProviderP
       userId: session?.userId ?? null,
       permissions: session?.permissions ?? [],
       can,
-      login,
       logout,
     }),
-    [session, can, login, logout],
+    [session, can, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

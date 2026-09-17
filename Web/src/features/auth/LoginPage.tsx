@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
 import { Eye, EyeOff, Trophy } from "lucide-react";
-import { useAuth } from "@/shared/contexts/AuthContext";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -15,29 +13,16 @@ import {
 } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { loginAction, type LoginState } from "./actions/login";
+
+const initialState: LoginState = { error: null, email: "" };
 
 export const LoginPage = () => {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
+  const [state, formAction, isPending] = useActionState(
+    loginAction,
+    initialState,
+  );
   const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
-  const router = useRouter();
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(false);
-    setIsSubmitting(true);
-
-    if (await login(user, pass)) {
-      router.replace("/");
-      return;
-    }
-
-    setError(true);
-    setIsSubmitting(false);
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
@@ -57,31 +42,30 @@ export const LoginPage = () => {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form action={formAction} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="user">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="user"
+                id="email"
+                name="email"
                 type="email"
                 placeholder="tu@email.com"
                 autoComplete="username"
-                value={user}
-                onChange={(event) => setUser(event.target.value)}
+                defaultValue={state.email}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pass">Contraseña</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <div className="relative">
                 <Input
-                  id="pass"
+                  id="password"
+                  name="password"
                   type={showPass ? "text" : "password"}
                   placeholder="Tu contraseña"
                   autoComplete="current-password"
                   className="pr-10"
-                  value={pass}
-                  onChange={(event) => setPass(event.target.value)}
                   required
                 />
                 <button
@@ -97,14 +81,17 @@ export const LoginPage = () => {
               </div>
             </div>
 
-            {error && (
-              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                Credenciales incorrectas. Intenta de nuevo.
+            {state.error && (
+              <p
+                role="alert"
+                className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
+                {state.error}
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Entrando…" : "Iniciar sesión"}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Entrando…" : "Iniciar sesión"}
             </Button>
           </form>
         </CardContent>
