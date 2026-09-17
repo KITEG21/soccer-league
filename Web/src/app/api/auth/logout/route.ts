@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import {
-  ACCESS_TOKEN_COOKIE,
-  REFRESH_TOKEN_COOKIE,
-} from "@/shared/auth/session";
+import { REFRESH_TOKEN_COOKIE } from "@/shared/auth/session";
+import { clearSessionCookies } from "@/shared/auth/cookies";
 import { getApiUrl } from "@/shared/config/api";
 import { API_ROUTES } from "@/shared/config/routes";
 
@@ -26,7 +24,6 @@ export async function POST() {
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.delete(ACCESS_TOKEN_COOKIE);
-  response.cookies.delete(REFRESH_TOKEN_COOKIE);
+  clearSessionCookies(response);
   return response;
 }

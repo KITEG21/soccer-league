@@ -1,11 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
   ACCESS_TOKEN_COOKIE,
-  ACCESS_TOKEN_MAX_AGE,
   REFRESH_TOKEN_COOKIE,
-  REFRESH_TOKEN_MAX_AGE,
 } from "@/shared/auth/session";
-import { refreshAccessToken } from "@/shared/auth/tokens";
+import { refreshAccessToken, type TokenPair } from "@/shared/auth/tokens";
+import { setSessionCookies } from "@/shared/auth/cookies";
 import { getApiUrl } from "@/shared/config/api";
 
 const METHODS_WITH_BODY = new Set(["POST", "PUT", "PATCH"]);
@@ -47,7 +46,7 @@ async function handler(
   const target = `${apiUrl}/${path.join("/")}${request.nextUrl.search}`;
 
   let response: Response;
-  let renewedCookies: { access: string; refresh: string } | null = null;
+  let renewedTokens: TokenPair | null = null;
   try {
     response = accessToken
       ? await callApi(target, request, accessToken)
@@ -58,7 +57,7 @@ async function handler(
       if (!renewed) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
       }
-      renewedCookies = { access: renewed.access_token, refresh: renewed.refresh_token };
+      renewedTokens = renewed;
       response = await callApi(target, request, renewed.access_token);
     }
   } catch {
@@ -82,21 +81,8 @@ async function handler(
     });
   }
 
-  if (renewedCookies) {
-    nextResponse.cookies.set(ACCESS_TOKEN_COOKIE, renewedCookies.access, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: ACCESS_TOKEN_MAX_AGE,
-    });
-    nextResponse.cookies.set(REFRESH_TOKEN_COOKIE, renewedCookies.refresh, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: REFRESH_TOKEN_MAX_AGE,
-    });
+  if (renewedTokens) {
+    setSessionCookies(nextResponse, renewedTokens);
   }
 
   return nextResponse;

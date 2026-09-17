@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
-import {
-  ACCESS_TOKEN_COOKIE,
-  ACCESS_TOKEN_MAX_AGE,
-  REFRESH_TOKEN_COOKIE,
-  REFRESH_TOKEN_MAX_AGE,
-} from "@/shared/auth/session";
 import type { TokenPair } from "@/shared/auth/tokens";
+import { setSessionCookies } from "@/shared/auth/cookies";
 import { parsePermissions } from "@/shared/auth/permissions";
 import { getApiUrl } from "@/shared/config/api";
 import { API_ROUTES } from "@/shared/config/routes";
@@ -58,20 +53,7 @@ export async function POST(request: Request) {
     role: tokens.role,
     permissions: parsePermissions(tokens.permissions),
   });
-  response.cookies.set(ACCESS_TOKEN_COOKIE, tokens.access_token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: ACCESS_TOKEN_MAX_AGE,
-  });
-  response.cookies.set(REFRESH_TOKEN_COOKIE, tokens.refresh_token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: REFRESH_TOKEN_MAX_AGE,
-  });
+  setSessionCookies(response, tokens);
 
   return response;
 }
