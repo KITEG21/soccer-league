@@ -120,6 +120,21 @@ func (s *AuthService) ParseAccessToken(token string) (*AccessClaims, error) {
 	return claims, nil
 }
 
+func (s *AuthService) UserFromToken(ctx context.Context, token string) (*User, error) {
+	claims, err := s.ParseAccessToken(token)
+	if err != nil {
+		return nil, err
+	}
+	row, err := s.store.GetUser(ctx, claims.Sub)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrInvalidToken
+	}
+	if err != nil {
+		return nil, err
+	}
+	return toUser(row), nil
+}
+
 func (s *AuthService) revokeOnReuse(ctx context.Context, hash string) error {
 	token, err := s.store.GetRefreshTokenByHash(ctx, hash)
 	if errors.Is(err, sql.ErrNoRows) {

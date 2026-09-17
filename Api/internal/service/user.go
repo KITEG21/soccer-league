@@ -55,6 +55,15 @@ func IsValidRole(role string) bool {
 	return false
 }
 
+func (u *User) HasRole(roles ...string) bool {
+	for _, role := range roles {
+		if u.Role == role {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *UserService) List(ctx context.Context, limit, offset int) ([]*User, int, error) {
 	limit, offset = normalizePagination(limit, offset)
 	total, err := s.store.CountUsers(ctx)

@@ -87,78 +87,82 @@ func main() {
 		r.Post("/logout", authHandler.Logout)
 	})
 
-	r.Route("/users", func(r chi.Router) {
-		r.Get("/", userHandler.List)
-		r.Post("/", userHandler.Create)
-		r.Get("/{id}", userHandler.Get)
-		r.Put("/{id}", userHandler.UpdateRole)
-		r.Delete("/{id}", userHandler.Delete)
-	})
+	r.Group(func(r chi.Router) {
+		r.Use(handler.RequireAuth(authSvc))
 
-	r.Route("/teams", func(r chi.Router) {
-		r.Post("/", teamHandler.Create)
-		r.Get("/", teamHandler.List)
-		r.Get("/{id}", teamHandler.Get)
-		r.Put("/{id}", teamHandler.Update)
-		r.Delete("/{id}", teamHandler.Delete)
-	})
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/", userHandler.List)
+			r.Post("/", userHandler.Create)
+			r.Get("/{id}", userHandler.Get)
+			r.Put("/{id}", userHandler.UpdateRole)
+			r.Delete("/{id}", userHandler.Delete)
+		})
 
-	r.Route("/stadiums", func(r chi.Router) {
-		r.Post("/", stadiumHandler.Create)
-		r.Get("/", stadiumHandler.List)
-		r.Get("/{id}", stadiumHandler.Get)
-		r.Put("/{id}", stadiumHandler.Update)
-		r.Delete("/{id}", stadiumHandler.Delete)
-	})
+		r.Route("/teams", func(r chi.Router) {
+			r.Post("/", teamHandler.Create)
+			r.Get("/", teamHandler.List)
+			r.Get("/{id}", teamHandler.Get)
+			r.Put("/{id}", teamHandler.Update)
+			r.Delete("/{id}", teamHandler.Delete)
+		})
 
-	r.Route("/seasons", func(r chi.Router) {
-		r.Post("/", seasonHandler.Create)
-		r.Get("/", seasonHandler.List)
-		r.Get("/{id}", seasonHandler.Get)
-		r.Put("/{id}", seasonHandler.Update)
-		r.Delete("/{id}", seasonHandler.Delete)
-	})
+		r.Route("/stadiums", func(r chi.Router) {
+			r.Post("/", stadiumHandler.Create)
+			r.Get("/", stadiumHandler.List)
+			r.Get("/{id}", stadiumHandler.Get)
+			r.Put("/{id}", stadiumHandler.Update)
+			r.Delete("/{id}", stadiumHandler.Delete)
+		})
 
-	r.Route("/players", func(r chi.Router) {
-		r.Post("/", playerHandler.CreatePlayer)
-		r.Get("/", playerHandler.ListPlayers)
-		r.Get("/{id}", playerHandler.GetPlayer)
-		r.Put("/{id}", playerHandler.UpdatePlayer)
-		r.Delete("/{id}", playerHandler.DeletePlayer)
-	})
+		r.Route("/seasons", func(r chi.Router) {
+			r.Post("/", seasonHandler.Create)
+			r.Get("/", seasonHandler.List)
+			r.Get("/{id}", seasonHandler.Get)
+			r.Put("/{id}", seasonHandler.Update)
+			r.Delete("/{id}", seasonHandler.Delete)
+		})
 
-	r.Route("/matches", func(r chi.Router) {
-		r.Post("/", matchHandler.Create)
-		r.Get("/", matchHandler.List)
-		r.Get("/{id}", matchHandler.Get)
-		r.Put("/{id}", matchHandler.Update)
-		r.Delete("/{id}", matchHandler.Delete)
-	})
+		r.Route("/players", func(r chi.Router) {
+			r.Post("/", playerHandler.CreatePlayer)
+			r.Get("/", playerHandler.ListPlayers)
+			r.Get("/{id}", playerHandler.GetPlayer)
+			r.Put("/{id}", playerHandler.UpdatePlayer)
+			r.Delete("/{id}", playerHandler.DeletePlayer)
+		})
 
-	r.Route("/player-stats", func(r chi.Router) {
-		r.Post("/", playerStatsHandler.Create)
-		r.Get("/", playerStatsHandler.List)
-		r.Get("/{id}", playerStatsHandler.Get)
-		r.Put("/{id}", playerStatsHandler.Update)
-		r.Delete("/{id}", playerStatsHandler.Delete)
-	})
+		r.Route("/matches", func(r chi.Router) {
+			r.Post("/", matchHandler.Create)
+			r.Get("/", matchHandler.List)
+			r.Get("/{id}", matchHandler.Get)
+			r.Put("/{id}", matchHandler.Update)
+			r.Delete("/{id}", matchHandler.Delete)
+		})
 
-	r.Route("/coaches", func(r chi.Router) {
-		r.Post("/", playerHandler.CreateCoach)
-		r.Get("/", playerHandler.ListCoaches)
-		r.Get("/{id}", playerHandler.GetCoach)
-		r.Put("/{id}", playerHandler.UpdateCoach)
-		r.Delete("/{id}", playerHandler.DeleteCoach)
-	})
+		r.Route("/player-stats", func(r chi.Router) {
+			r.Post("/", playerStatsHandler.Create)
+			r.Get("/", playerStatsHandler.List)
+			r.Get("/{id}", playerStatsHandler.Get)
+			r.Put("/{id}", playerStatsHandler.Update)
+			r.Delete("/{id}", playerStatsHandler.Delete)
+		})
 
-	r.Route("/reports", func(r chi.Router) {
-		r.Get("/standings", reportsHandler.Standings)
-		r.Get("/matches-between-teams", reportsHandler.MatchesBetweenTeams)
-		r.Get("/matches-by-date", reportsHandler.MatchesByDate)
-		r.Get("/coaches-by-experience", reportsHandler.CoachesByExperience)
-		r.Get("/stadiums-by-attendance", reportsHandler.StadiumsByAttendance)
-		r.Get("/team-status/{teamId}", reportsHandler.TeamStatus)
-		r.Get("/all-star-team", reportsHandler.AllStarTeam)
+		r.Route("/coaches", func(r chi.Router) {
+			r.Post("/", playerHandler.CreateCoach)
+			r.Get("/", playerHandler.ListCoaches)
+			r.Get("/{id}", playerHandler.GetCoach)
+			r.Put("/{id}", playerHandler.UpdateCoach)
+			r.Delete("/{id}", playerHandler.DeleteCoach)
+		})
+
+		r.Route("/reports", func(r chi.Router) {
+			r.Get("/standings", reportsHandler.Standings)
+			r.Get("/matches-between-teams", reportsHandler.MatchesBetweenTeams)
+			r.Get("/matches-by-date", reportsHandler.MatchesByDate)
+			r.Get("/coaches-by-experience", reportsHandler.CoachesByExperience)
+			r.Get("/stadiums-by-attendance", reportsHandler.StadiumsByAttendance)
+			r.Get("/team-status/{teamId}", reportsHandler.TeamStatus)
+			r.Get("/all-star-team", reportsHandler.AllStarTeam)
+		})
 	})
 
 	// Get port from environment variable or default
