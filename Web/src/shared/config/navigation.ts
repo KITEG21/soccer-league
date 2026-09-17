@@ -30,7 +30,10 @@ export interface NavGroup {
 export const navGroups: readonly NavGroup[] = [
   {
     label: "General",
-    items: [{ href: "/", label: "Resumen", icon: LayoutDashboard }],
+    items: [
+      { href: "/", label: "Resumen", icon: LayoutDashboard },
+      { href: "/users", label: "Usuarios", icon: Shield },
+    ],
   },
   {
     label: "Gestión",
@@ -41,7 +44,6 @@ export const navGroups: readonly NavGroup[] = [
       { href: "/coaches", label: "Entrenadores", icon: Megaphone },
       { href: "/matches", label: "Partidos", icon: Flag },
       { href: "/stadiums", label: "Estadios", icon: Landmark },
-      { href: "/users", label: "Usuarios", icon: Shield },
     ],
   },
   {
