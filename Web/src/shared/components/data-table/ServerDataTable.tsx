@@ -109,7 +109,7 @@ export const ServerDataTable = <TData extends RowData>({
     getRowId,
     manualSorting: true,
     enableSortingRemoval: true,
-    sortDescFirst: false,
+    sortDescFirst: true,
     state: { sorting },
     onSortingChange: (updater) => {
       const next = typeof updater === "function" ? updater(sorting) : updater;

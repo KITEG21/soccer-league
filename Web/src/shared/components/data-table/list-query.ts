@@ -168,6 +168,17 @@ export const useListQuery = ({
     [update],
   );
 
+  const setFilters = useCallback(
+    (values: Record<string, string>) =>
+      update({
+        ...Object.fromEntries(
+          Object.entries(values).map(([key, value]) => [key, value || null]),
+        ),
+        page: 1,
+      }),
+    [update],
+  );
+
   const clearFilters = useCallback(
     () =>
       update({
@@ -193,6 +204,7 @@ export const useListQuery = ({
     setSorting,
     setSearch,
     setFilter,
+    setFilters,
     clearFilters,
   };
 };
