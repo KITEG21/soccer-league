@@ -396,6 +396,8 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) (int64, error) {
 const getBestDefender = `-- name: GetBestDefender :many
 SELECT
     'Defensa' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'tackles_plus_blocks' AS metric_name,
@@ -415,13 +417,15 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Defensa' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, tackles DESC, blocks DESC, f.name
 LIMIT 4
 `
 
 type GetBestDefenderRow struct {
 	Position        string
+	PlayerID        int64
+	TeamID          sql.NullInt64
 	PlayerName      string
 	TeamName        string
 	MetricName      string
@@ -448,6 +452,8 @@ func (q *Queries) GetBestDefender(ctx context.Context, seasonID sql.NullInt64) (
 		var i GetBestDefenderRow
 		if err := rows.Scan(
 			&i.Position,
+			&i.PlayerID,
+			&i.TeamID,
 			&i.PlayerName,
 			&i.TeamName,
 			&i.MetricName,
@@ -478,6 +484,8 @@ func (q *Queries) GetBestDefender(ctx context.Context, seasonID sql.NullInt64) (
 const getBestForward = `-- name: GetBestForward :many
 SELECT
     'Delantero' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'shots_on_goal' AS metric_name,
@@ -497,13 +505,15 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Delantero' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, goals_scored DESC, assists DESC, f.name
 LIMIT 3
 `
 
 type GetBestForwardRow struct {
 	Position        string
+	PlayerID        int64
+	TeamID          sql.NullInt64
 	PlayerName      string
 	TeamName        string
 	MetricName      string
@@ -531,6 +541,8 @@ func (q *Queries) GetBestForward(ctx context.Context, seasonID sql.NullInt64) ([
 		var i GetBestForwardRow
 		if err := rows.Scan(
 			&i.Position,
+			&i.PlayerID,
+			&i.TeamID,
 			&i.PlayerName,
 			&i.TeamName,
 			&i.MetricName,
@@ -561,6 +573,8 @@ func (q *Queries) GetBestForward(ctx context.Context, seasonID sql.NullInt64) ([
 const getBestGoalkeeper = `-- name: GetBestGoalkeeper :one
 SELECT
     'Portero' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'saves_minus_goals_conceded' AS metric_name,
@@ -580,13 +594,15 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Portero' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, saves DESC, goals_conceded ASC, f.name
 LIMIT 1
 `
 
 type GetBestGoalkeeperRow struct {
 	Position        string
+	PlayerID        int64
+	TeamID          sql.NullInt64
 	PlayerName      string
 	TeamName        string
 	MetricName      string
@@ -607,6 +623,8 @@ func (q *Queries) GetBestGoalkeeper(ctx context.Context, seasonID sql.NullInt64)
 	var i GetBestGoalkeeperRow
 	err := row.Scan(
 		&i.Position,
+		&i.PlayerID,
+		&i.TeamID,
 		&i.PlayerName,
 		&i.TeamName,
 		&i.MetricName,
@@ -627,6 +645,8 @@ func (q *Queries) GetBestGoalkeeper(ctx context.Context, seasonID sql.NullInt64)
 const getBestMidfielder = `-- name: GetBestMidfielder :many
 SELECT
     'Mediocampo' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'passes_completed_plus_interceptions' AS metric_name,
@@ -646,13 +666,15 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Mediocampo' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, passes_completed DESC, interceptions DESC, f.name
 LIMIT 3
 `
 
 type GetBestMidfielderRow struct {
 	Position        string
+	PlayerID        int64
+	TeamID          sql.NullInt64
 	PlayerName      string
 	TeamName        string
 	MetricName      string
@@ -679,6 +701,8 @@ func (q *Queries) GetBestMidfielder(ctx context.Context, seasonID sql.NullInt64)
 		var i GetBestMidfielderRow
 		if err := rows.Scan(
 			&i.Position,
+			&i.PlayerID,
+			&i.TeamID,
 			&i.PlayerName,
 			&i.TeamName,
 			&i.MetricName,
@@ -1277,6 +1301,8 @@ func (q *Queries) ListCoaches(ctx context.Context) ([]ListCoachesRow, error) {
 
 const listCoachesByExperience = `-- name: ListCoachesByExperience :many
 SELECT
+    f.id,
+    f.team_id,
     f.name,
     f.number,
     c.experience_years,
@@ -1289,6 +1315,8 @@ ORDER BY c.championships_won DESC, c.experience_years DESC, f.name
 `
 
 type ListCoachesByExperienceRow struct {
+	ID               int64
+	TeamID           sql.NullInt64
 	Name             string
 	Number           sql.NullInt32
 	ExperienceYears  sql.NullInt32
@@ -1307,6 +1335,8 @@ func (q *Queries) ListCoachesByExperience(ctx context.Context) ([]ListCoachesByE
 	for rows.Next() {
 		var i ListCoachesByExperienceRow
 		if err := rows.Scan(
+			&i.ID,
+			&i.TeamID,
 			&i.Name,
 			&i.Number,
 			&i.ExperienceYears,
@@ -1450,6 +1480,9 @@ const listMatchesBetweenTeams = `-- name: ListMatchesBetweenTeams :many
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -1501,6 +1534,9 @@ type ListMatchesBetweenTeamsParams struct {
 type ListMatchesBetweenTeamsRow struct {
 	ID           int64
 	MatchDate    time.Time
+	HomeTeamID   sql.NullInt64
+	AwayTeamID   sql.NullInt64
+	StadiumID    sql.NullInt64
 	StadiumName  string
 	HomeTeamName string
 	AwayTeamName string
@@ -1523,6 +1559,9 @@ func (q *Queries) ListMatchesBetweenTeams(ctx context.Context, arg ListMatchesBe
 		if err := rows.Scan(
 			&i.ID,
 			&i.MatchDate,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.StadiumID,
 			&i.StadiumName,
 			&i.HomeTeamName,
 			&i.AwayTeamName,
@@ -1548,6 +1587,9 @@ const listMatchesBetweenTeamsAllSeasons = `-- name: ListMatchesBetweenTeamsAllSe
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -1597,6 +1639,9 @@ type ListMatchesBetweenTeamsAllSeasonsParams struct {
 type ListMatchesBetweenTeamsAllSeasonsRow struct {
 	ID           int64
 	MatchDate    time.Time
+	HomeTeamID   sql.NullInt64
+	AwayTeamID   sql.NullInt64
+	StadiumID    sql.NullInt64
 	StadiumName  string
 	HomeTeamName string
 	AwayTeamName string
@@ -1618,6 +1663,9 @@ func (q *Queries) ListMatchesBetweenTeamsAllSeasons(ctx context.Context, arg Lis
 		if err := rows.Scan(
 			&i.ID,
 			&i.MatchDate,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.StadiumID,
 			&i.StadiumName,
 			&i.HomeTeamName,
 			&i.AwayTeamName,
@@ -1932,6 +1980,9 @@ const listMatchesForDate = `-- name: ListMatchesForDate :many
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -1963,6 +2014,9 @@ ORDER BY m.id
 type ListMatchesForDateRow struct {
 	ID           int64
 	MatchDate    time.Time
+	HomeTeamID   sql.NullInt64
+	AwayTeamID   sql.NullInt64
+	StadiumID    sql.NullInt64
 	StadiumName  string
 	HomeTeamName string
 	AwayTeamName string
@@ -1984,6 +2038,9 @@ func (q *Queries) ListMatchesForDate(ctx context.Context, matchDate time.Time) (
 		if err := rows.Scan(
 			&i.ID,
 			&i.MatchDate,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.StadiumID,
 			&i.StadiumName,
 			&i.HomeTeamName,
 			&i.AwayTeamName,
@@ -2008,6 +2065,9 @@ const listMatchesForDateAndStadium = `-- name: ListMatchesForDateAndStadium :man
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -2045,6 +2105,9 @@ type ListMatchesForDateAndStadiumParams struct {
 type ListMatchesForDateAndStadiumRow struct {
 	ID           int64
 	MatchDate    time.Time
+	HomeTeamID   sql.NullInt64
+	AwayTeamID   sql.NullInt64
+	StadiumID    sql.NullInt64
 	StadiumName  string
 	HomeTeamName string
 	AwayTeamName string
@@ -2065,6 +2128,9 @@ func (q *Queries) ListMatchesForDateAndStadium(ctx context.Context, arg ListMatc
 		if err := rows.Scan(
 			&i.ID,
 			&i.MatchDate,
+			&i.HomeTeamID,
+			&i.AwayTeamID,
+			&i.StadiumID,
 			&i.StadiumName,
 			&i.HomeTeamName,
 			&i.AwayTeamName,

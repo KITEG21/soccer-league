@@ -407,6 +407,9 @@ ORDER BY points DESC, t.name;
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -452,6 +455,9 @@ ORDER BY m.match_date, m.id;
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -497,6 +503,9 @@ ORDER BY m.match_date, m.id;
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -528,6 +537,9 @@ ORDER BY m.id;
 SELECT
     m.id,
     m.match_date,
+    m.home_team_id,
+    m.away_team_id,
+    m.stadium_id,
     s.name AS stadium_name,
     ht.name AS home_team_name,
     at.name AS away_team_name,
@@ -559,6 +571,8 @@ ORDER BY m.id;
 -- Report 4: coaches by experience
 -- name: ListCoachesByExperience :many
 SELECT
+    f.id,
+    f.team_id,
     f.name,
     f.number,
     c.experience_years,
@@ -634,6 +648,8 @@ GROUP BY t.id, t.name;
 -- name: GetBestForward :many
 SELECT
     'Delantero' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'shots_on_goal' AS metric_name,
@@ -653,13 +669,15 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Delantero' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, goals_scored DESC, assists DESC, f.name
 LIMIT 3;
 
 -- name: GetBestMidfielder :many
 SELECT
     'Mediocampo' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'passes_completed_plus_interceptions' AS metric_name,
@@ -679,13 +697,15 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Mediocampo' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, passes_completed DESC, interceptions DESC, f.name
 LIMIT 3;
 
 -- name: GetBestDefender :many
 SELECT
     'Defensa' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'tackles_plus_blocks' AS metric_name,
@@ -705,13 +725,15 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Defensa' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, tackles DESC, blocks DESC, f.name
 LIMIT 4;
 
 -- name: GetBestGoalkeeper :one
 SELECT
     'Portero' AS position,
+    f.id AS player_id,
+    f.team_id,
     f.name AS player_name,
     COALESCE(t.name, '') AS team_name,
     'saves_minus_goals_conceded' AS metric_name,
@@ -731,7 +753,7 @@ JOIN PlayerStats ps ON ps.player_id = p.footballer_id
 JOIN Match m ON m.id = ps.match_id
 LEFT JOIN Team t ON t.id = f.team_id
 WHERE p.position = 'Portero' AND m.season_id = $1
-GROUP BY f.id, f.name, t.name
+GROUP BY f.id, f.team_id, f.name, t.name
 ORDER BY metric_value DESC, saves DESC, goals_conceded ASC, f.name
 LIMIT 1;
 

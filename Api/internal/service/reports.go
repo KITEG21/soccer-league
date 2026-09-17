@@ -27,6 +27,9 @@ type StandingRow struct {
 type MatchBetweenTeamsRow struct {
 	ID           int64  `json:"id"`
 	MatchDate    string `json:"match_date"`
+	HomeTeamID   int64  `json:"home_team_id"`
+	AwayTeamID   int64  `json:"away_team_id"`
+	StadiumID    int64  `json:"stadium_id"`
 	StadiumName  string `json:"stadium_name"`
 	HomeTeamName string `json:"home_team_name"`
 	AwayTeamName string `json:"away_team_name"`
@@ -39,6 +42,9 @@ type MatchBetweenTeamsRow struct {
 type MatchByDateRow struct {
 	ID           int64  `json:"id"`
 	MatchDate    string `json:"match_date"`
+	HomeTeamID   int64  `json:"home_team_id"`
+	AwayTeamID   int64  `json:"away_team_id"`
+	StadiumID    int64  `json:"stadium_id"`
 	StadiumName  string `json:"stadium_name"`
 	HomeTeamName string `json:"home_team_name"`
 	AwayTeamName string `json:"away_team_name"`
@@ -48,6 +54,8 @@ type MatchByDateRow struct {
 }
 
 type CoachReportRow struct {
+	ID               int64  `json:"id"`
+	TeamID           int64  `json:"team_id"`
 	Name             string `json:"name"`
 	Number           int32  `json:"number"`
 	ExperienceYears  int32  `json:"experience_years"`
@@ -80,6 +88,8 @@ type TeamStatusRow struct {
 
 type AllStarRow struct {
 	Position        string `json:"position"`
+	PlayerID        int64  `json:"player_id"`
+	TeamID          int64  `json:"team_id"`
 	PlayerName      string `json:"player_name"`
 	TeamName        string `json:"team_name"`
 	MetricName      string `json:"metric_name"`
@@ -184,6 +194,9 @@ func (s *ReportsService) MatchesBetweenTeams(ctx context.Context, team1ID, team2
 			result = append(result, &MatchBetweenTeamsRow{
 				ID:           row.ID,
 				MatchDate:    row.MatchDate.Format("2006-01-02"),
+				HomeTeamID:   fromNullInt64(row.HomeTeamID),
+				AwayTeamID:   fromNullInt64(row.AwayTeamID),
+				StadiumID:    fromNullInt64(row.StadiumID),
 				StadiumName:  row.StadiumName,
 				HomeTeamName: row.HomeTeamName,
 				AwayTeamName: row.AwayTeamName,
@@ -203,6 +216,9 @@ func (s *ReportsService) MatchesBetweenTeams(ctx context.Context, team1ID, team2
 		result = append(result, &MatchBetweenTeamsRow{
 			ID:           row.ID,
 			MatchDate:    row.MatchDate.Format("2006-01-02"),
+			HomeTeamID:   fromNullInt64(row.HomeTeamID),
+			AwayTeamID:   fromNullInt64(row.AwayTeamID),
+			StadiumID:    fromNullInt64(row.StadiumID),
 			StadiumName:  row.StadiumName,
 			HomeTeamName: row.HomeTeamName,
 			AwayTeamName: row.AwayTeamName,
@@ -233,6 +249,9 @@ func (s *ReportsService) MatchesByDate(ctx context.Context, date string, stadium
 			result = append(result, &MatchByDateRow{
 				ID:           row.ID,
 				MatchDate:    row.MatchDate.Format("2006-01-02"),
+				HomeTeamID:   fromNullInt64(row.HomeTeamID),
+				AwayTeamID:   fromNullInt64(row.AwayTeamID),
+				StadiumID:    fromNullInt64(row.StadiumID),
 				StadiumName:  row.StadiumName,
 				HomeTeamName: row.HomeTeamName,
 				AwayTeamName: row.AwayTeamName,
@@ -252,6 +271,9 @@ func (s *ReportsService) MatchesByDate(ctx context.Context, date string, stadium
 		result = append(result, &MatchByDateRow{
 			ID:           row.ID,
 			MatchDate:    row.MatchDate.Format("2006-01-02"),
+			HomeTeamID:   fromNullInt64(row.HomeTeamID),
+			AwayTeamID:   fromNullInt64(row.AwayTeamID),
+			StadiumID:    fromNullInt64(row.StadiumID),
 			StadiumName:  row.StadiumName,
 			HomeTeamName: row.HomeTeamName,
 			AwayTeamName: row.AwayTeamName,
@@ -271,6 +293,8 @@ func (s *ReportsService) CoachesByExperience(ctx context.Context) ([]*CoachRepor
 	var result []*CoachReportRow
 	for _, row := range rows {
 		result = append(result, &CoachReportRow{
+			ID:               row.ID,
+			TeamID:           fromNullInt64(row.TeamID),
 			Name:             row.Name,
 			Number:           nullInt32ToInt32(row.Number),
 			ExperienceYears:  nullInt32ToInt32(row.ExperienceYears),
@@ -374,24 +398,26 @@ func (s *ReportsService) AllStarTeam(ctx context.Context, seasonID int64) ([]*Al
 }
 
 func allStarRowFromForward(row store.GetBestForwardRow) AllStarRow {
-	return allStarRowFromCommon(row.Position, row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
+	return allStarRowFromCommon(row.Position, row.PlayerID, fromNullInt64(row.TeamID), row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
 }
 
 func allStarRowFromMidfielder(row store.GetBestMidfielderRow) AllStarRow {
-	return allStarRowFromCommon(row.Position, row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
+	return allStarRowFromCommon(row.Position, row.PlayerID, fromNullInt64(row.TeamID), row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
 }
 
 func allStarRowFromDefender(row store.GetBestDefenderRow) AllStarRow {
-	return allStarRowFromCommon(row.Position, row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
+	return allStarRowFromCommon(row.Position, row.PlayerID, fromNullInt64(row.TeamID), row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
 }
 
 func allStarRowFromGoalkeeper(row store.GetBestGoalkeeperRow) AllStarRow {
-	return allStarRowFromCommon(row.Position, row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
+	return allStarRowFromCommon(row.Position, row.PlayerID, fromNullInt64(row.TeamID), row.PlayerName, row.TeamName, row.MetricName, row.MetricValue, row.GoalsScored, row.Assists, row.ShotsOnGoal, row.PassesCompleted, row.Interceptions, row.Tackles, row.Blocks, row.Saves, row.GoalsConceded)
 }
 
-func allStarRowFromCommon(position, playerName, teamName, metricName string, metricValue, goalsScored, assists, shotsOnGoal, passesCompleted, interceptions, tackles, blocks, saves, goalsConceded any) AllStarRow {
+func allStarRowFromCommon(position string, playerID, teamID int64, playerName, teamName, metricName string, metricValue, goalsScored, assists, shotsOnGoal, passesCompleted, interceptions, tackles, blocks, saves, goalsConceded any) AllStarRow {
 	return AllStarRow{
 		Position:        position,
+		PlayerID:        playerID,
+		TeamID:          teamID,
 		PlayerName:      playerName,
 		TeamName:        teamName,
 		MetricName:      metricName,
