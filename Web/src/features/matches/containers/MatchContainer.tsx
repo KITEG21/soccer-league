@@ -8,13 +8,12 @@ import { seasonsApiService } from "../../seasons/services/api";
 import { MatchList } from "../components/MatchList";
 import { MatchForm } from "../components/MatchForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePermission } from "@/shared/hooks/use-permission";
 
 const PAGE_SIZE = 10;
 
 export const MatchContainer = () => {
-  const { role } = useAuth();
-  const canEdit = role === "admin" || role === "superadmin";
+  const canEdit = usePermission("matches:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMatch, setEditingMatch] = useState<Match | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

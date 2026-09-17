@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Pagination } from "@/shared/components/ui/pagination";
 import { TableCell, TableRow } from "@/shared/components/ui/table";
+import { usePermission } from "@/shared/hooks/use-permission";
 import type { User } from "../types";
 
 const COLUMNS = ["Email", "Rol", ""];
@@ -45,16 +46,20 @@ export function UserList({
   pageSize,
   onPageChange,
 }: UserListProps) {
+  const canWrite = usePermission("users:write");
+
   return (
     <>
       <PageHeader
         title="Usuarios"
         description="Gestiona quién puede acceder al panel y con qué rol"
         actions={
-          <Button onClick={onCreate}>
-            <Plus />
-            Nuevo usuario
-          </Button>
+          canWrite && (
+            <Button onClick={onCreate}>
+              <Plus />
+              Nuevo usuario
+            </Button>
+          )
         }
       />
 
@@ -90,7 +95,7 @@ export function UserList({
                 <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
               </TableCell>
               <TableCell className="text-right">
-                {!isCurrentUser && (
+                {canWrite && !isCurrentUser && (
                   <RowActions
                     onEdit={() => onEdit(user)}
                     onDelete={() => onDelete(user.id)}

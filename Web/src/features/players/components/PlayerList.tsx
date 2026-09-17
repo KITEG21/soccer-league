@@ -18,7 +18,7 @@ import { RowActions } from "@/shared/components/RowActions";
 import { playersApiService } from "../services/api";
 import { PlayerForm } from "./PlayerForm";
 import type { Player } from "../types";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePermission } from "@/shared/hooks/use-permission";
 
 interface PlayerListProps {
   readonly teamId: number;
@@ -33,8 +33,7 @@ export const PlayerList = ({
   autoCreate = false,
   onFormClose,
 }: PlayerListProps) => {
-  const { role } = useAuth();
-  const canEdit = role === "admin" || role === "superadmin";
+  const canEdit = usePermission("players:write");
   const [isFormOpen, setIsFormOpen] = useState(autoCreate && canEdit);
   const [editingPlayer, setEditingPlayer] = useState<Player | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

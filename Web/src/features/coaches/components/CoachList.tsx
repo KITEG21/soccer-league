@@ -17,7 +17,7 @@ import { RowActions } from "@/shared/components/RowActions";
 import { coachesApiService } from "../services/api";
 import { CoachForm } from "./CoachForm";
 import type { Coach } from "../types";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePermission } from "@/shared/hooks/use-permission";
 
 interface CoachListProps {
   readonly teamId: number;
@@ -32,8 +32,7 @@ export const CoachList = ({
   autoCreate = false,
   onFormClose,
 }: CoachListProps) => {
-  const { role } = useAuth();
-  const canEdit = role === "admin" || role === "superadmin";
+  const canEdit = usePermission("coaches:write");
   const [isFormOpen, setIsFormOpen] = useState(autoCreate && canEdit);
   const [editingCoach, setEditingCoach] = useState<Coach | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

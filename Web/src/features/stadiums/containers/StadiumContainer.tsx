@@ -5,13 +5,12 @@ import { stadiumsApiService } from "../services/api";
 import { StadiumList } from "../components/StadiumList";
 import { StadiumForm } from "../components/StadiumForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePermission } from "@/shared/hooks/use-permission";
 
 const PAGE_SIZE = 9;
 
 export const StadiumContainer = () => {
-  const { role } = useAuth();
-  const canEdit = role === "admin" || role === "superadmin";
+  const canEdit = usePermission("stadiums:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStadium, setEditingStadium] = useState<Stadium | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

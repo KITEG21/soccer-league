@@ -5,13 +5,12 @@ import { teamsApiService } from "../services/api";
 import { TeamList } from "../components/TeamList";
 import { TeamForm } from "../components/TeamForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePermission } from "@/shared/hooks/use-permission";
 
 const PAGE_SIZE = 9;
 
 export const TeamContainer = () => {
-  const { role } = useAuth();
-  const canEdit = role === "admin" || role === "superadmin";
+  const canEdit = usePermission("teams:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

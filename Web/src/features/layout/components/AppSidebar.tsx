@@ -18,11 +18,12 @@ import {
 } from "@/shared/components/ui/sidebar";
 import { navGroups } from "@/shared/config/navigation";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { getRoutePermission } from "@/shared/auth/routes";
 
 export const AppSidebar = () => {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
-  const { role } = useAuth();
+  const { can } = useAuth();
 
   const closeOnNavigate = () => {
     if (isMobile) setOpenMobile(false);
@@ -31,9 +32,10 @@ export const AppSidebar = () => {
   const visibleGroups = navGroups
     .map((group) => ({
       ...group,
-      items: group.items.filter(
-        (item) => !item.roles || (role && item.roles.includes(role)),
-      ),
+      items: group.items.filter((item) => {
+        const required = getRoutePermission(item.href);
+        return !required || can(required);
+      }),
     }))
     .filter((group) => group.items.length > 0);
 

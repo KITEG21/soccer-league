@@ -13,7 +13,7 @@ import { coachesApiService } from "../services/api";
 import { teamsApiService } from "@/features/teams/services/api";
 import { TeamPickerDialog } from "@/features/teams/components/TeamPickerDialog";
 import { Button } from "@/shared/components/ui/button";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePermission } from "@/shared/hooks/use-permission";
 
 const PAGE_SIZE = 10;
 const COLUMNS = [
@@ -25,8 +25,7 @@ const COLUMNS = [
 ];
 
 export const CoachGlobalList = () => {
-  const { role } = useAuth();
-  const canEdit = role === "admin" || role === "superadmin";
+  const canEdit = usePermission("coaches:write");
   const [page, setPage] = useState(1);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const router = useRouter();

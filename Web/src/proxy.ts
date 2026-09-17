@@ -7,7 +7,12 @@ import {
 } from "@/shared/auth/session";
 import { refreshAccessToken, type TokenPair } from "@/shared/auth/tokens";
 import { clearSessionCookies, setSessionCookies } from "@/shared/auth/cookies";
-import { isPublicRoute } from "@/shared/auth/routes";
+import {
+  FORBIDDEN_ROUTE,
+  getRoutePermission,
+  isPublicRoute,
+} from "@/shared/auth/routes";
+import { hasPermission } from "@/shared/auth/permissions";
 
 interface ResolvedSession {
   readonly claims: SessionClaims | null;
@@ -40,6 +45,11 @@ const resolveSession = async (request: NextRequest): Promise<ResolvedSession> =>
   };
 };
 
+const canAccessRoute = (claims: SessionClaims, pathname: string) => {
+  const required = getRoutePermission(pathname);
+  return !required || hasPermission(claims.permissions, required);
+};
+
 const redirectTo = (request: NextRequest, pathname: string) => {
   const url = request.nextUrl.clone();
   url.pathname = pathname;
@@ -57,6 +67,13 @@ export async function proxy(request: NextRequest) {
     response = redirectTo(request, "/login");
   } else if (claims && isPublic) {
     response = redirectTo(request, "/");
+  } else if (claims && !canAccessRoute(claims, pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = FORBIDDEN_ROUTE;
+    response = NextResponse.rewrite(url, {
+      status: 403,
+      request: { headers: request.headers },
+    });
   } else {
     response = NextResponse.next({ request: { headers: request.headers } });
   }

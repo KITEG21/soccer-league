@@ -5,11 +5,10 @@ import { seasonsApiService } from "../services/api";
 import { SeasonList } from "../components/SeasonList";
 import { SeasonForm } from "../components/SeasonForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
-import { useAuth } from "@/shared/contexts/AuthContext";
+import { usePermission } from "@/shared/hooks/use-permission";
 
 export const SeasonContainer = () => {
-  const { role } = useAuth();
-  const canEdit = role === "admin" || role === "superadmin";
+  const canEdit = usePermission("seasons:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
