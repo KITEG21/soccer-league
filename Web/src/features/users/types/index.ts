@@ -6,6 +6,7 @@ export interface User {
   id: number;
   email: string;
   role: Role;
+  created_at?: string;
 }
 
 export interface CreateUserRequest {

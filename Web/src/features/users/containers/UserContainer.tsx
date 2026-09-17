@@ -1,81 +1,73 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { User } from "../types";
 import { usersApiService } from "../services/api";
-import { UserList } from "../components/UserList";
+import { USER_FILTERS, UserList } from "../components/UserList";
 import { UserForm } from "../components/UserForm";
 import { UserRoleDialog } from "../components/UserRoleDialog";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { useListQuery } from "@/shared/components/data-table";
 import { ApiError } from "@/shared/utils/api-client";
 import { useAuth } from "@/shared/contexts/AuthContext";
 
-const PAGE_SIZE = 10;
+const getErrorMessage = (err: unknown) => {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof Error) return err.message;
+  return "Error al eliminar";
+};
 
 export const UserContainer = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | undefined>();
-  const [page, setPage] = useState(1);
-
   const queryClient = useQueryClient();
   const { userId } = useAuth();
+  const query = useListQuery({ filters: USER_FILTERS });
 
   const {
     data: usersPage,
     isLoading,
+    isFetching,
     error,
   } = useQuery({
-    queryKey: ["users", page],
-    queryFn: () => usersApiService.getUsersPage(page, PAGE_SIZE),
-    refetchOnWindowFocus: false,
+    queryKey: ["users", "list", query.apiParams],
+    queryFn: () => usersApiService.getUsersPage(query.apiParams),
+    placeholderData: keepPreviousData,
   });
-
-  const users = usersPage?.data ?? [];
-  const total = usersPage?.total ?? 0;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => usersApiService.deleteUser(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      if (users.length === 1 && page > 1) {
-        setPage((prev) => prev - 1);
-      }
-      setDeleteDialogOpen(false);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
       setUserToDelete(undefined);
     },
   });
 
-  const handleCreate = () => setIsFormOpen(true);
-  const handleEdit = (user: User) => setEditingUser(user);
   const handleDelete = (id: number) => {
     deleteMutation.reset();
     setUserToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const getErrorMessage = (err: unknown) => {
-    if (err instanceof ApiError) return err.message;
-    if (err instanceof Error) return err.message;
-    return "Error al eliminar";
   };
 
   return (
     <div className="space-y-6">
       <UserList
-        users={users}
+        users={usersPage?.data ?? []}
+        total={usersPage?.total ?? 0}
+        query={query}
         currentUserId={userId}
         isLoading={isLoading}
-        error={error instanceof Error ? error : null}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
+        isFetching={isFetching}
+        error={error}
+        onCreate={() => setIsFormOpen(true)}
+        onEdit={setEditingUser}
         onDelete={handleDelete}
-        page={page}
-        total={total}
-        pageSize={PAGE_SIZE}
-        onPageChange={setPage}
       />
       <UserForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
       <UserRoleDialog
@@ -84,9 +76,8 @@ export const UserContainer = () => {
         onClose={() => setEditingUser(undefined)}
       />
       <ConfirmDialog
-        isOpen={deleteDialogOpen}
+        isOpen={userToDelete !== undefined}
         onClose={() => {
-          setDeleteDialogOpen(false);
           setUserToDelete(undefined);
           deleteMutation.reset();
         }}

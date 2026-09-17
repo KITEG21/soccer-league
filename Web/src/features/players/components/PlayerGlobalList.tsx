@@ -1,54 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
-import { DataTable } from "@/shared/components/DataTable";
 import { Badge } from "@/shared/components/ui/badge";
-import { Pagination } from "@/shared/components/ui/pagination";
-import { TableCell, TableRow } from "@/shared/components/ui/table";
-import { playersApiService } from "../services/api";
-import { teamsApiService } from "@/features/teams/services/api";
-import { TeamPickerDialog } from "@/features/teams/components/TeamPickerDialog";
 import { Button } from "@/shared/components/ui/button";
+import {
+  DataTableToolbar,
+  ServerDataTable,
+  useListQuery,
+  type dataTableFeatures,
+  type FilterDefinition,
+} from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
+import { TeamPickerDialog } from "@/features/teams/components/TeamPickerDialog";
+import { useTeamOptions } from "@/features/teams/hooks/useTeamOptions";
+import { playersApiService } from "../services/api";
+import { PLAYER_POSITIONS } from "../constants";
+import type { Player } from "../types";
 
-const PAGE_SIZE = 10;
-const COLUMNS = ["#", "Nombre", "Equipo", "Posición", "Años en equipo"];
+const columnHelper = createColumnHelper<typeof dataTableFeatures, Player>();
 
 export const PlayerGlobalList = () => {
   const canEdit = usePermission("players:write");
-  const [page, setPage] = useState(1);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const router = useRouter();
+  const { options: teamOptions } = useTeamOptions();
+
+  const filters = useMemo<readonly FilterDefinition[]>(
+    () => [
+      { key: "team_id", label: "Equipo", type: "select", options: teamOptions },
+      { key: "position", label: "Posición", type: "select", options: PLAYER_POSITIONS },
+      { key: "years_in_team", label: "Años en equipo", type: "number-range", advanced: true },
+      { key: "number", label: "Dorsal", type: "text", placeholder: "Número exacto", advanced: true },
+    ],
+    [teamOptions],
+  );
+  const query = useListQuery({ filters });
 
   const {
     data: playersPage,
     isLoading: isLoadingPlayers,
+    isFetching,
     error,
   } = useQuery({
-    queryKey: ["players", page],
-    queryFn: () => playersApiService.getPlayersPage(page, PAGE_SIZE),
+    queryKey: ["players", "list", query.apiParams],
+    queryFn: () => playersApiService.getPlayersPage(query.apiParams),
+    placeholderData: keepPreviousData,
   });
 
-  const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
-    queryKey: ["teams"],
-    queryFn: () => teamsApiService.getTeams(),
-  });
-
-  const players = playersPage?.data ?? [];
-  const total = playersPage?.total ?? 0;
-
-  const rows = players.map((player) => ({
-    ...player,
-    team: player.team ?? teams.find((team) => team.id === player.team_id),
-  }));
+  const columns = columnHelper.columns([
+    columnHelper.accessor("number", {
+      header: "#",
+      cell: ({ getValue }) => (
+        <Badge variant="secondary" className="font-mono">
+          {getValue() ?? "—"}
+        </Badge>
+      ),
+    }),
+    columnHelper.accessor("name", {
+      header: "Nombre",
+      meta: { cellClassName: "font-medium" },
+    }),
+    columnHelper.accessor("team_name", {
+      header: "Equipo",
+      cell: ({ row }) =>
+        row.original.team_id ? (
+          <AppLink href={`/teams/${row.original.team_id}`}>
+            {row.original.team_name ?? `Equipo ${row.original.team_id}`}
+          </AppLink>
+        ) : (
+          <span className="text-muted-foreground">Sin equipo</span>
+        ),
+    }),
+    columnHelper.accessor("position", {
+      header: "Posición",
+      cell: ({ getValue }) => (
+        <span className="text-xs font-semibold uppercase text-primary">{getValue()}</span>
+      ),
+    }),
+    columnHelper.accessor("years_in_team", {
+      header: "Años en equipo",
+      cell: ({ getValue }) => getValue() ?? 0,
+      meta: { cellClassName: "tabular-nums" },
+    }),
+  ]);
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
         title="Jugadores"
         description="Listado global de jugadores registrados en la liga"
@@ -70,50 +113,20 @@ export const PlayerGlobalList = () => {
         description="Un jugador pertenece a un equipo. Selecciona uno para continuar con el alta."
       />
 
-      <DataTable
-        columns={COLUMNS}
-        isLoading={isLoadingPlayers || isLoadingTeams}
+      <DataTableToolbar query={query} searchPlaceholder="Buscar por nombre, posición o equipo…" />
+
+      <ServerDataTable
+        columns={columns}
+        data={playersPage?.data ?? []}
+        total={playersPage?.total ?? 0}
+        query={query}
+        getRowId={(player) => String(player.id)}
+        isLoading={isLoadingPlayers}
+        isFetching={isFetching}
         error={error}
         errorMessage="Error al cargar jugadores"
-        isEmpty={rows.length === 0}
         emptyMessage="No hay jugadores registrados"
-        footer={
-          <Pagination
-            page={page}
-            total={total}
-            pageSize={PAGE_SIZE}
-            onPageChange={setPage}
-          />
-        }
-      >
-        {rows.map((player) => (
-          <TableRow key={player.id}>
-            <TableCell>
-              <Badge variant="secondary" className="font-mono">
-                {player.number ?? "—"}
-              </Badge>
-            </TableCell>
-            <TableCell className="font-medium">{player.name}</TableCell>
-            <TableCell>
-              {player.team_id ? (
-                <AppLink href={`/teams/${player.team_id}`}>
-                  {player.team?.name ?? `Equipo ${player.team_id}`}
-                </AppLink>
-              ) : (
-                <span className="text-muted-foreground">Sin equipo</span>
-              )}
-            </TableCell>
-            <TableCell>
-              <span className="text-xs font-semibold uppercase text-primary">
-                {player.position}
-              </span>
-            </TableCell>
-            <TableCell className="tabular-nums">
-              {player.years_in_team ?? 0}
-            </TableCell>
-          </TableRow>
-        ))}
-      </DataTable>
-    </>
+      />
+    </div>
   );
 };

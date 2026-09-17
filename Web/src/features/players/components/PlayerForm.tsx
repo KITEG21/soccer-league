@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import { PLAYER_POSITIONS } from "../constants";
 
 interface PlayerFormProps {
   readonly teamId: number;
@@ -30,13 +31,6 @@ interface PlayerFormProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
 }
-
-const POSITIONS = [
-  { value: "Portero", label: "Portero" },
-  { value: "Defensa", label: "Defensa" },
-  { value: "Mediocampo", label: "Mediocampo" },
-  { value: "Delantero", label: "Delantero" },
-];
 
 export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps) => {
   const queryClient = useQueryClient();
@@ -186,7 +180,7 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
-                      {POSITIONS.map((pos) => (
+                      {PLAYER_POSITIONS.map((pos) => (
                         <SelectItem key={pos.value} value={pos.value}>
                           {pos.label}
                         </SelectItem>

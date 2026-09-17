@@ -1,15 +1,19 @@
+import { format, parseISO } from "date-fns";
 import { Plus } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
 import { PageHeader } from "@/shared/components/PageHeader";
-import { DataTable } from "@/shared/components/DataTable";
 import { RowActions } from "@/shared/components/RowActions";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Pagination } from "@/shared/components/ui/pagination";
-import { TableCell, TableRow } from "@/shared/components/ui/table";
+import {
+  DataTableToolbar,
+  ServerDataTable,
+  type dataTableFeatures,
+  type FilterDefinition,
+  type ListQueryState,
+} from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
 import type { User } from "../types";
-
-const COLUMNS = ["Email", "Rol", ""];
 
 const ROLE_LABELS: Record<User["role"], string> = {
   superadmin: "Superadmin",
@@ -17,34 +21,85 @@ const ROLE_LABELS: Record<User["role"], string> = {
   visitante: "Visitante",
 };
 
+export const USER_FILTERS: readonly FilterDefinition[] = [
+  {
+    key: "role",
+    label: "Rol",
+    type: "select",
+    options: Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label })),
+  },
+];
+
+const columnHelper = createColumnHelper<typeof dataTableFeatures, User>();
+
 interface UserListProps {
-  readonly users: User[];
+  readonly users: readonly User[];
+  readonly total: number;
+  readonly query: ListQueryState;
   readonly currentUserId: number | null;
   readonly isLoading: boolean;
+  readonly isFetching: boolean;
   readonly error: Error | null;
   readonly onCreate: () => void;
   readonly onEdit: (user: User) => void;
   readonly onDelete: (id: number) => void;
-  readonly page: number;
-  readonly total: number;
-  readonly pageSize: number;
-  readonly onPageChange: (page: number) => void;
 }
 
 export function UserList({
   users,
+  total,
+  query,
   currentUserId,
   isLoading,
+  isFetching,
   error,
   onCreate,
   onEdit,
   onDelete,
-  page,
-  total,
-  pageSize,
-  onPageChange,
 }: UserListProps) {
   const canWrite = usePermission("users:write");
+
+  const columns = columnHelper.columns([
+    columnHelper.accessor("email", {
+      header: "Email",
+      cell: ({ row }) => (
+        <>
+          {row.original.email}
+          {row.original.id === currentUserId && (
+            <Badge variant="outline" className="ml-2">
+              Tú
+            </Badge>
+          )}
+        </>
+      ),
+      meta: { cellClassName: "font-medium" },
+    }),
+    columnHelper.accessor("role", {
+      header: "Rol",
+      cell: ({ getValue }) => <Badge variant="secondary">{ROLE_LABELS[getValue()]}</Badge>,
+    }),
+    columnHelper.accessor("created_at", {
+      header: "Creado",
+      cell: ({ getValue }) => {
+        const value = getValue();
+        return value ? format(parseISO(value), "dd/MM/yyyy") : "—";
+      },
+      meta: { cellClassName: "tabular-nums text-muted-foreground" },
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "",
+      cell: ({ row }) =>
+        canWrite && row.original.id !== currentUserId ? (
+          <RowActions
+            onEdit={() => onEdit(row.original)}
+            onDelete={() => onDelete(row.original.id)}
+            editLabel="Cambiar rol"
+          />
+        ) : null,
+      meta: { cellClassName: "text-right" },
+    }),
+  ]);
 
   return (
     <>
@@ -61,50 +116,20 @@ export function UserList({
         }
       />
 
-      <DataTable
-        columns={COLUMNS}
+      <DataTableToolbar query={query} searchPlaceholder="Buscar por email…" />
+
+      <ServerDataTable
+        columns={columns}
+        data={users}
+        total={total}
+        query={query}
+        getRowId={(user) => String(user.id)}
         isLoading={isLoading}
+        isFetching={isFetching}
         error={error}
         errorMessage="Error al cargar usuarios"
-        isEmpty={users.length === 0}
         emptyMessage="No hay usuarios registrados"
-        footer={
-          <Pagination
-            page={page}
-            total={total}
-            pageSize={pageSize}
-            onPageChange={onPageChange}
-          />
-        }
-      >
-        {users.map((user) => {
-          const isCurrentUser = user.id === currentUserId;
-          return (
-            <TableRow key={user.id}>
-              <TableCell className="font-medium">
-                {user.email}
-                {isCurrentUser && (
-                  <Badge variant="outline" className="ml-2">
-                    Tú
-                  </Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                {canWrite && !isCurrentUser && (
-                  <RowActions
-                    onEdit={() => onEdit(user)}
-                    onDelete={() => onDelete(user.id)}
-                    editLabel="Cambiar rol"
-                  />
-                )}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </DataTable>
+      />
     </>
   );
 }

@@ -5,9 +5,12 @@ import type { Stadium } from "../../stadiums/types";
 export interface Match {
   id: number;
   home_team_id: number;
+  home_team_name?: string;
   away_team_id: number;
+  away_team_name?: string;
   season_id: number;
   stadium_id: number;
+  stadium_name?: string;
   match_date: string;
   home_goals: number;
   away_goals: number;

@@ -1,81 +1,86 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { Match } from "../types";
 import { matchesApiService } from "../services/api";
-import { teamsApiService } from "../../teams/services/api";
 import { stadiumsApiService } from "../../stadiums/services/api";
 import { seasonsApiService } from "../../seasons/services/api";
+import { getSeasonLabel } from "../../seasons/utils";
+import { useTeamOptions } from "../../teams/hooks/useTeamOptions";
 import { MatchList } from "../components/MatchList";
 import { MatchForm } from "../components/MatchForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { useListQuery, type FilterDefinition } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
-
-const PAGE_SIZE = 10;
 
 export const MatchContainer = () => {
   const canEdit = usePermission("matches:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMatch, setEditingMatch] = useState<Match | undefined>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [matchToDelete, setMatchToDelete] = useState<number | undefined>();
-  const [page, setPage] = useState(1);
-  const [selectedSeason, setSelectedSeason] = useState<string>("");
-
   const queryClient = useQueryClient();
-
-  const {
-    data: matchesPage,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["matches", page, selectedSeason],
-    queryFn: () =>
-      matchesApiService.getMatchesPage(
-        page,
-        PAGE_SIZE,
-        selectedSeason ? Number.parseInt(selectedSeason) : undefined
-      ),
-    refetchOnWindowFocus: false,
-  });
-
-  const matches = matchesPage?.data ?? [];
-  const total = matchesPage?.total ?? 0;
+  const { options: teamOptions } = useTeamOptions();
 
   const { data: seasons = [] } = useQuery({
     queryKey: ["seasons"],
     queryFn: () => seasonsApiService.getSeasons(),
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: teams = [] } = useQuery({
-    queryKey: ["teams"],
-    queryFn: () => teamsApiService.getTeams(),
-    refetchOnWindowFocus: false,
   });
 
   const { data: stadiums = [] } = useQuery({
     queryKey: ["stadiums"],
     queryFn: () => stadiumsApiService.getStadiums(),
-    refetchOnWindowFocus: false,
   });
 
-  const matchesWithNames = matches.map((match) => ({
-    ...match,
-    home_team: match.home_team || teams.find((t) => t.id === match.home_team_id),
-    away_team: match.away_team || teams.find((t) => t.id === match.away_team_id),
-    stadium: match.stadium || stadiums.find((s) => s.id === match.stadium_id),
-  }));
+  const filters = useMemo<readonly FilterDefinition[]>(
+    () => [
+      {
+        key: "season_id",
+        label: "Temporada",
+        type: "select",
+        options: seasons.map((season) => ({
+          value: String(season.id),
+          label: getSeasonLabel(season),
+        })),
+      },
+      { key: "team_id", label: "Equipo", type: "select", options: teamOptions },
+      { key: "disputed", label: "Disputado", type: "boolean" },
+      {
+        key: "stadium_id",
+        label: "Estadio",
+        type: "select",
+        options: stadiums.map((stadium) => ({ value: String(stadium.id), label: stadium.name })),
+        advanced: true,
+      },
+      { key: "home_team_id", label: "Equipo local", type: "select", options: teamOptions, advanced: true },
+      { key: "away_team_id", label: "Equipo visitante", type: "select", options: teamOptions, advanced: true },
+      { key: "date", label: "Fecha", type: "date-range", advanced: true },
+      { key: "attendance", label: "Asistencia", type: "number-range", advanced: true },
+    ],
+    [seasons, stadiums, teamOptions],
+  );
+  const query = useListQuery({ filters });
+
+  const {
+    data: matchesPage,
+    isLoading,
+    isFetching,
+    error,
+  } = useQuery({
+    queryKey: ["matches", "list", query.apiParams],
+    queryFn: () => matchesApiService.getMatchesPage(query.apiParams),
+    placeholderData: keepPreviousData,
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => matchesApiService.deleteMatch(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["matches"] });
-      if (matches.length === 1 && page > 1) {
-        setPage((prev) => prev - 1);
-      }
-      setDeleteDialogOpen(false);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["matches"] });
       setMatchToDelete(undefined);
     },
   });
@@ -91,19 +96,13 @@ export const MatchContainer = () => {
   };
 
   const handleDelete = (id: number) => {
+    deleteMutation.reset();
     setMatchToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (matchToDelete !== undefined) {
-      deleteMutation.mutate(matchToDelete);
-    }
   };
 
   const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
     setMatchToDelete(undefined);
+    deleteMutation.reset();
   };
 
   const handleCloseForm = () => {
@@ -111,27 +110,18 @@ export const MatchContainer = () => {
     setEditingMatch(undefined);
   };
 
-  const handleSeasonChange = (season: string) => {
-    setSelectedSeason(season);
-    setPage(1);
-  };
-
   return (
     <div className="space-y-6">
       <MatchList
-        matches={matchesWithNames}
+        matches={matchesPage?.data ?? []}
+        total={matchesPage?.total ?? 0}
+        query={query}
         isLoading={isLoading}
-        error={error instanceof Error ? error : null}
+        isFetching={isFetching}
+        error={error}
         onCreate={canEdit ? handleCreate : undefined}
         onEdit={canEdit ? handleEdit : undefined}
         onDelete={canEdit ? handleDelete : undefined}
-        page={page}
-        total={total}
-        pageSize={PAGE_SIZE}
-        onPageChange={setPage}
-        seasons={seasons}
-        selectedSeason={selectedSeason}
-        onSeasonChange={handleSeasonChange}
       />
       {canEdit && (
         <MatchForm
@@ -141,9 +131,9 @@ export const MatchContainer = () => {
         />
       )}
       <ConfirmDialog
-        isOpen={deleteDialogOpen}
+        isOpen={matchToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
-        onConfirm={handleConfirmDelete}
+        onConfirm={() => matchToDelete !== undefined && deleteMutation.mutate(matchToDelete)}
         title="Eliminar Partido"
         description="¿Estás seguro de que quieres eliminar este partido? Esta acción no se puede deshacer."
         confirmText="Eliminar"
