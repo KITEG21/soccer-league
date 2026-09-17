@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 )
 
 var (
@@ -15,6 +16,14 @@ var (
 	ErrEmailTaken         = errors.New("email already exists")
 	ErrSelfModification   = errors.New("cannot modify your own user")
 )
+
+type TooManyAttemptsError struct {
+	RetryAfter time.Duration
+}
+
+func (e *TooManyAttemptsError) Error() string {
+	return "too many login attempts"
+}
 
 // ValidationError es una estructura que agrupa todos los errores de validación
 type ValidationError struct {

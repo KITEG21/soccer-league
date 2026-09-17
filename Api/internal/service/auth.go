@@ -21,17 +21,28 @@ import (
 const (
 	AccessTokenTTL  = 15 * time.Minute
 	RefreshTokenTTL = 7 * 24 * time.Hour
+
+	loginAttemptWindow       = 15 * time.Minute
+	maxFailedLoginsByAccount = 5
+	maxFailedLoginsByClient  = 20
 )
 
 var dummyPasswordHash, _ = bcrypt.GenerateFromPassword([]byte("dummy-password"), bcrypt.DefaultCost)
 
 type AuthService struct {
-	store  *store.Queries
-	secret []byte
+	store          *store.Queries
+	secret         []byte
+	accountLimiter *LoginLimiter
+	clientLimiter  *LoginLimiter
 }
 
 func NewAuthService(s *store.Queries, secret string) *AuthService {
-	return &AuthService{store: s, secret: []byte(secret)}
+	return &AuthService{
+		store:          s,
+		secret:         []byte(secret),
+		accountLimiter: NewLoginLimiter(maxFailedLoginsByAccount, loginAttemptWindow),
+		clientLimiter:  NewLoginLimiter(maxFailedLoginsByClient, loginAttemptWindow),
+	}
 }
 
 type LoginRequest struct {
@@ -59,10 +70,19 @@ type AccessClaims struct {
 	jwt.RegisteredClaims
 }
 
-func (s *AuthService) Login(ctx context.Context, req LoginRequest) (*TokenPair, error) {
-	user, err := s.store.GetUserByEmail(ctx, normalizeEmail(req.Email))
+func (s *AuthService) Login(ctx context.Context, req LoginRequest, clientIP string) (*TokenPair, error) {
+	email := normalizeEmail(req.Email)
+	accountKey := "account:" + email
+	clientKey := "client:" + clientIP
+
+	if wait := max(s.accountLimiter.RetryAfter(accountKey), s.clientLimiter.RetryAfter(clientKey)); wait > 0 {
+		return nil, &TooManyAttemptsError{RetryAfter: wait}
+	}
+
+	user, err := s.store.GetUserByEmail(ctx, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		_ = bcrypt.CompareHashAndPassword(dummyPasswordHash, []byte(req.Password))
+		s.recordFailedLogin(accountKey, clientKey)
 		return nil, ErrInvalidCredentials
 	}
 	if err != nil {
@@ -70,10 +90,17 @@ func (s *AuthService) Login(ctx context.Context, req LoginRequest) (*TokenPair, 
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		s.recordFailedLogin(accountKey, clientKey)
 		return nil, ErrInvalidCredentials
 	}
 
+	s.accountLimiter.Reset(accountKey)
 	return s.issueTokens(ctx, user)
+}
+
+func (s *AuthService) recordFailedLogin(accountKey, clientKey string) {
+	s.accountLimiter.RecordFailure(accountKey)
+	s.clientLimiter.RecordFailure(clientKey)
 }
 
 func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*TokenPair, error) {
