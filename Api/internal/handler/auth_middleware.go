@@ -35,7 +35,17 @@ func RequireAuth(auth *service.AuthService) func(http.Handler) http.Handler {
 	}
 }
 
-func RequireRole(roles ...string) func(http.Handler) http.Handler {
+func RequirePermission(permission service.Permission) func(http.Handler) http.Handler {
+	return authorize(func(*http.Request) service.Permission { return permission })
+}
+
+func AuthorizeResource(resource string) func(http.Handler) http.Handler {
+	return authorize(func(r *http.Request) service.Permission {
+		return service.NewPermission(resource, actionForMethod(r.Method))
+	})
+}
+
+func authorize(required func(*http.Request) service.Permission) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			user, ok := CurrentUser(r)
@@ -43,12 +53,21 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 				writeError(w, http.StatusUnauthorized, "unauthorized")
 				return
 			}
-			if !user.HasRole(roles...) {
+			if !user.Can(required(r)) {
 				writeError(w, http.StatusForbidden, "forbidden")
 				return
 			}
 			next.ServeHTTP(w, r)
 		})
+	}
+}
+
+func actionForMethod(method string) service.Action {
+	switch method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+		return service.ActionRead
+	default:
+		return service.ActionWrite
 	}
 }
 

@@ -91,7 +91,7 @@ func main() {
 		r.Use(handler.RequireAuth(authSvc))
 
 		r.Route("/users", func(r chi.Router) {
-			r.Use(handler.RequireRole(service.RoleSuperadmin))
+			r.Use(handler.AuthorizeResource(service.ResourceUsers))
 			r.Get("/", userHandler.List)
 			r.Post("/", userHandler.Create)
 			r.Get("/{id}", userHandler.Get)
@@ -100,6 +100,7 @@ func main() {
 		})
 
 		r.Route("/teams", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourceTeams))
 			r.Post("/", teamHandler.Create)
 			r.Get("/", teamHandler.List)
 			r.Get("/{id}", teamHandler.Get)
@@ -108,6 +109,7 @@ func main() {
 		})
 
 		r.Route("/stadiums", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourceStadiums))
 			r.Post("/", stadiumHandler.Create)
 			r.Get("/", stadiumHandler.List)
 			r.Get("/{id}", stadiumHandler.Get)
@@ -116,6 +118,7 @@ func main() {
 		})
 
 		r.Route("/seasons", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourceSeasons))
 			r.Post("/", seasonHandler.Create)
 			r.Get("/", seasonHandler.List)
 			r.Get("/{id}", seasonHandler.Get)
@@ -124,6 +127,7 @@ func main() {
 		})
 
 		r.Route("/players", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourcePlayers))
 			r.Post("/", playerHandler.CreatePlayer)
 			r.Get("/", playerHandler.ListPlayers)
 			r.Get("/{id}", playerHandler.GetPlayer)
@@ -132,6 +136,7 @@ func main() {
 		})
 
 		r.Route("/matches", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourceMatches))
 			r.Post("/", matchHandler.Create)
 			r.Get("/", matchHandler.List)
 			r.Get("/{id}", matchHandler.Get)
@@ -140,6 +145,7 @@ func main() {
 		})
 
 		r.Route("/player-stats", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourcePlayerStats))
 			r.Post("/", playerStatsHandler.Create)
 			r.Get("/", playerStatsHandler.List)
 			r.Get("/{id}", playerStatsHandler.Get)
@@ -148,6 +154,7 @@ func main() {
 		})
 
 		r.Route("/coaches", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourceCoaches))
 			r.Post("/", playerHandler.CreateCoach)
 			r.Get("/", playerHandler.ListCoaches)
 			r.Get("/{id}", playerHandler.GetCoach)
@@ -156,6 +163,7 @@ func main() {
 		})
 
 		r.Route("/reports", func(r chi.Router) {
+			r.Use(handler.AuthorizeResource(service.ResourceReports))
 			r.Get("/standings", reportsHandler.Standings)
 			r.Get("/matches-between-teams", reportsHandler.MatchesBetweenTeams)
 			r.Get("/matches-by-date", reportsHandler.MatchesByDate)
