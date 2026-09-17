@@ -34,23 +34,13 @@ func (h *MatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MatchHandler) List(w http.ResponseWriter, r *http.Request) {
-	limit, offset := parsePagination(r)
-	var seasonID *int64
-	if v := r.URL.Query().Get("season_id"); v != "" {
-		id, err := strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			http.Error(w, "invalid season_id", http.StatusBadRequest)
-			return
-		}
-		seasonID = &id
-	}
-	matches, total, err := h.svc.List(r.Context(), limit, offset, seasonID)
+	query := parseListQuery(r)
+	result, err := h.svc.List(r.Context(), query)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeListError(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newPagedResponse(matches, total, limit, offset))
+	writeJSON(w, http.StatusOK, newPagedResponse(result.Items, result.Total, query.Limit, query.Offset))
 }
 
 func (h *MatchHandler) Get(w http.ResponseWriter, r *http.Request) {

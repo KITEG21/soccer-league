@@ -116,10 +116,10 @@ func (s *PlayerService) GetPlayer(ctx context.Context, id int64) (*Player, error
 	}, nil
 }
 
-func (s *PlayerService) ListPlayers(ctx context.Context, limit, offset int) ([]*Player, int, error) {
+func (s *PlayerService) ListPlayers(ctx context.Context, query ListQuery) (ListResult[*Player], error) {
 	rows, err := s.store.ListPlayers(ctx)
 	if err != nil {
-		return nil, 0, err
+		return ListResult[*Player]{}, err
 	}
 	var players []*Player
 	for _, row := range rows {
@@ -132,8 +132,7 @@ func (s *PlayerService) ListPlayers(ctx context.Context, limit, offset int) ([]*
 			Position:    row.Position,
 		})
 	}
-	page, total := paginateSlice(players, limit, offset)
-	return page, total, nil
+	return ApplyListQuery(players, playerListSpec, query)
 }
 
 func (s *PlayerService) UpdatePlayer(ctx context.Context, id int64, req CreatePlayerRequest) error {
@@ -202,10 +201,10 @@ func (s *PlayerService) GetCoach(ctx context.Context, id int64) (*Coach, error) 
 	}, nil
 }
 
-func (s *PlayerService) ListCoaches(ctx context.Context, limit, offset int) ([]*Coach, int, error) {
+func (s *PlayerService) ListCoaches(ctx context.Context, query ListQuery) (ListResult[*Coach], error) {
 	rows, err := s.store.ListCoaches(ctx)
 	if err != nil {
-		return nil, 0, err
+		return ListResult[*Coach]{}, err
 	}
 	var coaches []*Coach
 	for _, row := range rows {
@@ -219,8 +218,7 @@ func (s *PlayerService) ListCoaches(ctx context.Context, limit, offset int) ([]*
 			ChampionshipsWon: nullInt32ToInt32(row.ChampionshipsWon),
 		})
 	}
-	page, total := paginateSlice(coaches, limit, offset)
-	return page, total, nil
+	return ApplyListQuery(coaches, coachListSpec, query)
 }
 
 func (s *PlayerService) UpdateCoach(ctx context.Context, id int64, req CreateCoachRequest) error {

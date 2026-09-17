@@ -42,14 +42,13 @@ func (h *SeasonHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SeasonHandler) List(w http.ResponseWriter, r *http.Request) {
-	limit, offset := parsePagination(r)
-	seasons, err := h.svc.List(r.Context(), limit, offset)
+	query := parseListQuery(r)
+	result, err := h.svc.List(r.Context(), query)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeListError(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(seasons)
+	writeJSON(w, http.StatusOK, result.Items)
 }
 
 func (h *SeasonHandler) Get(w http.ResponseWriter, r *http.Request) {

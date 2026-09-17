@@ -39,14 +39,13 @@ func (h *TeamHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TeamHandler) List(w http.ResponseWriter, r *http.Request) {
-	limit, offset := parsePagination(r)
-	teams, total, err := h.svc.List(r.Context(), limit, offset)
+	query := parseListQuery(r)
+	result, err := h.svc.List(r.Context(), query)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeListError(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newPagedResponse(teams, total, limit, offset))
+	writeJSON(w, http.StatusOK, newPagedResponse(result.Items, result.Total, query.Limit, query.Offset))
 }
 
 func (h *TeamHandler) Get(w http.ResponseWriter, r *http.Request) {

@@ -19,13 +19,13 @@ func NewUserHandler(svc *service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
-	limit, offset := parsePagination(r)
-	users, total, err := h.svc.List(r.Context(), limit, offset)
+	query := parseListQuery(r)
+	result, err := h.svc.List(r.Context(), query)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "internal server error")
+		writeListError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, newPagedResponse(users, total, limit, offset))
+	writeJSON(w, http.StatusOK, newPagedResponse(result.Items, result.Total, query.Limit, query.Offset))
 }
 
 func (h *UserHandler) Get(w http.ResponseWriter, r *http.Request) {

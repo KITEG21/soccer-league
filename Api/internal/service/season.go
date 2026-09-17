@@ -68,10 +68,10 @@ func (s *SeasonService) Get(ctx context.Context, id int64) (*Season, error) {
 	}, nil
 }
 
-func (s *SeasonService) List(ctx context.Context, limit, offset int) ([]*Season, error) {
+func (s *SeasonService) List(ctx context.Context, query ListQuery) (ListResult[*Season], error) {
 	rows, err := s.store.ListSeasons(ctx)
 	if err != nil {
-		return nil, err
+		return ListResult[*Season]{}, err
 	}
 
 	var seasons []*Season
@@ -82,8 +82,7 @@ func (s *SeasonService) List(ctx context.Context, limit, offset int) ([]*Season,
 			EndDate:   fromNullTime(se.EndDate),
 		})
 	}
-	page, _ := paginateSlice(seasons, limit, offset)
-	return page, nil
+	return ApplyListQuery(seasons, seasonListSpec, query)
 }
 
 func (s *SeasonService) Update(ctx context.Context, id int64, req UpdateSeasonRequest) (*Season, error) {

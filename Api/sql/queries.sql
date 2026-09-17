@@ -802,11 +802,7 @@ SELECT id, email, password_hash, role, created_at FROM Users WHERE email = $1;
 -- name: ListUsers :many
 SELECT id, email, password_hash, role, created_at
 FROM Users
-ORDER BY id
-LIMIT $1 OFFSET $2;
-
--- name: CountUsers :one
-SELECT COUNT(*) FROM Users;
+ORDER BY id;
 
 -- name: CountUsersByRole :one
 SELECT COUNT(*) FROM Users WHERE role = $1;

@@ -11,17 +11,6 @@ import (
 	"time"
 )
 
-const countUsers = `-- name: CountUsers :one
-SELECT COUNT(*) FROM Users
-`
-
-func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countUsers)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const countUsersByRole = `-- name: CountUsersByRole :one
 SELECT COUNT(*) FROM Users WHERE role = $1
 `
@@ -2491,16 +2480,10 @@ const listUsers = `-- name: ListUsers :many
 SELECT id, email, password_hash, role, created_at
 FROM Users
 ORDER BY id
-LIMIT $1 OFFSET $2
 `
 
-type ListUsersParams struct {
-	Limit  int32
-	Offset int32
-}
-
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUsers, arg.Limit, arg.Offset)
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}

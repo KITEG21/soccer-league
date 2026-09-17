@@ -64,21 +64,16 @@ func (u *User) HasRole(roles ...string) bool {
 	return false
 }
 
-func (s *UserService) List(ctx context.Context, limit, offset int) ([]*User, int, error) {
-	limit, offset = normalizePagination(limit, offset)
-	total, err := s.store.CountUsers(ctx)
+func (s *UserService) List(ctx context.Context, query ListQuery) (ListResult[*User], error) {
+	rows, err := s.store.ListUsers(ctx)
 	if err != nil {
-		return nil, 0, err
-	}
-	rows, err := s.store.ListUsers(ctx, store.ListUsersParams{Limit: int32(limit), Offset: int32(offset)})
-	if err != nil {
-		return nil, 0, err
+		return ListResult[*User]{}, err
 	}
 	users := make([]*User, len(rows))
 	for i, row := range rows {
 		users[i] = toUser(row)
 	}
-	return users, int(total), nil
+	return ApplyListQuery(users, userListSpec, query)
 }
 
 func (s *UserService) Get(ctx context.Context, id int64) (*User, error) {

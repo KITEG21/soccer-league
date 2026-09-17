@@ -150,22 +150,14 @@ func (s *TeamService) Get(ctx context.Context, id int64) (*Team, error) {
 	}, nil
 }
 
-func (s *TeamService) List(ctx context.Context, limit, offset int) ([]*Team, int, error) {
+func (s *TeamService) List(ctx context.Context, query ListQuery) (ListResult[*Team], error) {
 	rows, err := s.store.ListTeams(ctx)
 	if err != nil {
-		return nil, 0, err
+		return ListResult[*Team]{}, err
 	}
 
-	var teams []*Team
+	teams := make([]*Team, 0, len(rows))
 	for _, t := range rows {
-		players, err := s.fetchPlayersByTeam(ctx, t.ID)
-		if err != nil {
-			return nil, 0, err
-		}
-		coaches, err := s.fetchCoachesByTeam(ctx, t.ID)
-		if err != nil {
-			return nil, 0, err
-		}
 		teams = append(teams, &Team{
 			ID:                  t.ID,
 			Name:                t.Name,
@@ -174,12 +166,22 @@ func (s *TeamService) List(ctx context.Context, limit, offset int) ([]*Team, int
 			Color:               fromNullString(t.Color),
 			ChampionshipsPlayed: fromNullInt32(t.ChampionshipsPlayed),
 			ChampionshipsWon:    fromNullInt32(t.ChampionshipsWon),
-			Players:             players,
-			Coaches:             coaches,
 		})
 	}
-	page, total := paginateSlice(teams, limit, offset)
-	return page, total, nil
+
+	result, err := ApplyListQuery(teams, teamListSpec, query)
+	if err != nil {
+		return ListResult[*Team]{}, err
+	}
+	for _, team := range result.Items {
+		if team.Players, err = s.fetchPlayersByTeam(ctx, team.ID); err != nil {
+			return ListResult[*Team]{}, err
+		}
+		if team.Coaches, err = s.fetchCoachesByTeam(ctx, team.ID); err != nil {
+			return ListResult[*Team]{}, err
+		}
+	}
+	return result, nil
 }
 
 func (s *TeamService) Update(ctx context.Context, id int64, req UpdateTeamRequest) (*Team, error) {

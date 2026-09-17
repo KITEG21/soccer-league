@@ -39,14 +39,13 @@ func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlayerHandler) ListPlayers(w http.ResponseWriter, r *http.Request) {
-	limit, offset := parsePagination(r)
-	players, total, err := h.svc.ListPlayers(r.Context(), limit, offset)
+	query := parseListQuery(r)
+	result, err := h.svc.ListPlayers(r.Context(), query)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeListError(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newPagedResponse(players, total, limit, offset))
+	writeJSON(w, http.StatusOK, newPagedResponse(result.Items, result.Total, query.Limit, query.Offset))
 }
 
 func (h *PlayerHandler) GetPlayer(w http.ResponseWriter, r *http.Request) {
@@ -121,14 +120,13 @@ func (h *PlayerHandler) CreateCoach(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlayerHandler) ListCoaches(w http.ResponseWriter, r *http.Request) {
-	limit, offset := parsePagination(r)
-	coaches, total, err := h.svc.ListCoaches(r.Context(), limit, offset)
+	query := parseListQuery(r)
+	result, err := h.svc.ListCoaches(r.Context(), query)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeListError(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newPagedResponse(coaches, total, limit, offset))
+	writeJSON(w, http.StatusOK, newPagedResponse(result.Items, result.Total, query.Limit, query.Offset))
 }
 
 func (h *PlayerHandler) GetCoach(w http.ResponseWriter, r *http.Request) {

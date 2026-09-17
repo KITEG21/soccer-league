@@ -125,27 +125,16 @@ func newMatch(row matchRow) *Match {
 	}
 }
 
-func (s *MatchService) List(ctx context.Context, limit, offset int, seasonID *int64) ([]*Match, int, error) {
-	var matches []*Match
-	if seasonID != nil {
-		rows, err := s.store.ListMatchesBySeason(ctx, int64ToNullInt64(*seasonID))
-		if err != nil {
-			return nil, 0, err
-		}
-		for _, row := range rows {
-			matches = append(matches, newMatch(matchRow(row)))
-		}
-	} else {
-		rows, err := s.store.ListMatches(ctx)
-		if err != nil {
-			return nil, 0, err
-		}
-		for _, row := range rows {
-			matches = append(matches, newMatch(matchRow(row)))
-		}
+func (s *MatchService) List(ctx context.Context, query ListQuery) (ListResult[*Match], error) {
+	rows, err := s.store.ListMatches(ctx)
+	if err != nil {
+		return ListResult[*Match]{}, err
 	}
-	page, total := paginateSlice(matches, limit, offset)
-	return page, total, nil
+	matches := make([]*Match, 0, len(rows))
+	for _, row := range rows {
+		matches = append(matches, newMatch(matchRow(row)))
+	}
+	return ApplyListQuery(matches, matchListSpec, query)
 }
 
 func (s *MatchService) Update(ctx context.Context, id int64, req UpdateMatchRequest) (*Match, error) {
