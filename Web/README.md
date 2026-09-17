@@ -42,7 +42,6 @@ src/
   proxy.ts             # gate de sesión, previo al renderizado
   app/                 # rutas del App Router
     layout.tsx         # lee la cookie de sesión y monta los providers
-    api/auth/          # logout
     api/backend/       # reenvía las llamadas a la API de Go
     globals.css        # tema Tailwind (claro/oscuro vía clase .dark)
   features/            # módulos por dominio

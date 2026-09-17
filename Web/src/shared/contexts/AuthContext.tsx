@@ -5,17 +5,16 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import type { Role } from "@/shared/auth/session";
 import {
   hasPermission,
   type Permission,
   type PermissionRequirement,
 } from "@/shared/auth/permissions";
-import { WEB_API_ROUTES } from "@/shared/config/routes";
+import { logoutAction } from "@/features/auth/actions/logout";
 
 export interface AuthSession {
   readonly userId: number | null;
@@ -39,28 +38,13 @@ interface AuthProviderProps {
   readonly session: AuthSession | null;
 }
 
-const sessionKey = (session: AuthSession | null) =>
-  session
-    ? `${session.userId}|${session.role}|${session.permissions.join(",")}`
-    : "";
-
-export const AuthProvider = ({ children, session: serverSession }: AuthProviderProps) => {
-  const [session, setSession] = useState<AuthSession | null>(serverSession);
-  const [syncedKey, setSyncedKey] = useState(sessionKey(serverSession));
-  const router = useRouter();
-
-  const serverKey = sessionKey(serverSession);
-  if (serverKey !== syncedKey) {
-    setSyncedKey(serverKey);
-    setSession(serverSession);
-  }
+export const AuthProvider = ({ children, session }: AuthProviderProps) => {
+  const queryClient = useQueryClient();
 
   const logout = useCallback(async () => {
-    await fetch(WEB_API_ROUTES.logout, { method: "POST" });
-    setSession(null);
-    router.replace("/login");
-    router.refresh();
-  }, [router]);
+    queryClient.clear();
+    await logoutAction();
+  }, [queryClient]);
 
   const can = useCallback(
     (requirement: PermissionRequirement) =>
