@@ -1,5 +1,10 @@
 ﻿param(
-    [string]$BaseUrl = "http://localhost:8080"
+    [string]$BaseUrl = "http://localhost:8080",
+    [string]$Email = "admin@soccerleague.com",
+    [string]$Password = "admin1234",
+    [string]$DbContainer = "soccer-league-postgres",
+    [string]$DbUser = "postgres",
+    [string]$DbName = "football"
 )
 
 $base = $BaseUrl
@@ -8,7 +13,7 @@ function Wait-ServerReady {
     param($url, $retries = 20)
     for ($i = 0; $i -lt $retries; $i++) {
         try {
-            Invoke-RestMethod -Method Get -Uri "$url/teams" -ErrorAction Stop | Out-Null
+            Invoke-RestMethod -Method Get -Uri "$url/openapi.json" -ErrorAction Stop | Out-Null
             Write-Host "Server is ready."
             return $true
         } catch {
@@ -20,14 +25,59 @@ function Wait-ServerReady {
     return $false
 }
 
+function Initialize-Superadmin {
+    param($email, $password)
+    if (([uri]$base).Host -notin @("localhost", "127.0.0.1")) {
+        Write-Host "Remote API detected, skipping superadmin seeding."
+        return
+    }
+    $sql = @"
+SET client_min_messages TO WARNING;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+INSERT INTO Users (email, password_hash, role)
+VALUES (:'email', crypt(:'password', gen_salt('bf', 10)), 'superadmin')
+ON CONFLICT (email) DO NOTHING;
+"@
+    $sql | docker exec -i $DbContainer psql -q -U $DbUser -d $DbName -v ON_ERROR_STOP=1 -v "email=$($email.Trim().ToLower())" -v "password=$password" | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Failed to seed superadmin in container $DbContainer" }
+    Write-Host "Superadmin ready: $email"
+}
+
+function Get-Json($url) {
+    $response = Invoke-WebRequest -Method Get -Uri $url -Headers $script:AuthHeaders -UseBasicParsing -ErrorAction Stop
+    $json = [System.Text.Encoding]::UTF8.GetString($response.RawContentStream.ToArray())
+    return ConvertFrom-Json $json
+}
+
+function Get-All($path) {
+    $items = @()
+    $offset = 0
+    do {
+        $separator = if ($path.Contains("?")) { "&" } else { "?" }
+        $page = Get-Json "$base$path$($separator)limit=100&offset=$offset"
+        if ($null -eq $page) { return }
+        if ($null -eq $page.PSObject.Properties["total"]) { return $page }
+        $items += @($page.data)
+        $offset += 100
+    } while ($offset -lt $page.total)
+    return $items
+}
+
+function Connect-Api {
+    param($url, $email, $password)
+    $body = @{ email = $email; password = $password } | ConvertTo-Json
+    $tokens = Invoke-RestMethod -Method Post -Uri "$url/auth/login" -Body $body -ContentType "application/json" -ErrorAction Stop
+    return @{ Authorization = "Bearer $($tokens.access_token)" }
+}
+
 function PostJson($url, $body) {
     $jsonBytes = [System.Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json -Depth 5))
-    return Invoke-RestMethod -Method Post -Uri $url -Body $jsonBytes -ContentType "application/json; charset=utf-8"
+    return Invoke-RestMethod -Method Post -Uri $url -Body $jsonBytes -ContentType "application/json; charset=utf-8" -Headers $script:AuthHeaders
 }
 
 function PutJson($url, $body) {
     $jsonBytes = [System.Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json -Depth 5))
-    return Invoke-RestMethod -Method Put -Uri $url -Body $jsonBytes -ContentType "application/json; charset=utf-8"
+    return Invoke-RestMethod -Method Put -Uri $url -Body $jsonBytes -ContentType "application/json; charset=utf-8" -Headers $script:AuthHeaders
 }
 
 function Get-StatsForPosition($position) {
@@ -81,6 +131,8 @@ function Get-StatsForPosition($position) {
 }
 
 if (-not (Wait-ServerReady -url $base)) { exit 1 }
+Initialize-Superadmin -email $Email -password $Password
+$script:AuthHeaders = Connect-Api -url $base -email $Email -password $Password
 
 # ---------- Teams ----------
 $teamsData = @(
@@ -94,7 +146,7 @@ $teamsData = @(
     @{name="Mineros de Holguín"; province="Holguín"; mascot="Minero"; color="#4527A0"; championships_played=7; championships_won=0}
 )
 
-$existingTeams = Invoke-RestMethod -Method Get -Uri "$base/teams?limit=200" -ErrorAction SilentlyContinue
+$existingTeams = @(Get-All "/teams")
 $createdTeams = @()
 foreach ($t in $teamsData) {
     $found = $null
@@ -120,7 +172,7 @@ $stadiumsData = @(
     @{name="Estadio Central de Holguín"; capacity=15000}
 )
 
-$existingStadiums = Invoke-RestMethod -Method Get -Uri "$base/stadiums?limit=200" -ErrorAction SilentlyContinue
+$existingStadiums = @(Get-All "/stadiums")
 $createdStadiums = @()
 foreach ($s in $stadiumsData) {
     $found = $null
@@ -138,7 +190,7 @@ foreach ($s in $stadiumsData) {
 Write-Host "Created/Found stadiums:" ($createdStadiums | ForEach-Object { "$($_.id):$($_.name)" })
 
 # ---------- Seasons ----------
-$existingSeasons = Invoke-RestMethod -Method Get -Uri "$base/seasons?limit=200" -ErrorAction SilentlyContinue
+$existingSeasons = @(Get-All "/seasons")
 
 $seasonPastDates = @{start_date="2025-01-05"; end_date="2025-11-30"}
 $seasonCurrentDates = @{start_date="2026-01-10"; end_date="2026-12-20"}
@@ -177,8 +229,8 @@ $rosterTemplate = @(
     "Delantero","Delantero","Delantero"
 )
 
-$allPlayers = Invoke-RestMethod -Method Get -Uri "$base/players?limit=500" -ErrorAction SilentlyContinue
-$allCoaches = Invoke-RestMethod -Method Get -Uri "$base/coaches?limit=500" -ErrorAction SilentlyContinue
+$allPlayers = @(Get-All "/players")
+$allCoaches = @(Get-All "/coaches")
 
 $players = @()
 $coaches = @()
@@ -238,7 +290,7 @@ function New-RoundRobinPairs($teams, $count) {
 }
 
 $today = Get-Date "2026-06-19"
-$existingMatches = Invoke-RestMethod -Method Get -Uri "$base/matches?limit=500" -ErrorAction SilentlyContinue
+$existingMatches = @(Get-All "/matches")
 
 function Add-MatchWithStats($homeTeam, $awayTeam, $seasonId, $stadium, $matchDate, $disputed, $allPlayers) {
     $capacity = if ($stadium.capacity -gt 0) { $stadium.capacity } else { 10000 }
@@ -267,9 +319,7 @@ function Add-MatchWithStats($homeTeam, $awayTeam, $seasonId, $stadium, $matchDat
 }
 
 $matches = @()
-$existingMatchCount = 0
-if ($existingMatches) { $existingMatchCount = @($existingMatches).Count }
-if ($existingMatchCount -lt 1) {
+if ($existingMatches.Count -lt 1) {
     $stadiumIdx = 0
 
     # Past season: fully disputed matches
