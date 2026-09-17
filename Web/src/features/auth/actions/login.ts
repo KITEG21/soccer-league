@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { setSessionCookies } from "@/shared/auth/cookies";
 import type { TokenPair } from "@/shared/auth/tokens";
@@ -13,6 +13,21 @@ export interface LoginState {
 }
 
 const MAX_FIELD_LENGTH = 256;
+
+const getClientIp = async () => {
+  const requestHeaders = await headers();
+  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwardedFor || requestHeaders.get("x-real-ip")?.trim() || null;
+};
+
+const retryMessage = (retryAfterHeader: string | null) => {
+  const seconds = Number(retryAfterHeader);
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return "Demasiados intentos fallidos. Inténtalo de nuevo más tarde.";
+  }
+  const minutes = Math.ceil(seconds / 60);
+  return `Demasiados intentos fallidos. Inténtalo de nuevo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`;
+};
 
 const readField = (formData: FormData, name: string) => {
   const value = formData.get(name);
@@ -38,11 +53,16 @@ export async function loginAction(
     return { error: "El servidor no está configurado correctamente.", email };
   }
 
+  const clientIp = await getClientIp();
+
   let response: Response;
   try {
     response = await fetch(`${apiUrl}${API_ROUTES.auth.login}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(clientIp ? { "X-Forwarded-For": clientIp } : {}),
+      },
       body: JSON.stringify({ email, password }),
       cache: "no-store",
     });
@@ -50,6 +70,9 @@ export async function loginAction(
     return { error: "No se pudo contactar con la API.", email };
   }
 
+  if (response.status === 429) {
+    return { error: retryMessage(response.headers.get("Retry-After")), email };
+  }
   if (!response.ok) {
     return { error: "Credenciales incorrectas. Intenta de nuevo.", email };
   }
