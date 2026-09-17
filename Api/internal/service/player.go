@@ -16,21 +16,23 @@ func NewPlayerService(s *store.Queries) *PlayerService {
 }
 
 type Player struct {
-	ID           int64  `json:"id"`
-	TeamID       int64  `json:"team_id"`
-	Name         string `json:"name"`
-	Number       int32  `json:"number"`
-	YearsInTeam  int32  `json:"years_in_team"`
-	Position     string `json:"position"`
+	ID          int64  `json:"id"`
+	TeamID      int64  `json:"team_id"`
+	TeamName    string `json:"team_name,omitempty"`
+	Name        string `json:"name"`
+	Number      int32  `json:"number"`
+	YearsInTeam int32  `json:"years_in_team"`
+	Position    string `json:"position"`
 }
 
 type Coach struct {
-	ID              int64  `json:"id"`
-	TeamID          int64  `json:"team_id"`
-	Name            string `json:"name"`
-	Number          int32  `json:"number"`
-	YearsInTeam     int32  `json:"years_in_team"`
-	ExperienceYears int32  `json:"experience_years"`
+	ID               int64  `json:"id"`
+	TeamID           int64  `json:"team_id"`
+	TeamName         string `json:"team_name,omitempty"`
+	Name             string `json:"name"`
+	Number           int32  `json:"number"`
+	YearsInTeam      int32  `json:"years_in_team"`
+	ExperienceYears  int32  `json:"experience_years"`
 	ChampionshipsWon int32  `json:"championships_won"`
 }
 
@@ -121,18 +123,28 @@ func (s *PlayerService) ListPlayers(ctx context.Context, query ListQuery) (ListR
 	if err != nil {
 		return ListResult[*Player]{}, err
 	}
-	var players []*Player
+	teamNames, err := teamNamesByID(ctx, s.store)
+	if err != nil {
+		return ListResult[*Player]{}, err
+	}
+	players := make([]*Player, 0, len(rows))
 	for _, row := range rows {
-		players = append(players, &Player{
-			ID:          row.ID,
-			TeamID:      nullInt64ToInt64(row.TeamID),
-			Name:        row.Name,
-			Number:      nullInt32ToInt32(row.Number),
-			YearsInTeam: nullInt32ToInt32(row.YearsInTeam),
-			Position:    row.Position,
-		})
+		player := playerFromListRow(row)
+		player.TeamName = teamNames[player.TeamID]
+		players = append(players, player)
 	}
 	return ApplyListQuery(players, playerListSpec, query)
+}
+
+func playerFromListRow(row store.ListPlayersRow) *Player {
+	return &Player{
+		ID:          row.ID,
+		TeamID:      nullInt64ToInt64(row.TeamID),
+		Name:        row.Name,
+		Number:      nullInt32ToInt32(row.Number),
+		YearsInTeam: nullInt32ToInt32(row.YearsInTeam),
+		Position:    row.Position,
+	}
 }
 
 func (s *PlayerService) UpdatePlayer(ctx context.Context, id int64, req CreatePlayerRequest) error {
@@ -206,19 +218,29 @@ func (s *PlayerService) ListCoaches(ctx context.Context, query ListQuery) (ListR
 	if err != nil {
 		return ListResult[*Coach]{}, err
 	}
-	var coaches []*Coach
+	teamNames, err := teamNamesByID(ctx, s.store)
+	if err != nil {
+		return ListResult[*Coach]{}, err
+	}
+	coaches := make([]*Coach, 0, len(rows))
 	for _, row := range rows {
-		coaches = append(coaches, &Coach{
-			ID:              row.ID,
-			TeamID:          nullInt64ToInt64(row.TeamID),
-			Name:            row.Name,
-			Number:          nullInt32ToInt32(row.Number),
-			YearsInTeam:     nullInt32ToInt32(row.YearsInTeam),
-			ExperienceYears: nullInt32ToInt32(row.ExperienceYears),
-			ChampionshipsWon: nullInt32ToInt32(row.ChampionshipsWon),
-		})
+		coach := coachFromListRow(row)
+		coach.TeamName = teamNames[coach.TeamID]
+		coaches = append(coaches, coach)
 	}
 	return ApplyListQuery(coaches, coachListSpec, query)
+}
+
+func coachFromListRow(row store.ListCoachesRow) *Coach {
+	return &Coach{
+		ID:               row.ID,
+		TeamID:           nullInt64ToInt64(row.TeamID),
+		Name:             row.Name,
+		Number:           nullInt32ToInt32(row.Number),
+		YearsInTeam:      nullInt32ToInt32(row.YearsInTeam),
+		ExperienceYears:  nullInt32ToInt32(row.ExperienceYears),
+		ChampionshipsWon: nullInt32ToInt32(row.ChampionshipsWon),
+	}
 }
 
 func (s *PlayerService) UpdateCoach(ctx context.Context, id int64, req CreateCoachRequest) error {

@@ -106,6 +106,37 @@ func normalizeName(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }
 
+func nonNilSlice[T any](items []T) []T {
+	if items == nil {
+		return []T{}
+	}
+	return items
+}
+
+func teamNamesByID(ctx context.Context, q *store.Queries) (map[int64]string, error) {
+	teams, err := q.ListTeams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	names := make(map[int64]string, len(teams))
+	for _, team := range teams {
+		names[team.ID] = team.Name
+	}
+	return names, nil
+}
+
+func stadiumNamesByID(ctx context.Context, q *store.Queries) (map[int64]string, error) {
+	stadiums, err := q.ListStadiums(ctx)
+	if err != nil {
+		return nil, err
+	}
+	names := make(map[int64]string, len(stadiums))
+	for _, stadium := range stadiums {
+		names[stadium.ID] = stadium.Name
+	}
+	return names, nil
+}
+
 func teamNameConflictsWithStadiums(ctx context.Context, q *store.Queries, name string) (bool, error) {
 	stadiums, err := q.ListStadiums(ctx)
 	if err != nil {

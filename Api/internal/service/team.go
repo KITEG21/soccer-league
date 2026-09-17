@@ -23,6 +23,8 @@ type Team struct {
 	Color               string    `json:"color,omitempty"`
 	ChampionshipsPlayed int32     `json:"championships_played,omitempty"`
 	ChampionshipsWon    int32     `json:"championships_won,omitempty"`
+	PlayersCount        int       `json:"players_count"`
+	CoachesCount        int       `json:"coaches_count"`
 	Players             []*Player `json:"players,omitempty"`
 	Coaches             []*Coach  `json:"coaches,omitempty"`
 }
@@ -145,6 +147,8 @@ func (s *TeamService) Get(ctx context.Context, id int64) (*Team, error) {
 		Color:               fromNullString(t.Color),
 		ChampionshipsPlayed: fromNullInt32(t.ChampionshipsPlayed),
 		ChampionshipsWon:    fromNullInt32(t.ChampionshipsWon),
+		PlayersCount:        len(players),
+		CoachesCount:        len(coaches),
 		Players:             players,
 		Coaches:             coaches,
 	}, nil
@@ -154,6 +158,26 @@ func (s *TeamService) List(ctx context.Context, query ListQuery) (ListResult[*Te
 	rows, err := s.store.ListTeams(ctx)
 	if err != nil {
 		return ListResult[*Team]{}, err
+	}
+
+	playerRows, err := s.store.ListPlayers(ctx)
+	if err != nil {
+		return ListResult[*Team]{}, err
+	}
+	coachRows, err := s.store.ListCoaches(ctx)
+	if err != nil {
+		return ListResult[*Team]{}, err
+	}
+
+	playersByTeam := make(map[int64][]*Player)
+	for _, row := range playerRows {
+		player := playerFromListRow(row)
+		playersByTeam[player.TeamID] = append(playersByTeam[player.TeamID], player)
+	}
+	coachesByTeam := make(map[int64][]*Coach)
+	for _, row := range coachRows {
+		coach := coachFromListRow(row)
+		coachesByTeam[coach.TeamID] = append(coachesByTeam[coach.TeamID], coach)
 	}
 
 	teams := make([]*Team, 0, len(rows))
@@ -166,6 +190,8 @@ func (s *TeamService) List(ctx context.Context, query ListQuery) (ListResult[*Te
 			Color:               fromNullString(t.Color),
 			ChampionshipsPlayed: fromNullInt32(t.ChampionshipsPlayed),
 			ChampionshipsWon:    fromNullInt32(t.ChampionshipsWon),
+			PlayersCount:        len(playersByTeam[t.ID]),
+			CoachesCount:        len(coachesByTeam[t.ID]),
 		})
 	}
 
@@ -174,12 +200,8 @@ func (s *TeamService) List(ctx context.Context, query ListQuery) (ListResult[*Te
 		return ListResult[*Team]{}, err
 	}
 	for _, team := range result.Items {
-		if team.Players, err = s.fetchPlayersByTeam(ctx, team.ID); err != nil {
-			return ListResult[*Team]{}, err
-		}
-		if team.Coaches, err = s.fetchCoachesByTeam(ctx, team.ID); err != nil {
-			return ListResult[*Team]{}, err
-		}
+		team.Players = nonNilSlice(playersByTeam[team.ID])
+		team.Coaches = nonNilSlice(coachesByTeam[team.ID])
 	}
 	return result, nil
 }

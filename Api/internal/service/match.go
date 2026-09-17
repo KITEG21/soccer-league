@@ -18,16 +18,19 @@ func NewMatchService(s *store.Queries) *MatchService {
 }
 
 type Match struct {
-	ID         int64  `json:"id"`
-	HomeTeamID int64  `json:"home_team_id"`
-	AwayTeamID int64  `json:"away_team_id"`
-	SeasonID   int64  `json:"season_id"`
-	StadiumID  int64  `json:"stadium_id"`
-	MatchDate  string `json:"match_date"`
-	HomeGoals  int32  `json:"home_goals"`
-	AwayGoals  int32  `json:"away_goals"`
-	Attendance int32  `json:"attendance"`
-	Disputed   bool   `json:"disputed"`
+	ID           int64  `json:"id"`
+	HomeTeamID   int64  `json:"home_team_id"`
+	HomeTeamName string `json:"home_team_name,omitempty"`
+	AwayTeamID   int64  `json:"away_team_id"`
+	AwayTeamName string `json:"away_team_name,omitempty"`
+	SeasonID     int64  `json:"season_id"`
+	StadiumID    int64  `json:"stadium_id"`
+	StadiumName  string `json:"stadium_name,omitempty"`
+	MatchDate    string `json:"match_date"`
+	HomeGoals    int32  `json:"home_goals"`
+	AwayGoals    int32  `json:"away_goals"`
+	Attendance   int32  `json:"attendance"`
+	Disputed     bool   `json:"disputed"`
 }
 
 type CreateMatchRequest struct {
@@ -94,7 +97,28 @@ func (s *MatchService) Get(ctx context.Context, id int64) (*Match, error) {
 	if err != nil {
 		return nil, err
 	}
-	return matchFromStore(row), nil
+	match := matchFromStore(row)
+	if err := s.attachNames(ctx, []*Match{match}); err != nil {
+		return nil, err
+	}
+	return match, nil
+}
+
+func (s *MatchService) attachNames(ctx context.Context, matches []*Match) error {
+	teamNames, err := teamNamesByID(ctx, s.store)
+	if err != nil {
+		return err
+	}
+	stadiumNames, err := stadiumNamesByID(ctx, s.store)
+	if err != nil {
+		return err
+	}
+	for _, match := range matches {
+		match.HomeTeamName = teamNames[match.HomeTeamID]
+		match.AwayTeamName = teamNames[match.AwayTeamID]
+		match.StadiumName = stadiumNames[match.StadiumID]
+	}
+	return nil
 }
 
 type matchRow struct {
@@ -133,6 +157,9 @@ func (s *MatchService) List(ctx context.Context, query ListQuery) (ListResult[*M
 	matches := make([]*Match, 0, len(rows))
 	for _, row := range rows {
 		matches = append(matches, newMatch(matchRow(row)))
+	}
+	if err := s.attachNames(ctx, matches); err != nil {
+		return ListResult[*Match]{}, err
 	}
 	return ApplyListQuery(matches, matchListSpec, query)
 }
