@@ -91,6 +91,7 @@ func main() {
 		r.Use(handler.RequireAuth(authSvc))
 
 		r.Route("/users", func(r chi.Router) {
+			r.Use(handler.RequireRole(service.RoleSuperadmin))
 			r.Get("/", userHandler.List)
 			r.Post("/", userHandler.Create)
 			r.Get("/{id}", userHandler.Get)

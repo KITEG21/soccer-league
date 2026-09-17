@@ -67,7 +67,12 @@ func (h *UserHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	user, err := h.svc.UpdateRole(r.Context(), id, req)
+	actor, ok := CurrentUser(r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	user, err := h.svc.UpdateRole(r.Context(), actor, id, req)
 	if err != nil {
 		h.writeServiceError(w, err)
 		return
@@ -81,7 +86,12 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	if err := h.svc.Delete(r.Context(), id); err != nil {
+	actor, ok := CurrentUser(r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	if err := h.svc.Delete(r.Context(), actor, id); err != nil {
 		h.writeServiceError(w, err)
 		return
 	}
@@ -96,6 +106,8 @@ func (h *UserHandler) writeServiceError(w http.ResponseWriter, err error) {
 		writeError(w, http.StatusNotFound, "not found")
 	case errors.Is(err, service.ErrEmailTaken):
 		writeError(w, http.StatusConflict, err.Error())
+	case errors.Is(err, service.ErrSelfModification):
+		writeError(w, http.StatusForbidden, err.Error())
 	default:
 		writeError(w, http.StatusInternalServerError, "internal server error")
 	}

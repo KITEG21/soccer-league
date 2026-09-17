@@ -13,6 +13,7 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidToken       = errors.New("invalid token")
 	ErrEmailTaken         = errors.New("email already exists")
+	ErrSelfModification   = errors.New("cannot modify your own user")
 )
 
 // ValidationError es una estructura que agrupa todos los errores de validación

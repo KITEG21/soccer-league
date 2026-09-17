@@ -132,11 +132,14 @@ func (s *UserService) Create(ctx context.Context, req CreateUserRequest) (*User,
 	return toUser(row), nil
 }
 
-func (s *UserService) UpdateRole(ctx context.Context, id int64, req UpdateUserRoleRequest) (*User, error) {
+func (s *UserService) UpdateRole(ctx context.Context, actor *User, id int64, req UpdateUserRoleRequest) (*User, error) {
 	if !IsValidRole(req.Role) {
 		validationErr := NewValidationError()
 		validationErr.Add("role", "invalid role")
 		return nil, validationErr
+	}
+	if actor.ID == id {
+		return nil, ErrSelfModification
 	}
 
 	row, err := s.store.UpdateUserRole(ctx, store.UpdateUserRoleParams{ID: id, Role: req.Role})
@@ -149,7 +152,10 @@ func (s *UserService) UpdateRole(ctx context.Context, id int64, req UpdateUserRo
 	return toUser(row), nil
 }
 
-func (s *UserService) Delete(ctx context.Context, id int64) error {
+func (s *UserService) Delete(ctx context.Context, actor *User, id int64) error {
+	if actor.ID == id {
+		return ErrSelfModification
+	}
 	affected, err := s.store.DeleteUser(ctx, id)
 	if err != nil {
 		return err
