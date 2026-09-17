@@ -1,39 +1,69 @@
 import { Plus } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
 import { PageHeader } from "@/shared/components/PageHeader";
-import { DataTable } from "@/shared/components/DataTable";
 import { RowActions } from "@/shared/components/RowActions";
 import { Button } from "@/shared/components/ui/button";
-import { Pagination } from "@/shared/components/ui/pagination";
-import { TableCell, TableRow } from "@/shared/components/ui/table";
+import {
+  DataTableToolbar,
+  ServerDataTable,
+  type dataTableFeatures,
+  type FilterDefinition,
+  type ListQueryState,
+} from "@/shared/components/data-table";
 import type { Stadium } from "../types";
 
-const COLUMNS = ["Estadio", "Capacidad", ""];
+export const STADIUM_FILTERS: readonly FilterDefinition[] = [
+  { key: "capacity", label: "Capacidad", type: "number-range" },
+];
+
+const columnHelper = createColumnHelper<typeof dataTableFeatures, Stadium>();
 
 interface StadiumListProps {
-  readonly stadiums: Stadium[];
+  readonly stadiums: readonly Stadium[];
+  readonly total: number;
+  readonly query: ListQueryState;
   readonly isLoading: boolean;
+  readonly isFetching: boolean;
   readonly error: Error | null;
   readonly onCreate?: () => void;
   readonly onEdit?: (stadium: Stadium) => void;
   readonly onDelete?: (id: number) => void;
-  readonly page: number;
-  readonly total: number;
-  readonly pageSize: number;
-  readonly onPageChange: (page: number) => void;
 }
 
 export function StadiumList({
   stadiums,
+  total,
+  query,
   isLoading,
+  isFetching,
   error,
   onCreate,
   onEdit,
   onDelete,
-  page,
-  total,
-  pageSize,
-  onPageChange,
 }: StadiumListProps) {
+  const columns = columnHelper.columns([
+    columnHelper.accessor("name", {
+      header: "Estadio",
+      meta: { cellClassName: "font-medium" },
+    }),
+    columnHelper.accessor("capacity", {
+      header: "Capacidad",
+      cell: ({ getValue }) => getValue()?.toLocaleString("es") ?? 0,
+      meta: { cellClassName: "tabular-nums text-muted-foreground" },
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <RowActions
+          onEdit={onEdit ? () => onEdit(row.original) : undefined}
+          onDelete={onDelete ? () => onDelete(row.original.id) : undefined}
+        />
+      ),
+      meta: { cellClassName: "text-right" },
+    }),
+  ]);
+
   return (
     <>
       <PageHeader
@@ -49,12 +79,18 @@ export function StadiumList({
         }
       />
 
-      <DataTable
-        columns={COLUMNS}
+      <DataTableToolbar query={query} searchPlaceholder="Buscar estadio…" />
+
+      <ServerDataTable
+        columns={columns}
+        data={stadiums}
+        total={total}
+        query={query}
+        getRowId={(stadium) => String(stadium.id)}
         isLoading={isLoading}
+        isFetching={isFetching}
         error={error}
         errorMessage="Error al cargar estadios"
-        isEmpty={stadiums.length === 0}
         emptyMessage="No hay estadios registrados"
         emptyAction={
           onCreate && (
@@ -63,30 +99,7 @@ export function StadiumList({
             </Button>
           )
         }
-        footer={
-          <Pagination
-            page={page}
-            total={total}
-            pageSize={pageSize}
-            onPageChange={onPageChange}
-          />
-        }
-      >
-        {stadiums.map((stadium) => (
-          <TableRow key={stadium.id}>
-            <TableCell className="font-medium">{stadium.name}</TableCell>
-            <TableCell className="tabular-nums text-muted-foreground">
-              {stadium.capacity?.toLocaleString("es") ?? 0}
-            </TableCell>
-            <TableCell className="text-right">
-              <RowActions
-                onEdit={onEdit ? () => onEdit(stadium) : undefined}
-                onDelete={onDelete ? () => onDelete(stadium.id) : undefined}
-              />
-            </TableCell>
-          </TableRow>
-        ))}
-      </DataTable>
+      />
     </>
   );
 }

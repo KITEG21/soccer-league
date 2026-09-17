@@ -2,6 +2,7 @@ import type { Coach, CreateCoachRequest, UpdateCoachRequest } from "../types";
 import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 import { API_ROUTES } from "@/shared/config/routes";
+import type { ListApiParams } from "@/shared/components/data-table";
 
 class CoachesApiService {
   async getCoaches(): Promise<Coach[]> {
@@ -9,9 +10,8 @@ class CoachesApiService {
     return res.data;
   }
 
-  async getCoachesPage(page: number, pageSize: number): Promise<PaginatedResponse<Coach>> {
-    const offset = (page - 1) * pageSize;
-    return apiRequest<PaginatedResponse<Coach>>(API_ROUTES.coaches.collection({ limit: pageSize, offset }));
+  async getCoachesPage(params: ListApiParams): Promise<PaginatedResponse<Coach>> {
+    return apiRequest<PaginatedResponse<Coach>>(API_ROUTES.coaches.collection(params));
   }
 
   async getCoach(id: number): Promise<Coach> {

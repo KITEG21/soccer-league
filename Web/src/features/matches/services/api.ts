@@ -2,6 +2,7 @@ import type { Match, CreateMatchRequest, UpdateMatchRequest } from "../types";
 import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 import { API_ROUTES } from "@/shared/config/routes";
+import type { ListApiParams } from "@/shared/components/data-table";
 
 class MatchesApiService {
   async getMatches(): Promise<Match[]> {
@@ -9,9 +10,8 @@ class MatchesApiService {
     return res.data;
   }
 
-  async getMatchesPage(page: number, pageSize: number, seasonId?: number): Promise<PaginatedResponse<Match>> {
-    const offset = (page - 1) * pageSize;
-    return apiRequest<PaginatedResponse<Match>>(API_ROUTES.matches.collection({ limit: pageSize, offset, season_id: seasonId }));
+  async getMatchesPage(params: ListApiParams): Promise<PaginatedResponse<Match>> {
+    return apiRequest<PaginatedResponse<Match>>(API_ROUTES.matches.collection(params));
   }
 
   async getMatch(id: number): Promise<Match> {

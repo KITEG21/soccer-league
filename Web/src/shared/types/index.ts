@@ -2,6 +2,7 @@
 export interface Footballer {
   id: number;
   team_id?: number;
+  team_name?: string;
   name: string;
   number?: number;
   years_in_team?: number;

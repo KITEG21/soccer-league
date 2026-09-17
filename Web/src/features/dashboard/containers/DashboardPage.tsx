@@ -48,12 +48,12 @@ const formatSeason = (start?: string, end?: string) => {
 export const DashboardPage = () => {
   const { data: teams, isLoading: isLoadingTeams } = useQuery({
     queryKey: ["teams", "count"],
-    queryFn: () => teamsApiService.getTeamsPage(1, 1),
+    queryFn: () => teamsApiService.getTeamsPage({ limit: 1 }),
   });
 
   const { data: players, isLoading: isLoadingPlayers } = useQuery({
     queryKey: ["players", "count"],
-    queryFn: () => playersApiService.getPlayersPage(1, 1),
+    queryFn: () => playersApiService.getPlayersPage({ limit: 1 }),
   });
 
   const { data: matches = [], isLoading: isLoadingMatches } = useQuery({

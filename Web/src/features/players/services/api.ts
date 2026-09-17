@@ -2,6 +2,7 @@ import type { Player, CreatePlayerRequest, UpdatePlayerRequest } from "../types"
 import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 import { API_ROUTES } from "@/shared/config/routes";
+import type { ListApiParams } from "@/shared/components/data-table";
 
 class PlayersApiService {
   async getPlayers(): Promise<Player[]> {
@@ -9,9 +10,8 @@ class PlayersApiService {
     return res.data;
   }
 
-  async getPlayersPage(page: number, pageSize: number): Promise<PaginatedResponse<Player>> {
-    const offset = (page - 1) * pageSize;
-    return apiRequest<PaginatedResponse<Player>>(API_ROUTES.players.collection({ limit: pageSize, offset }));
+  async getPlayersPage(params: ListApiParams): Promise<PaginatedResponse<Player>> {
+    return apiRequest<PaginatedResponse<Player>>(API_ROUTES.players.collection(params));
   }
 
   async getPlayer(id: number): Promise<Player> {

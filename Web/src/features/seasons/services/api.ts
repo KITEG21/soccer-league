@@ -1,10 +1,11 @@
 import type { Season, CreateSeasonRequest, UpdateSeasonRequest } from "../types";
 import { apiRequest } from "@/shared/utils/api-client";
 import { API_ROUTES } from "@/shared/config/routes";
+import type { ListApiParams } from "@/shared/components/data-table";
 
 class SeasonsApiService {
-  async getSeasons(): Promise<Season[]> {
-    return apiRequest<Season[]>(API_ROUTES.seasons.collection());
+  async getSeasons(params: ListApiParams = { limit: 100 }): Promise<Season[]> {
+    return apiRequest<Season[]>(API_ROUTES.seasons.collection(params));
   }
 
   async getSeason(id: number): Promise<Season> {

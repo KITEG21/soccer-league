@@ -6,16 +6,11 @@ import type {
 import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 import { API_ROUTES } from "@/shared/config/routes";
+import type { ListApiParams } from "@/shared/components/data-table";
 
 class UsersApiService {
-  async getUsersPage(
-    page: number,
-    pageSize: number,
-  ): Promise<PaginatedResponse<User>> {
-    const offset = (page - 1) * pageSize;
-    return apiRequest<PaginatedResponse<User>>(
-      API_ROUTES.users.collection({ limit: pageSize, offset }),
-    );
+  async getUsersPage(params: ListApiParams): Promise<PaginatedResponse<User>> {
+    return apiRequest<PaginatedResponse<User>>(API_ROUTES.users.collection(params));
   }
 
   async createUser(user: CreateUserRequest): Promise<User> {

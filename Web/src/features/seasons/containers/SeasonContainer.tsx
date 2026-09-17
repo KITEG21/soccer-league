@@ -1,49 +1,52 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { Season } from "../types";
 import { seasonsApiService } from "../services/api";
-import { SeasonList } from "../components/SeasonList";
+import { SEASON_FILTERS, SeasonList } from "../components/SeasonList";
 import { SeasonForm } from "../components/SeasonForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { useListQuery } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
+
+const MAX_SEASONS = 100;
 
 export const SeasonContainer = () => {
   const canEdit = usePermission("seasons:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | undefined>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [seasonToDelete, setSeasonToDelete] = useState<number | undefined>();
-  const [refreshKey, setRefreshKey] = useState(0);
-
   const queryClient = useQueryClient();
+  const query = useListQuery({ filters: SEASON_FILTERS });
+
+  const { limit, offset, ...criteria } = query.apiParams;
+  const seasonsParams = { ...criteria, limit: MAX_SEASONS };
 
   const {
     data: seasons = [],
     isLoading,
+    isFetching,
     error,
-    refetch,
-  } = useQuery<Season[]>({
-    queryKey: ["seasons", refreshKey],
-    queryFn: () => seasonsApiService.getSeasons(),
-    refetchOnWindowFocus: false,
+  } = useQuery({
+    queryKey: ["seasons", "list", seasonsParams],
+    queryFn: () => seasonsApiService.getSeasons(seasonsParams),
+    placeholderData: keepPreviousData,
   });
+
+  const pageStart = Number(offset) || 0;
+  const pageRows = seasons.slice(pageStart, pageStart + (Number(limit) || query.pageSize));
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => seasonsApiService.deleteSeason(id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["seasons"],
-        refetchType: "active",
-      });
-      await refetch();
-      setRefreshKey((prev) => prev + 1);
-      setDeleteDialogOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["seasons"] });
       setSeasonToDelete(undefined);
-    },
-    onError: (error) => {
-      console.error("Delete error:", error);
     },
   });
 
@@ -60,17 +63,9 @@ export const SeasonContainer = () => {
   const handleDelete = (id: number) => {
     deleteMutation.reset();
     setSeasonToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (seasonToDelete !== undefined) {
-      deleteMutation.mutate(seasonToDelete);
-    }
   };
 
   const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
     setSeasonToDelete(undefined);
     deleteMutation.reset();
   };
@@ -83,8 +78,11 @@ export const SeasonContainer = () => {
   return (
     <div className="space-y-6">
       <SeasonList
-        seasons={seasons}
+        seasons={pageRows}
+        total={seasons.length}
+        query={query}
         isLoading={isLoading}
+        isFetching={isFetching}
         error={error}
         onCreate={canEdit ? handleCreate : undefined}
         onEdit={canEdit ? handleEdit : undefined}
@@ -98,15 +96,21 @@ export const SeasonContainer = () => {
         />
       )}
       <ConfirmDialog
-        isOpen={deleteDialogOpen}
+        isOpen={seasonToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
-        onConfirm={handleConfirmDelete}
+        onConfirm={() => seasonToDelete !== undefined && deleteMutation.mutate(seasonToDelete)}
         title="Eliminar Temporada"
         description="¿Estás seguro de que quieres eliminar esta temporada? Esta acción no se puede deshacer."
         confirmText="Eliminar"
         cancelText="Cancelar"
         isLoading={deleteMutation.isPending}
-        error={deleteMutation.isError ? (deleteMutation.error instanceof Error ? deleteMutation.error.message : "Error al eliminar") : null}
+        error={
+          deleteMutation.isError
+            ? deleteMutation.error instanceof Error
+              ? deleteMutation.error.message
+              : "Error al eliminar"
+            : null
+        }
       />
     </div>
   );

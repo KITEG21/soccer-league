@@ -2,6 +2,7 @@ import type { Stadium, CreateStadiumRequest, UpdateStadiumRequest } from "../typ
 import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 import { API_ROUTES } from "@/shared/config/routes";
+import type { ListApiParams } from "@/shared/components/data-table";
 
 class StadiumsApiService {
   async getStadiums(): Promise<Stadium[]> {
@@ -9,9 +10,8 @@ class StadiumsApiService {
     return res.data;
   }
 
-  async getStadiumsPage(page: number, pageSize: number): Promise<PaginatedResponse<Stadium>> {
-    const offset = (page - 1) * pageSize;
-    return apiRequest<PaginatedResponse<Stadium>>(API_ROUTES.stadiums.collection({ limit: pageSize, offset }));
+  async getStadiumsPage(params: ListApiParams): Promise<PaginatedResponse<Stadium>> {
+    return apiRequest<PaginatedResponse<Stadium>>(API_ROUTES.stadiums.collection(params));
   }
 
   async getStadium(id: number): Promise<Stadium> {

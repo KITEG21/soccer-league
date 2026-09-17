@@ -1,47 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { Stadium } from "../types";
 import { stadiumsApiService } from "../services/api";
-import { StadiumList } from "../components/StadiumList";
+import { STADIUM_FILTERS, StadiumList } from "../components/StadiumList";
 import { StadiumForm } from "../components/StadiumForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { useListQuery } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
-
-const PAGE_SIZE = 9;
 
 export const StadiumContainer = () => {
   const canEdit = usePermission("stadiums:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStadium, setEditingStadium] = useState<Stadium | undefined>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [stadiumToDelete, setStadiumToDelete] = useState<number | undefined>();
-  const [page, setPage] = useState(1);
-
   const queryClient = useQueryClient();
+  const query = useListQuery({ filters: STADIUM_FILTERS });
 
   const {
     data: stadiumsPage,
     isLoading,
+    isFetching,
     error,
   } = useQuery({
-    queryKey: ["stadiums", page],
-    queryFn: () => stadiumsApiService.getStadiumsPage(page, PAGE_SIZE),
-    refetchOnWindowFocus: false,
+    queryKey: ["stadiums", "list", query.apiParams],
+    queryFn: () => stadiumsApiService.getStadiumsPage(query.apiParams),
+    placeholderData: keepPreviousData,
   });
-
-  const stadiums = stadiumsPage?.data ?? [];
-  const total = stadiumsPage?.total ?? 0;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => stadiumsApiService.deleteStadium(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stadiums"] });
-      if (stadiums.length === 1 && page > 1) {
-        setPage((prev) => prev - 1);
-      }
-      setDeleteDialogOpen(false);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["stadiums"] });
       setStadiumToDelete(undefined);
     },
   });
@@ -57,19 +53,13 @@ export const StadiumContainer = () => {
   };
 
   const handleDelete = (id: number) => {
+    deleteMutation.reset();
     setStadiumToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (stadiumToDelete !== undefined) {
-      deleteMutation.mutate(stadiumToDelete);
-    }
   };
 
   const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
     setStadiumToDelete(undefined);
+    deleteMutation.reset();
   };
 
   const handleCloseForm = () => {
@@ -80,16 +70,15 @@ export const StadiumContainer = () => {
   return (
     <div className="space-y-6">
       <StadiumList
-        stadiums={stadiums}
+        stadiums={stadiumsPage?.data ?? []}
+        total={stadiumsPage?.total ?? 0}
+        query={query}
         isLoading={isLoading}
-        error={error instanceof Error ? error : null}
+        isFetching={isFetching}
+        error={error}
         onCreate={canEdit ? handleCreate : undefined}
         onEdit={canEdit ? handleEdit : undefined}
         onDelete={canEdit ? handleDelete : undefined}
-        page={page}
-        total={total}
-        pageSize={PAGE_SIZE}
-        onPageChange={setPage}
       />
       {canEdit && (
         <StadiumForm
@@ -99,9 +88,9 @@ export const StadiumContainer = () => {
         />
       )}
       <ConfirmDialog
-        isOpen={deleteDialogOpen}
+        isOpen={stadiumToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
-        onConfirm={handleConfirmDelete}
+        onConfirm={() => stadiumToDelete !== undefined && deleteMutation.mutate(stadiumToDelete)}
         title="Eliminar Estadio"
         description="¿Estás seguro de que quieres eliminar este estadio? Esta acción no se puede deshacer."
         confirmText="Eliminar"

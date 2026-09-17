@@ -1,58 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { Team } from "../types";
 import { teamsApiService } from "../services/api";
-import { TeamList } from "../components/TeamList";
+import { TEAM_FILTERS, TeamList } from "../components/TeamList";
 import { TeamForm } from "../components/TeamForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { useListQuery } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
-
-const PAGE_SIZE = 9;
 
 export const TeamContainer = () => {
   const canEdit = usePermission("teams:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<number | undefined>();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [page, setPage] = useState(1);
-
   const queryClient = useQueryClient();
+  const query = useListQuery({ filters: TEAM_FILTERS });
 
   const {
     data: teamsPage,
     isLoading,
+    isFetching,
     error,
-    refetch,
   } = useQuery({
-    queryKey: ["teams", page, refreshKey],
-    queryFn: () => teamsApiService.getTeamsPage(page, PAGE_SIZE),
-    refetchOnWindowFocus: false,
+    queryKey: ["teams", "list", query.apiParams],
+    queryFn: () => teamsApiService.getTeamsPage(query.apiParams),
+    placeholderData: keepPreviousData,
   });
-
-  const teams = teamsPage?.data ?? [];
-  const total = teamsPage?.total ?? 0;
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => teamsApiService.deleteTeam(id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["teams"],
-        refetchType: "active",
-      });
-      await refetch();
-      if (teams.length === 1 && page > 1) {
-        setPage((prev) => prev - 1);
-      }
-      setRefreshKey((prev) => prev + 1);
-      setDeleteDialogOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["teams"] });
       setTeamToDelete(undefined);
-    },
-    onError: (error) => {
-      console.error("Delete error:", error);
     },
   });
 
@@ -69,17 +55,9 @@ export const TeamContainer = () => {
   const handleDelete = (id: number) => {
     deleteMutation.reset();
     setTeamToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (teamToDelete !== undefined) {
-      deleteMutation.mutate(teamToDelete);
-    }
   };
 
   const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
     setTeamToDelete(undefined);
     deleteMutation.reset();
   };
@@ -92,16 +70,15 @@ export const TeamContainer = () => {
   return (
     <div className="space-y-6">
       <TeamList
-        teams={teams}
+        teams={teamsPage?.data ?? []}
+        total={teamsPage?.total ?? 0}
+        query={query}
         isLoading={isLoading}
+        isFetching={isFetching}
         error={error}
         onCreate={canEdit ? handleCreate : undefined}
         onEdit={canEdit ? handleEdit : undefined}
         onDelete={canEdit ? handleDelete : undefined}
-        page={page}
-        total={total}
-        pageSize={PAGE_SIZE}
-        onPageChange={setPage}
       />
       {canEdit && (
         <TeamForm
@@ -111,9 +88,9 @@ export const TeamContainer = () => {
         />
       )}
       <ConfirmDialog
-        isOpen={deleteDialogOpen}
+        isOpen={teamToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
-        onConfirm={handleConfirmDelete}
+        onConfirm={() => teamToDelete !== undefined && deleteMutation.mutate(teamToDelete)}
         title="Eliminar Equipo"
         description="¿Estás seguro de que quieres eliminar este equipo? Esta acción no se puede deshacer."
         confirmText="Eliminar"

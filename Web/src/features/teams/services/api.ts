@@ -2,6 +2,7 @@ import type { Team, CreateTeamRequest, UpdateTeamRequest } from "../types";
 import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
 import { API_ROUTES } from "@/shared/config/routes";
+import type { ListApiParams } from "@/shared/components/data-table";
 
 class TeamsApiService {
   async getTeams(): Promise<Team[]> {
@@ -9,9 +10,8 @@ class TeamsApiService {
     return res.data;
   }
 
-  async getTeamsPage(page: number, pageSize: number): Promise<PaginatedResponse<Team>> {
-    const offset = (page - 1) * pageSize;
-    return apiRequest<PaginatedResponse<Team>>(API_ROUTES.teams.collection({ limit: pageSize, offset }));
+  async getTeamsPage(params: ListApiParams): Promise<PaginatedResponse<Team>> {
+    return apiRequest<PaginatedResponse<Team>>(API_ROUTES.teams.collection(params));
   }
 
   async getTeam(id: number): Promise<Team> {
