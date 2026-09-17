@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
+import { APP_ROUTES } from "@/shared/config/routes";
 import { Field } from "@/shared/components/Field";
 import { DataTable } from "@/shared/components/DataTable";
 import {
@@ -79,7 +81,13 @@ export const AttendanceReport = () => {
       >
         {stats.map((stadium) => (
           <TableRow key={stadium.id}>
-            <TableCell className="font-medium">{stadium.name}</TableCell>
+            <TableCell className="font-medium">
+              <AppLink
+                href={APP_ROUTES.matches({ stadium_id: stadium.id, season_id: selectedSeason })}
+              >
+                {stadium.name}
+              </AppLink>
+            </TableCell>
             <TableCell className="tabular-nums text-muted-foreground">
               {stadium.capacity.toLocaleString("es")}
             </TableCell>

@@ -1,6 +1,8 @@
 "use client";
 
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
+import { APP_ROUTES } from "@/shared/config/routes";
 import { useQuery } from "@tanstack/react-query";
 import { reportsApiService } from "../services/api";
 import { Loading } from "@/shared/components/Loading";
@@ -49,11 +51,19 @@ export const CoachExperienceReport = () => {
                   </TableRow>
                 ) : (
                   coaches.map((coach, index) => (
-                    <TableRow key={index}>
+                    <TableRow key={coach.id}>
                       <TableCell className="text-center font-bold">{index + 1}</TableCell>
-                      <TableCell className="font-medium">{coach.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <AppLink href={APP_ROUTES.coaches({ q: coach.name })}>{coach.name}</AppLink>
+                      </TableCell>
                       <TableCell className="text-center">{coach.number}</TableCell>
-                      <TableCell>{coach.team_name || t.coachExperience.noTeam}</TableCell>
+                      <TableCell>
+                        {coach.team_id ? (
+                          <AppLink href={APP_ROUTES.team(coach.team_id)}>{coach.team_name}</AppLink>
+                        ) : (
+                          t.coachExperience.noTeam
+                        )}
+                      </TableCell>
                       <TableCell className="text-center font-bold text-primary">{coach.experience_years} años</TableCell>
                       <TableCell className="text-center">{coach.championships_won}</TableCell>
                     </TableRow>

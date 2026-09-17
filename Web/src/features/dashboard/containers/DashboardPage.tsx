@@ -148,12 +148,12 @@ export const DashboardPage = () => {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
-                      {match.home_team?.name ?? `Equipo ${match.home_team_id}`}
+                      {match.home_team_name ?? match.home_team?.name ?? `Equipo ${match.home_team_id}`}
                       <span className="px-1.5 text-muted-foreground">vs</span>
-                      {match.away_team?.name ?? `Equipo ${match.away_team_id}`}
+                      {match.away_team_name ?? match.away_team?.name ?? `Equipo ${match.away_team_id}`}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {match.stadium?.name ?? `Estadio ${match.stadium_id}`}
+                      {match.stadium_name ?? match.stadium?.name ?? `Estadio ${match.stadium_id}`}
                     </p>
                   </div>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">

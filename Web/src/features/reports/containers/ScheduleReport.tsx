@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
+import { APP_ROUTES } from "@/shared/config/routes";
 import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -166,19 +167,27 @@ export const ScheduleReport = () => {
                   matches.map((match) => (
                     <TableRow key={match.id}>
                       <TableCell className="font-mono text-sm">
-                        <AppLink href={`/matches/${match.id}`}>
+                        <AppLink href={APP_ROUTES.match(match.id)}>
                           {format(parseISO(match.match_date), "dd/MM/yyyy")}
                         </AppLink>
                       </TableCell>
-                      <TableCell>{match.stadium_name}</TableCell>
+                      <TableCell>
+                        <AppLink href={APP_ROUTES.matches({ stadium_id: match.stadium_id })}>
+                          {match.stadium_name}
+                        </AppLink>
+                      </TableCell>
                       <TableCell className="font-medium">
-                        {match.home_team_name}
+                        <AppLink href={APP_ROUTES.team(match.home_team_id)}>
+                          {match.home_team_name}
+                        </AppLink>
                       </TableCell>
                       <TableCell className="text-center font-bold">
                         {match.home_goals} - {match.away_goals}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {match.away_team_name}
+                        <AppLink href={APP_ROUTES.team(match.away_team_id)}>
+                          {match.away_team_name}
+                        </AppLink>
                       </TableCell>
                       <TableCell className="text-center font-mono">
                         {match.attendance.toLocaleString()}

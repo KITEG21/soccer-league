@@ -151,7 +151,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
           match.match_date
             ? format(new Date(match.match_date), "PPP p", { locale: es })
             : null,
-          match.stadium?.name,
+          match.stadium_name ?? match.stadium?.name,
         ]
           .filter(Boolean)
           .join(" · ")}

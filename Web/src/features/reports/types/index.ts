@@ -7,6 +7,9 @@ export interface StandingRow {
 export interface HeadToHeadMatch {
   id: number;
   match_date: string;
+  home_team_id: number;
+  away_team_id: number;
+  stadium_id: number;
   stadium_name: string;
   home_team_name: string;
   away_team_name: string;
@@ -19,6 +22,9 @@ export interface HeadToHeadMatch {
 export interface MatchByDateRow {
   id: number;
   match_date: string;
+  home_team_id: number;
+  away_team_id: number;
+  stadium_id: number;
   stadium_name: string;
   home_team_name: string;
   away_team_name: string;
@@ -28,6 +34,8 @@ export interface MatchByDateRow {
 }
 
 export interface CoachExperience {
+  id: number;
+  team_id: number;
   name: string;
   number: number;
   experience_years: number;
@@ -60,6 +68,8 @@ export interface TeamStatusReport {
 
 export interface AllStarPlayer {
   position: string;
+  player_id: number;
+  team_id: number;
   player_name: string;
   team_name: string;
   metric_name: string;

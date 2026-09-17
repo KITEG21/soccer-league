@@ -3,6 +3,8 @@ import { es } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
+import { APP_ROUTES } from "@/shared/config/routes";
 import { RowActions } from "@/shared/components/RowActions";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -68,7 +70,11 @@ export function SeasonList({
     columnHelper.accessor((season) => season.start_date ?? "", {
       id: "title",
       header: "Temporada",
-      cell: ({ row }) => getSeasonTitle(row.original),
+      cell: ({ row }) => (
+        <AppLink href={APP_ROUTES.matches({ season_id: row.original.id })}>
+          {getSeasonTitle(row.original)}
+        </AppLink>
+      ),
       meta: { cellClassName: "font-medium capitalize" },
     }),
     columnHelper.accessor("start_date", {

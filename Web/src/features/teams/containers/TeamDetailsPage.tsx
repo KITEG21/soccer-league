@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { APP_ROUTES } from "@/shared/config/routes";
 import { Loading } from "@/shared/components/Loading";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -61,9 +63,14 @@ export const TeamDetailsPage = ({ teamId, createIntent }: TeamDetailsPageProps) 
         title={team.name}
         description="Ficha del equipo y gestión de su plantilla"
         actions={
-          <Button variant="outline" onClick={() => router.push("/teams")}>
-            Volver a equipos
-          </Button>
+          <>
+            <Button variant="outline" asChild>
+              <Link href={APP_ROUTES.matches({ team_id: team.id })}>Ver partidos</Link>
+            </Button>
+            <Button variant="outline" onClick={() => router.push(APP_ROUTES.teams())}>
+              Volver a equipos
+            </Button>
+          </>
         }
       />
 

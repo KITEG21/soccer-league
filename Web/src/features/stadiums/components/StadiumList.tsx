@@ -1,6 +1,8 @@
 import { Plus } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
+import { APP_ROUTES } from "@/shared/config/routes";
 import { RowActions } from "@/shared/components/RowActions";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -44,6 +46,11 @@ export function StadiumList({
   const columns = columnHelper.columns([
     columnHelper.accessor("name", {
       header: "Estadio",
+      cell: ({ row }) => (
+        <AppLink href={APP_ROUTES.matches({ stadium_id: row.original.id })}>
+          {row.original.name}
+        </AppLink>
+      ),
       meta: { cellClassName: "font-medium" },
     }),
     columnHelper.accessor("capacity", {

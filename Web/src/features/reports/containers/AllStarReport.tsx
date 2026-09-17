@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { AppLink } from "@/shared/components/AppLink";
+import { APP_ROUTES } from "@/shared/config/routes";
 import { Field } from "@/shared/components/Field";
 import { Loading } from "@/shared/components/Loading";
 import { Badge } from "@/shared/components/ui/badge";
@@ -60,9 +62,13 @@ const PlayerCard = ({ player }: { readonly player: AllStarPlayer }) => {
             <Badge variant="secondary" className="uppercase">
               {player.position}
             </Badge>
-            <p className="truncate font-semibold">{player.player_name}</p>
+            <p className="truncate font-semibold">
+              <AppLink href={APP_ROUTES.players({ q: player.player_name, team_id: player.team_id })}>
+                {player.player_name}
+              </AppLink>
+            </p>
             <p className="truncate text-xs text-muted-foreground">
-              {player.team_name}
+              <AppLink href={APP_ROUTES.team(player.team_id)}>{player.team_name}</AppLink>
             </p>
           </div>
 
@@ -177,7 +183,7 @@ export const AllStarReport = () => {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {players.map((player) => (
           <PlayerCard
-            key={`${player.position}-${player.player_name}`}
+            key={player.player_id}
             player={player}
           />
         ))}

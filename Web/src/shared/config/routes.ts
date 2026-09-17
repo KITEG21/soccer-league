@@ -49,6 +49,20 @@ export const API_ROUTES = {
   },
 } as const;
 
+export const APP_ROUTES = {
+  home: "/",
+  login: "/login",
+  users: "/users",
+  teams: (query?: Query) => withQuery("/teams", query),
+  team: (id: Id) => `/teams/${id}`,
+  players: (query?: Query) => withQuery("/players", query),
+  coaches: (query?: Query) => withQuery("/coaches", query),
+  matches: (query?: Query) => withQuery("/matches", query),
+  match: (id: Id) => `/matches/${id}`,
+  seasons: (query?: Query) => withQuery("/seasons", query),
+  stadiums: (query?: Query) => withQuery("/stadiums", query),
+} as const;
+
 export const WEB_API_ROUTES = {
   backend: "/api/backend",
 } as const;
