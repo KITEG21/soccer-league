@@ -1,5 +1,3 @@
-"use client";
-
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useTheme } from "@/shared/contexts/ThemeContext";

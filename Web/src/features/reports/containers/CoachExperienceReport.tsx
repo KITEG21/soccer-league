@@ -1,3 +1,5 @@
+"use client";
+
 import { PageHeader } from "@/shared/components/PageHeader";
 import { useQuery } from "@tanstack/react-query";
 import { reportsApiService } from "../services/api";

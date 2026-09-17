@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { cookies } from "next/headers";
 import { RootProviders } from "./providers";
-import { ACCESS_TOKEN_COOKIE, verifyAccessToken } from "@/shared/auth/session";
+import { getServerSession } from "@/shared/auth/server-session";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Liga de Fútbol",
+  title: { default: "Liga de Fútbol", template: "%s | Liga de Fútbol" },
   icons: { icon: "/favicon.svg" },
 };
 
@@ -15,10 +14,7 @@ export default async function RootLayout({
 }: {
   readonly children: ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const claims = await verifyAccessToken(
-    cookieStore.get(ACCESS_TOKEN_COOKIE)?.value,
-  );
+  const claims = await getServerSession();
 
   return (
     <html lang="es" suppressHydrationWarning>

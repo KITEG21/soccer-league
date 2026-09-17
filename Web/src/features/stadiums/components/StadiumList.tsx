@@ -1,5 +1,3 @@
-"use client";
-
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { DataTable } from "@/shared/components/DataTable";

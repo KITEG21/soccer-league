@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { Loading } from "@/shared/components/Loading";
@@ -10,12 +10,13 @@ import { teamsApiService } from "../services/api";
 import { CoachList } from "@/features/coaches/components/CoachList";
 import { PlayerList } from "@/features/players/components/PlayerList";
 
-export const TeamDetailsPage = () => {
-  const { id } = useParams<{ id: string }>();
+interface TeamDetailsPageProps {
+  readonly teamId: number;
+  readonly createIntent: string | null;
+}
+
+export const TeamDetailsPage = ({ teamId, createIntent }: TeamDetailsPageProps) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const teamId = Number(id);
-  const createIntent = searchParams.get("create");
 
   const clearCreateIntent = () => {
     if (createIntent) router.replace(`/teams/${teamId}`);
@@ -28,7 +29,6 @@ export const TeamDetailsPage = () => {
   } = useQuery({
     queryKey: ["team", teamId],
     queryFn: () => teamsApiService.getTeam(teamId),
-    enabled: !isNaN(teamId),
   });
 
   if (isLoading) return <Loading />;

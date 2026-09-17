@@ -1,5 +1,7 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ArrowLeft, Plus } from "lucide-react";
@@ -47,21 +49,21 @@ import {
 } from "@/shared/components/ui/select";
 import { usePermission } from "@/shared/hooks/use-permission";
 
-export const MatchDetailContainer = () => {
+interface MatchDetailContainerProps {
+  readonly matchId: number;
+}
+
+export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => {
   const canEdit = usePermission("player-stats:write");
-  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isStatDialogOpen, setIsStatDialogOpen] = useState(false);
   const [editingStat, setEditingStat] = useState<PlayerStat | null>(null);
   const [statToDelete, setStatToDelete] = useState<number | undefined>();
 
-  const matchId = parseInt(id || "0");
-
   const { data: match, isLoading: isLoadingMatch } = useQuery({
     queryKey: ["match", matchId],
     queryFn: () => matchesApiService.getMatch(matchId),
-    enabled: !!matchId,
   });
 
   const { data: teams = [] } = useQuery({
@@ -72,7 +74,6 @@ export const MatchDetailContainer = () => {
   const { data: matchStats = [] } = useQuery({
     queryKey: ["player-stats", matchId],
     queryFn: () => playerStatsApiService.getPlayerStatsByMatch(matchId),
-    enabled: !!matchId,
   });
 
   const { data: allPlayers = [] } = useQuery({

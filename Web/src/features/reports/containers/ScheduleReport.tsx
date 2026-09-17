@@ -1,3 +1,5 @@
+"use client";
+
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
 import { Field } from "@/shared/components/Field";

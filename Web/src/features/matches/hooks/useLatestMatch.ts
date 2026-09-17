@@ -1,5 +1,3 @@
-"use client";
-
 import { useQuery } from "@tanstack/react-query";
 import { matchesApiService } from "../services/api";
 import type { Match } from "../types";
