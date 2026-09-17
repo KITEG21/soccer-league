@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/shared/contexts/ThemeContext";
 import { AuthProvider, type AuthSession } from "@/shared/contexts/AuthContext";
 
@@ -19,12 +20,12 @@ interface AppProvidersProps {
 
 export const AppProviders = ({ children, session }: AppProvidersProps) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider session={session}>
-          {children}
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <NuqsAdapter>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider session={session}>{children}</AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </NuqsAdapter>
   );
 };
