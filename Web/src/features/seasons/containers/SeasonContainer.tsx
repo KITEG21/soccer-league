@@ -9,21 +9,24 @@ import {
 } from "@tanstack/react-query";
 import type { Season } from "../types";
 import { seasonsApiService } from "../services/api";
-import { SEASON_FILTERS, SeasonList } from "../components/SeasonList";
+import { getSeasonFilters, SeasonList } from "../components/SeasonList";
 import { SeasonForm } from "../components/SeasonForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { useListQuery } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
+import { useTranslations } from "next-intl";
 
 const MAX_SEASONS = 100;
 
 export const SeasonContainer = () => {
+  const t = useTranslations();
+  const common = useTranslations("Common");
   const canEdit = usePermission("seasons:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | undefined>();
   const [seasonToDelete, setSeasonToDelete] = useState<number | undefined>();
   const queryClient = useQueryClient();
-  const query = useListQuery({ filters: SEASON_FILTERS });
+  const query = useListQuery({ filters: getSeasonFilters(t) });
 
   const { limit, offset, ...criteria } = query.apiParams;
   const seasonsParams = { ...criteria, limit: MAX_SEASONS };
@@ -99,16 +102,16 @@ export const SeasonContainer = () => {
         isOpen={seasonToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
         onConfirm={() => seasonToDelete !== undefined && deleteMutation.mutate(seasonToDelete)}
-        title="Eliminar Temporada"
-        description="¿Estás seguro de que quieres eliminar esta temporada? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title={`${common("delete")} ${common("season")}`}
+        description={common("confirm")}
+        confirmText={common("delete")}
+        cancelText={common("cancel")}
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError
             ? deleteMutation.error instanceof Error
               ? deleteMutation.error.message
-              : "Error al eliminar"
+              : common("loadError")
             : null
         }
       />

@@ -18,44 +18,44 @@ import {
 
 export interface NavItem {
   readonly href: string;
-  readonly label: string;
+  readonly labelKey: string;
   readonly icon: LucideIcon;
 }
 
 export interface NavGroup {
-  readonly label: string;
+  readonly labelKey: string;
   readonly items: readonly NavItem[];
 }
 
 export const navGroups: readonly NavGroup[] = [
   {
-    label: "General",
+    labelKey: "general",
     items: [
-      { href: "/", label: "Resumen", icon: LayoutDashboard },
-      { href: "/users", label: "Usuarios", icon: Shield },
+      { href: "/", labelKey: "dashboard", icon: LayoutDashboard },
+      { href: "/users", labelKey: "users", icon: Shield },
     ],
   },
   {
-    label: "Gestión",
+    labelKey: "management",
     items: [
-      { href: "/seasons", label: "Temporadas", icon: Calendar },
-      { href: "/teams", label: "Equipos", icon: Users },
-      { href: "/players", label: "Jugadores", icon: User },
-      { href: "/coaches", label: "Entrenadores", icon: Megaphone },
-      { href: "/matches", label: "Partidos", icon: Flag },
-      { href: "/stadiums", label: "Estadios", icon: Landmark },
+      { href: "/seasons", labelKey: "seasons", icon: Calendar },
+      { href: "/teams", labelKey: "teams", icon: Users },
+      { href: "/players", labelKey: "players", icon: User },
+      { href: "/coaches", labelKey: "coaches", icon: Megaphone },
+      { href: "/matches", labelKey: "matches", icon: Flag },
+      { href: "/stadiums", labelKey: "stadiums", icon: Landmark },
     ],
   },
   {
-    label: "Reportes",
+    labelKey: "reports",
     items: [
-      { href: "/reports/standings", label: "Posiciones", icon: Trophy },
-      { href: "/reports/head-to-head", label: "Cara a cara", icon: Flag },
-      { href: "/reports/schedule", label: "Calendario", icon: CalendarDays },
-      { href: "/reports/attendance", label: "Asistencia", icon: TrendingUp },
-      { href: "/reports/team-status", label: "Estado del equipo", icon: ClipboardCheck },
-      { href: "/reports/coach-experience", label: "Experiencia", icon: Award },
-      { href: "/reports/all-star", label: "Equipo ideal", icon: Star },
+      { href: "/reports/standings", labelKey: "standings", icon: Trophy },
+      { href: "/reports/head-to-head", labelKey: "headToHead", icon: Flag },
+      { href: "/reports/schedule", labelKey: "schedule", icon: CalendarDays },
+      { href: "/reports/attendance", labelKey: "attendance", icon: TrendingUp },
+      { href: "/reports/team-status", labelKey: "teamStatus", icon: ClipboardCheck },
+      { href: "/reports/coach-experience", labelKey: "coachExperience", icon: Award },
+      { href: "/reports/all-star", labelKey: "allStar", icon: Star },
     ],
   },
 ];
@@ -70,8 +70,11 @@ export interface Crumb {
   readonly label: string;
 }
 
-export const buildBreadcrumbs = (pathname: string): Crumb[] => {
-  if (pathname === "/") return [{ href: "/", label: "Resumen" }];
+export const buildBreadcrumbs = (
+  pathname: string,
+  translate: (key: string) => string,
+): Crumb[] => {
+  if (pathname === "/") return [{ href: "/", label: translate("dashboard") }];
 
   const segments = pathname.split("/").filter(Boolean);
   const crumbs: Crumb[] = [];
@@ -81,16 +84,16 @@ export const buildBreadcrumbs = (pathname: string): Crumb[] => {
     const item = findNavItem(href);
 
     if (item) {
-      crumbs.push({ href, label: item.label });
+      crumbs.push({ href, label: translate(item.labelKey) });
       return;
     }
 
     if (segment === "reports") {
-      crumbs.push({ href, label: "Reportes" });
+      crumbs.push({ href, label: translate("reports") });
       return;
     }
 
-    crumbs.push({ href, label: "Detalle" });
+    crumbs.push({ href, label: translate("detail") });
   });
 
   return crumbs;

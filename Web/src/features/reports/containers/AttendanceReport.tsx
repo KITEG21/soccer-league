@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
@@ -15,20 +16,16 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { TableCell, TableRow } from "@/shared/components/ui/table";
-import { t } from "@/shared/translations";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { reportsApiService } from "../services/api";
 
-const COLUMNS = [
-  t.common.stadium,
-  t.attendance.capacity,
-  t.attendance.matches,
-  t.attendance.totalAttendance,
-  t.attendance.percentage,
-];
-
 export const AttendanceReport = () => {
+  const t = useTranslations();
+  const columns = [
+    t("Common.stadium"), t("Reports.attendance.capacity"), t("Reports.attendance.matches"),
+    t("Reports.attendance.totalAttendance"), t("Reports.attendance.percentage"),
+  ];
   const [seasonChoice, setSeasonChoice] = useState<string>();
 
   const { data: seasons = [] } = useQuery({
@@ -52,12 +49,12 @@ export const AttendanceReport = () => {
   return (
     <>
       <PageHeader
-        title={t.attendance.title}
+        title={t("Reports.attendance.title")}
         actions={
-          <Field label={t.common.season}>
+          <Field label={t("Common.season")}>
             <Select value={selectedSeason} onValueChange={setSeasonChoice}>
               <SelectTrigger className="w-56">
-                <SelectValue placeholder={t.common.selectSeason} />
+                <SelectValue placeholder={t("Common.selectSeason")} />
               </SelectTrigger>
               <SelectContent>
                 {seasons.map((season) => (
@@ -72,12 +69,12 @@ export const AttendanceReport = () => {
       />
 
       <DataTable
-        columns={COLUMNS}
+        columns={columns}
         isLoading={isLoading || !selectedSeason}
         error={isError || null}
-        errorMessage={t.attendance.error}
+        errorMessage={t("Reports.attendance.error")}
         isEmpty={stats.length === 0}
-        emptyMessage={t.common.noData}
+        emptyMessage={t("Common.noData")}
       >
         {stats.map((stadium) => (
           <TableRow key={stadium.id}>

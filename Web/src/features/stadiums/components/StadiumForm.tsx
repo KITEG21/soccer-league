@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +29,7 @@ interface StadiumFormProps {
 }
 
 export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
+  const t = useTranslations();
   const queryClient = useQueryClient();
 
   const formMethods = useForm<StadiumFormInput, unknown, StadiumFormData>({
@@ -101,19 +103,19 @@ export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{stadium ? "Editar Estadio" : "Nuevo Estadio"}</DialogTitle>
+          <DialogTitle>{stadium ? t("Forms.editStadium") : t("Forms.newStadium")}</DialogTitle>
           <DialogDescription>
             {stadium
-              ? "Edita la información del estadio."
-              : "Completa el formulario para crear un nuevo estadio."}
+              ? t("Forms.editStadiumDescription")
+              : t("Forms.newStadiumDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre *</Label>
+            <Label htmlFor="name">{t("Common.name")} *</Label>
             <Input
               id="name"
-              placeholder="Nombre del estadio"
+              placeholder={t("Forms.stadiumName")}
               {...register("name")}
               disabled={isLoading}
             />
@@ -123,12 +125,12 @@ export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="capacity">Capacidad</Label>
+            <Label htmlFor="capacity">{t("Common.capacity")}</Label>
             <Input
               id="capacity"
               type="number"
               min="0"
-              placeholder="Ej. 25000"
+              placeholder={t("Forms.exampleCapacity")}
               {...register("capacity")}
               disabled={isLoading}
             />
@@ -152,10 +154,10 @@ export const StadiumForm = ({ stadium, isOpen, onClose }: StadiumFormProps) => {
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancelar
+              {t("Common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Guardando..." : stadium ? "Actualizar" : "Crear"}
+              {isLoading ? t("Common.saving") : stadium ? t("Common.update") : t("Common.create")}
             </Button>
           </div>
         </form>

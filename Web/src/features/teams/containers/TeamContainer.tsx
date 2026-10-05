@@ -9,19 +9,22 @@ import {
 } from "@tanstack/react-query";
 import type { Team } from "../types";
 import { teamsApiService } from "../services/api";
-import { TEAM_FILTERS, TeamList } from "../components/TeamList";
+import { getTeamFilters, TeamList } from "../components/TeamList";
 import { TeamForm } from "../components/TeamForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { useListQuery } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
+import { useTranslations } from "next-intl";
 
 export const TeamContainer = () => {
+  const t = useTranslations();
+  const common = useTranslations("Common");
   const canEdit = usePermission("teams:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>();
   const [teamToDelete, setTeamToDelete] = useState<number | undefined>();
   const queryClient = useQueryClient();
-  const query = useListQuery({ filters: TEAM_FILTERS });
+  const query = useListQuery({ filters: getTeamFilters(t) });
 
   const {
     data: teamsPage,
@@ -91,16 +94,16 @@ export const TeamContainer = () => {
         isOpen={teamToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
         onConfirm={() => teamToDelete !== undefined && deleteMutation.mutate(teamToDelete)}
-        title="Eliminar Equipo"
-        description="¿Estás seguro de que quieres eliminar este equipo? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title={`${common("delete")} ${common("team")}`}
+        description={common("confirm")}
+        confirmText={common("delete")}
+        cancelText={common("cancel")}
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError
             ? deleteMutation.error instanceof Error
               ? deleteMutation.error.message
-              : "Error al eliminar"
+              : common("loadError")
             : null
         }
       />

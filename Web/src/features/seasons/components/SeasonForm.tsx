@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +23,7 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { format, parseISO, isValid } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/shared/utils/utils";
 
@@ -33,6 +34,9 @@ interface SeasonFormProps {
 }
 
 export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
+  const t = useTranslations();
+  const locale = useLocale();
+  const dateLocale = locale === "es" ? es : enUS;
   const queryClient = useQueryClient();
 
   const {
@@ -106,16 +110,16 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{season ? "Editar Temporada" : "Nueva Temporada"}</DialogTitle>
+          <DialogTitle>{season ? t("Forms.editSeason") : t("Forms.newSeason")}</DialogTitle>
           <DialogDescription>
             {season
-              ? "Edita las fechas de la temporada."
-              : "Completa el formulario para crear una nueva temporada."}
+              ? t("Forms.editSeasonDescription")
+              : t("Forms.newSeasonDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <Label>Fecha de Inicio *</Label>
+            <Label>{t("Forms.startDate")} *</Label>
             <Controller
               control={control}
               name="start_date"
@@ -132,9 +136,9 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {field.value ? (
-                        format(parseISO(field.value), "PPP", { locale: es })
+                        format(parseISO(field.value), "PPP", { locale: dateLocale })
                       ) : (
-                        <span>Selecciona una fecha</span>
+                        <span>{t("Forms.selectDate")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -146,7 +150,7 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
                         field.onChange(date ? format(date, "yyyy-MM-dd") : "")
                       }
                       autoFocus
-                      locale={es}
+                      locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
@@ -158,7 +162,7 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Fecha de Fin *</Label>
+            <Label>{t("Forms.endDate")} *</Label>
             <Controller
               control={control}
               name="end_date"
@@ -175,9 +179,9 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {field.value ? (
-                        format(parseISO(field.value), "PPP", { locale: es })
+                        format(parseISO(field.value), "PPP", { locale: dateLocale })
                       ) : (
-                        <span>Selecciona una fecha</span>
+                        <span>{t("Forms.selectDate")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -189,7 +193,7 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
                         field.onChange(date ? format(date, "yyyy-MM-dd") : "")
                       }
                       autoFocus
-                      locale={es}
+                      locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
@@ -203,7 +207,7 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
           {(createMutation.isError || updateMutation.isError) && (
             <div className="space-y-1">
               <p className="text-sm text-destructive font-semibold">
-                {createMutation.error?.message || updateMutation.error?.message || "Error en la temporada"}
+                {createMutation.error?.message || updateMutation.error?.message || t("Forms.seasonError")}
               </p>
               {(createMutation.error instanceof ApiError && createMutation.error.errors.date_range) && (
                 <p className="text-xs text-destructive/80 italic">
@@ -225,10 +229,10 @@ export const SeasonForm = ({ season, isOpen, onClose }: SeasonFormProps) => {
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancelar
+              {t("Common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Guardando..." : season ? "Actualizar" : "Crear"}
+              {isLoading ? t("Common.saving") : season ? t("Common.update") : t("Common.create")}
             </Button>
           </div>
         </form>

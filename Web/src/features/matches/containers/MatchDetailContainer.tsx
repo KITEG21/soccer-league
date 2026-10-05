@@ -3,7 +3,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
+import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -54,6 +55,10 @@ interface MatchDetailContainerProps {
 }
 
 export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => {
+  const t = useTranslations("Matches");
+  const common = useTranslations("Common");
+  const locale = useLocale();
+  const dateLocale = locale === "es" ? es : enUS;
   const canEdit = usePermission("player-stats:write");
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -122,7 +127,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
   });
 
   if (isLoadingMatch) return <Loading />;
-  if (!match) return <div className="p-8 text-center">Partido no encontrado</div>;
+  if (!match) return <div className="p-8 text-center">{t("notFound")}</div>;
 
   const handleAddStat = () => {
     createStatMutation.reset();
@@ -146,10 +151,10 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`${homeTeam?.name || "Local"} vs ${awayTeam?.name || "Visitante"}`}
+        title={`${homeTeam?.name || t("home")} vs ${awayTeam?.name || t("away")}`}
         description={[
           match.match_date
-            ? format(new Date(match.match_date), "PPP p", { locale: es })
+            ? format(new Date(match.match_date), "PPP p", { locale: dateLocale })
             : null,
           match.stadium_name ?? match.stadium?.name,
         ]
@@ -158,7 +163,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
         actions={
           <Button variant="outline" onClick={() => router.push("/matches")}>
             <ArrowLeft />
-            Volver a partidos
+            {t("back")}
           </Button>
         }
       />
@@ -174,7 +179,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
               href={`/teams/${match.home_team_id}`}
               className="text-center font-medium sm:text-right"
             >
-              {homeTeam?.name || "Local"}
+              {homeTeam?.name || t("home")}
             </AppLink>
           </div>
 
@@ -185,7 +190,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
               <span>{match.away_goals}</span>
             </div>
             <Badge variant={match.disputed ? "default" : "secondary"}>
-              {match.disputed ? "Finalizado" : "Pendiente"}
+              {match.disputed ? t("completed") : t("pending")}
             </Badge>
           </div>
 
@@ -198,7 +203,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
               href={`/teams/${match.away_team_id}`}
               className="text-center font-medium sm:text-left"
             >
-              {awayTeam?.name || "Visitante"}
+              {awayTeam?.name || t("away")}
             </AppLink>
           </div>
         </CardContent>
@@ -207,17 +212,17 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b px-6 py-4">
           <div className="space-y-1">
-            <CardTitle>Estadísticas de jugadores</CardTitle>
+            <CardTitle>{t("playerStats")}</CardTitle>
             {!match.disputed && (
               <p className="text-sm text-muted-foreground">
-                Marca el partido como disputado para registrar estadísticas
+                {t("markPlayed")}
               </p>
             )}
           </div>
           {canEdit && (
             <Button onClick={handleAddStat} size="sm" disabled={!match.disputed}>
               <Plus />
-              Agregar
+              {t("add")}
             </Button>
           )}
         </CardHeader>
@@ -231,21 +236,21 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead className="font-bold">Jugador</TableHead>
-                  <TableHead className="font-bold">Equipo</TableHead>
-                  <TableHead className="text-center font-bold">Goles</TableHead>
-                  <TableHead className="text-center font-bold">Asist.</TableHead>
-                  <TableHead className="text-center font-bold">Remates</TableHead>
-                  <TableHead className="text-center font-bold">Pases</TableHead>
-                  <TableHead className="text-center font-bold">Tackles</TableHead>
-                  <TableHead className="text-right font-bold">Acciones</TableHead>
+                  <TableHead className="font-bold">{t("player")}</TableHead>
+                  <TableHead className="font-bold">{common("team")}</TableHead>
+                  <TableHead className="text-center font-bold">{common("goals")}</TableHead>
+                  <TableHead className="text-center font-bold">{common("assists")}</TableHead>
+                  <TableHead className="text-center font-bold">{common("shots")}</TableHead>
+                  <TableHead className="text-center font-bold">{common("passes")}</TableHead>
+                  <TableHead className="text-center font-bold">{common("tackles")}</TableHead>
+                  <TableHead className="text-right font-bold">{common("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {matchStats.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-12 text-muted-foreground italic">
-                      {match.disputed ? "No hay estadísticas registradas para este partido" : "El partido aún no se ha disputado. Marca el partido como disputado para poder agregar estadísticas."}
+                      {match.disputed ? t("statsEmpty") : t("statsUnavailable")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -256,7 +261,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
                       <TableRow key={stat.id} className="hover:bg-muted/30 transition-colors">
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-bold text-sm">{player?.name || "Desconocido"}</span>
+                            <span className="font-bold text-sm">{player?.name || t("unknown")}</span>
                             <span className="text-[10px] text-muted-foreground uppercase font-black">#{player?.number || "--"}</span>
                           </div>
                         </TableCell>
@@ -323,9 +328,9 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
         onConfirm={() =>
           statToDelete !== undefined && deleteStatMutation.mutate(statToDelete)
         }
-        title="Eliminar estadística"
-        description="¿Seguro que quieres eliminar esta estadística? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
+        title={t("deleteStat")}
+        description={t("deleteStatDescription")}
+        confirmText={t("delete")}
         isLoading={deleteStatMutation.isPending}
         error={getErrorMessage(deleteStatMutation.error)}
       />
@@ -359,6 +364,8 @@ const buildStatFormState = (stat: PlayerStat | null) => ({
 });
 
 const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, existingPlayerIds, isSubmitting, error }: StatFormDialogProps) => {
+  const t = useTranslations("Matches");
+  const common = useTranslations("Common");
   const [formData, setFormData] = useState(() => buildStatFormState(stat));
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -384,18 +391,18 @@ const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, exist
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{stat ? "Editar Estadística" : "Agregar Estadística"}</DialogTitle>
+          <DialogTitle>{stat ? t("editStat") : t("addStat")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Jugador</Label>
+            <Label>{t("player")}</Label>
             <Select 
                 value={formData.player_id} 
                 onValueChange={(v) => setFormData({ ...formData, player_id: v })}
                 disabled={!!stat}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Seleccionar jugador" />
+                <SelectValue placeholder={t("selectPlayer")} />
               </SelectTrigger>
               <SelectContent>
                 {availablePlayers.map((p) => {
@@ -412,27 +419,27 @@ const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, exist
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Goles</Label>
+              <Label>{common("goals")}</Label>
               <Input type="number" min="0" placeholder="0" value={formData.goals_scored} onChange={(e) => setFormData({ ...formData, goals_scored: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
-              <Label>Asistencias</Label>
+              <Label>{common("assists")}</Label>
               <Input type="number" min="0" placeholder="0" value={formData.assists} onChange={(e) => setFormData({ ...formData, assists: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
-              <Label>Remates</Label>
+              <Label>{common("shots")}</Label>
               <Input type="number" min="0" placeholder="0" value={formData.shots_on_goal} onChange={(e) => setFormData({ ...formData, shots_on_goal: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
-              <Label>Pases Completados</Label>
+              <Label>{t("completedPasses")}</Label>
               <Input type="number" min="0" placeholder="0" value={formData.passes_completed} onChange={(e) => setFormData({ ...formData, passes_completed: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
-              <Label>Entradas (Tackles)</Label>
+              <Label>{t("tackles")}</Label>
               <Input type="number" min="0" placeholder="0" value={formData.tackles} onChange={(e) => setFormData({ ...formData, tackles: parseInt(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
-              <Label>Intercepciones</Label>
+              <Label>{t("interceptions")}</Label>
               <Input type="number" min="0" placeholder="0" value={formData.interceptions} onChange={(e) => setFormData({ ...formData, interceptions: parseInt(e.target.value) || 0 })} />
             </div>
           </div>
@@ -442,9 +449,9 @@ const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, exist
           )}
 
           <DialogFooter className="pt-6">
-            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="button" variant="outline" onClick={onClose}>{common("cancel")}</Button>
             <Button type="submit" disabled={isSubmitting || !formData.player_id}>
-              {isSubmitting ? "Guardando..." : "Guardar Estadísticas"}
+              {isSubmitting ? common("saving") : t("saveStats")}
             </Button>
           </DialogFooter>
         </form>

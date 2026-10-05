@@ -20,10 +20,14 @@ import { TeamPickerDialog } from "@/features/teams/components/TeamPickerDialog";
 import { useTeamOptions } from "@/features/teams/hooks/useTeamOptions";
 import { coachesApiService } from "../services/api";
 import type { Coach } from "../types";
+import { useTranslations } from "next-intl";
 
 const columnHelper = createColumnHelper<typeof dataTableFeatures, Coach>();
 
 export const CoachGlobalList = () => {
+  const t = useTranslations("Lists");
+  const common = useTranslations("Common");
+  const team = useTranslations("Team");
   const canEdit = usePermission("coaches:write");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const router = useRouter();
@@ -31,12 +35,12 @@ export const CoachGlobalList = () => {
 
   const filters = useMemo<readonly FilterDefinition[]>(
     () => [
-      { key: "team_id", label: "Equipo", type: "select", options: teamOptions },
-      { key: "experience_years", label: "Experiencia (años)", type: "number-range", advanced: true },
-      { key: "championships_won", label: "Campeonatos", type: "number-range", advanced: true },
-      { key: "years_in_team", label: "Años en equipo", type: "number-range", advanced: true },
+      { key: "team_id", label: common("team"), type: "select", options: teamOptions },
+      { key: "experience_years", label: t("years"), type: "number-range", advanced: true },
+      { key: "championships_won", label: team("championshipsWon"), type: "number-range", advanced: true },
+      { key: "years_in_team", label: common("yearsInTeam"), type: "number-range", advanced: true },
     ],
-    [teamOptions],
+    [teamOptions, common, t, team],
   );
   const query = useListQuery({ filters });
 
@@ -53,32 +57,32 @@ export const CoachGlobalList = () => {
 
   const columns = columnHelper.columns([
     columnHelper.accessor("name", {
-      header: "Nombre",
+      header: common("name"),
       meta: { cellClassName: "font-medium" },
     }),
     columnHelper.accessor("team_name", {
-      header: "Equipo",
+      header: common("team"),
       cell: ({ row }) =>
         row.original.team_id ? (
           <AppLink href={`/teams/${row.original.team_id}`}>
-            {row.original.team_name ?? `Equipo ${row.original.team_id}`}
+            {row.original.team_name ?? t("teamFallback", { id: row.original.team_id })}
           </AppLink>
         ) : (
-          <span className="text-muted-foreground">Sin equipo</span>
+          <span className="text-muted-foreground">{t("noTeam")}</span>
         ),
     }),
     columnHelper.accessor("experience_years", {
-      header: "Experiencia",
-      cell: ({ getValue }) => `${getValue() ?? 0} años`,
+      header: t("years"),
+      cell: ({ getValue }) => `${getValue() ?? 0} ${t("years")}`,
       meta: { cellClassName: "tabular-nums" },
     }),
     columnHelper.accessor("championships_won", {
-      header: "Campeonatos",
+      header: team("championshipsWon"),
       cell: ({ getValue }) => getValue() ?? 0,
       meta: { cellClassName: "tabular-nums" },
     }),
     columnHelper.accessor("years_in_team", {
-      header: "Años en equipo",
+      header: common("yearsInTeam"),
       cell: ({ getValue }) => getValue() ?? 0,
       meta: { cellClassName: "tabular-nums" },
     }),
@@ -87,13 +91,13 @@ export const CoachGlobalList = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Entrenadores"
-        description="Listado global de entrenadores registrados en la liga"
+        title={t("coachesTitle")}
+        description={t("coachesDescription")}
         actions={
           canEdit && (
             <Button onClick={() => setIsPickerOpen(true)}>
               <Plus />
-              Nuevo entrenador
+              {t("newCoach")}
             </Button>
           )
         }
@@ -103,11 +107,11 @@ export const CoachGlobalList = () => {
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}
         onSelect={(teamId) => router.push(`/teams/${teamId}?create=coach`)}
-        title="Elige el equipo"
-        description="Un entrenador pertenece a un equipo. Selecciona uno para continuar con el alta."
+        title={t("chooseTeam")}
+        description={t("coachTeamDescription")}
       />
 
-      <DataTableToolbar query={query} searchPlaceholder="Buscar por nombre o equipo…" />
+      <DataTableToolbar query={query} searchPlaceholder={t("searchCoaches")} />
 
       <ServerDataTable
         columns={columns}
@@ -118,8 +122,8 @@ export const CoachGlobalList = () => {
         isLoading={isLoadingCoaches}
         isFetching={isFetching}
         error={error}
-        errorMessage="Error al cargar entrenadores"
-        emptyMessage="No hay entrenadores registrados"
+        errorMessage={t("coachesLoadError")}
+        emptyMessage={t("coachesEmpty")}
       />
     </div>
   );

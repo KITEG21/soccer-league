@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +26,8 @@ interface CoachFormProps {
 }
 
 export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) => {
+  const t = useTranslations("Coach");
+  const common = useTranslations("Common");
   const queryClient = useQueryClient();
 
   const {
@@ -107,19 +110,18 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{coach ? "Editar Entrenador" : "Nuevo Entrenador"}</DialogTitle>
+          <DialogTitle>{coach ? t("edit") : t("new")}</DialogTitle>
           <DialogDescription>
             {coach
-              ? "Edita la información del entrenador."
-              : "Completa el formulario para asignar un nuevo entrenador."}
+              ? t("editDescription") : t("newDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="coach-name">Nombre *</Label>
+            <Label htmlFor="coach-name">{common("name")} *</Label>
             <Input
               id="coach-name"
-              placeholder="Nombre completo del entrenador"
+              placeholder={t("name")}
               {...register("name")}
               disabled={isLoading}
             />
@@ -133,12 +135,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="coach-number">Número</Label>
+              <Label htmlFor="coach-number">{common("number")}</Label>
               <Input
                 id="coach-number"
                 type="number"
                 min="0"
-                placeholder="Ej. 12"
+                placeholder={t("numberExample")}
                 {...register("number", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -147,12 +149,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="coach-years">Años en Equipo</Label>
+              <Label htmlFor="coach-years">{common("yearsInTeam")}</Label>
               <Input
                 id="coach-years"
                 type="number"
                 min="0"
-                placeholder="Ej. 3"
+                placeholder="3"
                 {...register("years_in_team", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -161,12 +163,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="coach-experience">Años de Experiencia</Label>
+              <Label htmlFor="coach-experience">{t("yearsExperience")}</Label>
               <Input
                 id="coach-experience"
                 type="number"
                 min="0"
-                placeholder="Ej. 10"
+                placeholder="10"
                 {...register("experience_years", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -178,12 +180,12 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="coach-won">Campeonatos Ganados</Label>
+              <Label htmlFor="coach-won">{t("championshipsWon")}</Label>
               <Input
                 id="coach-won"
                 type="number"
                 min="0"
-                placeholder="Ej. 2"
+                placeholder={t("twoExample")}
                 {...register("championships_won", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -203,10 +205,10 @@ export const CoachForm = ({ teamId, coach, isOpen, onClose }: CoachFormProps) =>
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancelar
+              {common("cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Guardando..." : coach ? "Actualizar" : "Crear"}
+              {isLoading ? common("saving") : coach ? common("update") : common("create")}
             </Button>
           </div>
         </form>

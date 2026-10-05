@@ -11,6 +11,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { teamsApiService } from "../services/api";
+import { useTranslations } from "next-intl";
 
 interface TeamPickerDialogProps {
   readonly isOpen: boolean;
@@ -27,6 +28,7 @@ export const TeamPickerDialog = ({
   title,
   description,
 }: TeamPickerDialogProps) => {
+  const t = useTranslations("Lists");
   const [search, setSearch] = useState("");
 
   const { data: teams = [], isPending } = useQuery({
@@ -64,7 +66,7 @@ export const TeamPickerDialog = ({
             autoFocus
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar equipo por nombre o provincia"
+            placeholder={t("searchTeam")}
             className="pl-9"
           />
         </div>
@@ -77,7 +79,7 @@ export const TeamPickerDialog = ({
 
           {!isPending && results.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No se encontraron equipos
+              {t("noTeamsFound")}
             </p>
           )}
 
@@ -98,8 +100,8 @@ export const TeamPickerDialog = ({
                     {team.name}
                   </span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {team.province || "Sin provincia"} ·{" "}
-                    {team.players?.length ?? 0} jugadores
+                    {team.province || t("noProvince")} ·{" "}
+                    {t("playersCount", { count: team.players?.length ?? 0 })}
                   </span>
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" />

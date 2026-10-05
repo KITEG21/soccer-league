@@ -1,4 +1,5 @@
 import { Pencil, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/shared/components/ui/button";
 
 interface RowActionsProps {
@@ -11,9 +12,12 @@ interface RowActionsProps {
 export const RowActions = ({
   onEdit,
   onDelete,
-  editLabel = "Editar",
-  deleteLabel = "Eliminar",
+  editLabel,
+  deleteLabel,
 }: RowActionsProps) => {
+  const t = useTranslations("Common");
+  const resolvedEditLabel = editLabel ?? t("edit");
+  const resolvedDeleteLabel = deleteLabel ?? t("delete");
   if (!onEdit && !onDelete) return null;
 
   return (
@@ -23,8 +27,8 @@ export const RowActions = ({
           variant="ghost"
           size="icon"
           className="size-8 text-muted-foreground hover:text-foreground"
-          aria-label={editLabel}
-          title={editLabel}
+          aria-label={resolvedEditLabel}
+          title={resolvedEditLabel}
           onClick={onEdit}
         >
           <Pencil className="size-4" />
@@ -35,8 +39,8 @@ export const RowActions = ({
           variant="ghost"
           size="icon"
           className="size-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-          aria-label={deleteLabel}
-          title={deleteLabel}
+          aria-label={resolvedDeleteLabel}
+          title={resolvedDeleteLabel}
           onClick={onDelete}
         >
           <Trash2 className="size-4" />

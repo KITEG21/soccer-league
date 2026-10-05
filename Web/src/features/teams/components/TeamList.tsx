@@ -12,18 +12,19 @@ import {
   type ListQueryState,
 } from "@/shared/components/data-table";
 import type { Team } from "../types";
+import { useTranslations } from "next-intl";
 
-export const TEAM_FILTERS: readonly FilterDefinition[] = [
-  { key: "province", label: "Provincia", type: "text" },
+export const getTeamFilters = (t: (key: string) => string): readonly FilterDefinition[] => [
+  { key: "province", label: t("Common.province"), type: "text" },
   {
     key: "championships_won",
-    label: "Campeonatos ganados",
+    label: t("Team.championshipsWon"),
     type: "number-range",
     advanced: true,
   },
   {
     key: "championships_played",
-    label: "Campeonatos jugados",
+    label: t("Team.championshipsPlayed"),
     type: "number-range",
     advanced: true,
   },
@@ -54,9 +55,12 @@ export function TeamList({
   onEdit,
   onDelete,
 }: TeamListProps) {
+  const t = useTranslations("Lists");
+  const common = useTranslations("Common");
+  const team = useTranslations("Team");
   const columns = columnHelper.columns([
     columnHelper.accessor("name", {
-      header: "Equipo",
+      header: common("team"),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <span
@@ -73,27 +77,27 @@ export function TeamList({
       ),
     }),
     columnHelper.accessor("province", {
-      header: "Provincia",
+      header: common("province"),
       cell: ({ getValue }) => getValue() || "—",
       meta: { cellClassName: "text-muted-foreground" },
     }),
     columnHelper.accessor("mascot", {
-      header: "Mascota",
+      header: common("mascot"),
       cell: ({ getValue }) => getValue() || "—",
       meta: { cellClassName: "text-muted-foreground" },
     }),
     columnHelper.accessor("championships_won", {
-      header: "Títulos",
+      header: team("championshipsWon"),
       cell: ({ getValue }) => getValue() ?? 0,
       meta: { cellClassName: "tabular-nums" },
     }),
     columnHelper.accessor("players_count", {
-      header: "Jugadores",
+      header: common("player"),
       cell: ({ row }) => row.original.players_count ?? row.original.players?.length ?? 0,
       meta: { cellClassName: "tabular-nums" },
     }),
     columnHelper.accessor("coaches_count", {
-      header: "Entrenadores",
+      header: common("coach"),
       cell: ({ row }) => row.original.coaches_count ?? row.original.coaches?.length ?? 0,
       meta: { cellClassName: "tabular-nums" },
     }),
@@ -113,13 +117,13 @@ export function TeamList({
   return (
     <>
       <PageHeader
-        title="Equipos"
-        description="Administra los clubes participantes y sus plantillas"
+        title={t("teamsTitle")}
+        description={t("teamsDescription")}
         actions={
           onCreate && (
             <Button onClick={onCreate}>
               <Plus />
-              Nuevo equipo
+              {t("newTeam")}
             </Button>
           )
         }
@@ -127,7 +131,7 @@ export function TeamList({
 
       <DataTableToolbar
         query={query}
-        searchPlaceholder="Buscar por nombre, provincia o mascota…"
+        searchPlaceholder={t("searchTeams")}
       />
 
       <ServerDataTable
@@ -140,12 +144,12 @@ export function TeamList({
         isLoading={isLoading}
         isFetching={isFetching}
         error={error}
-        errorMessage="Error al cargar equipos"
-        emptyMessage="No hay equipos registrados"
+        errorMessage={t("teamsLoadError")}
+        emptyMessage={t("teamsEmpty")}
         emptyAction={
           onCreate && (
             <Button size="sm" onClick={onCreate}>
-              Crear primer equipo
+              {t("createFirstTeam")}
             </Button>
           )
         }

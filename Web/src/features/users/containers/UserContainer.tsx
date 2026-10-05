@@ -14,16 +14,11 @@ import { UserForm } from "../components/UserForm";
 import { UserRoleDialog } from "../components/UserRoleDialog";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { useListQuery } from "@/shared/components/data-table";
-import { ApiError } from "@/shared/utils/api-client";
 import { useAuth } from "@/shared/contexts/AuthContext";
-
-const getErrorMessage = (err: unknown) => {
-  if (err instanceof ApiError) return err.message;
-  if (err instanceof Error) return err.message;
-  return "Error al eliminar";
-};
+import { useTranslations } from "next-intl";
 
 export const UserContainer = () => {
+  const common = useTranslations("Common");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>();
   const [userToDelete, setUserToDelete] = useState<number | undefined>();
@@ -82,12 +77,18 @@ export const UserContainer = () => {
           deleteMutation.reset();
         }}
         onConfirm={() => userToDelete !== undefined && deleteMutation.mutate(userToDelete)}
-        title="Eliminar usuario"
-        description="¿Seguro que quieres eliminar este usuario? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title={`${common("delete")} ${common("user")}`}
+        description={common("confirm")}
+        confirmText={common("delete")}
+        cancelText={common("cancel")}
         isLoading={deleteMutation.isPending}
-        error={deleteMutation.isError ? getErrorMessage(deleteMutation.error) : null}
+        error={
+          deleteMutation.isError
+            ? deleteMutation.error instanceof Error
+              ? deleteMutation.error.message
+              : common("loadError")
+            : null
+        }
       />
     </div>
   );

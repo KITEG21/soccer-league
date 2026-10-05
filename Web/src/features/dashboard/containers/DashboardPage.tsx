@@ -2,7 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { ArrowRight, Calendar, Flag, Trophy, Users } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
@@ -34,18 +35,21 @@ const PODIUM = [
   { row: "border-orange-700 bg-orange-700/10", rank: "text-orange-700 dark:text-orange-400" },
 ] as const;
 
-const formatSeason = (start?: string, end?: string) => {
-  if (!start || !end) return "Sin definir";
+const formatSeason = (start: string | undefined, end: string | undefined, locale: typeof es, undefinedLabel: string) => {
+  if (!start || !end) return undefinedLabel;
   try {
-    const from = format(parseISO(start), "MMM yyyy", { locale: es });
-    const to = format(parseISO(end), "MMM yyyy", { locale: es });
+    const from = format(parseISO(start), "MMM yyyy", { locale });
+    const to = format(parseISO(end), "MMM yyyy", { locale });
     return `${from} – ${to}`;
   } catch {
-    return "Sin definir";
+    return undefinedLabel;
   }
 };
 
 export const DashboardPage = () => {
+  const t = useTranslations("Dashboard");
+  const locale = useLocale();
+  const dateLocale = locale === "es" ? es : enUS;
   const { data: teams, isLoading: isLoadingTeams } = useQuery({
     queryKey: ["teams", "count"],
     queryFn: () => teamsApiService.getTeamsPage({ limit: 1 }),
@@ -86,36 +90,36 @@ export const DashboardPage = () => {
 
   return (
     <>
-      <PageHeader title="Resumen" description="Estado general de la liga" />
+      <PageHeader title={t("title")} description={t("description")} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Equipos"
+          label={t("teams")}
           value={teams?.total ?? 0}
           icon={Users}
           isLoading={isLoadingTeams}
         />
         <StatCard
-          label="Jugadores"
+          label={t("players")}
           value={players?.total ?? 0}
           icon={Users}
           isLoading={isLoadingPlayers}
         />
         <StatCard
-          label="Partidos"
+          label={t("matches")}
           value={matches.length}
-          hint={`${upcoming.length} por disputar`}
+          hint={`${upcoming.length} ${t("toPlay")}`}
           icon={Flag}
           isLoading={isLoadingMatches}
         />
         <StatCard
-          label="Temporada actual"
+          label={t("currentSeason")}
           value={
             currentSeason
-              ? formatSeason(currentSeason.start_date, currentSeason.end_date)
-              : "Sin temporadas"
+              ? formatSeason(currentSeason.start_date, currentSeason.end_date, dateLocale, t("undefined"))
+              : t("noSeason")
           }
-          hint={`${seasons.length} registradas`}
+          hint={`${seasons.length} ${t("registered")}`}
           icon={Calendar}
           isLoading={isLoadingSeasons}
         />
@@ -124,9 +128,9 @@ export const DashboardPage = () => {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Próximos partidos</CardTitle>
+            <CardTitle>{t("upcoming")}</CardTitle>
             <CardDescription>
-              Encuentros programados más cercanos
+              {t("upcomingDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -135,7 +139,7 @@ export const DashboardPage = () => {
 
             {!isLoadingMatches && upcoming.length === 0 && (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                No hay partidos programados
+                {t("noUpcoming")}
               </p>
             )}
 
@@ -148,17 +152,17 @@ export const DashboardPage = () => {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
-                      {match.home_team_name ?? match.home_team?.name ?? `Equipo ${match.home_team_id}`}
+                      {match.home_team_name ?? match.home_team?.name ?? t("teamFallback", { id: match.home_team_id })}
                       <span className="px-1.5 text-muted-foreground">vs</span>
-                      {match.away_team_name ?? match.away_team?.name ?? `Equipo ${match.away_team_id}`}
+                      {match.away_team_name ?? match.away_team?.name ?? t("teamFallback", { id: match.away_team_id })}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {match.stadium_name ?? match.stadium?.name ?? `Estadio ${match.stadium_id}`}
+                      {match.stadium_name ?? match.stadium?.name ?? t("stadiumFallback", { id: match.stadium_id })}
                     </p>
                   </div>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     {format(new Date(match.match_date), "dd MMM HH:mm", {
-                      locale: es,
+                      locale: dateLocale,
                     })}
                   </span>
                 </Link>
@@ -170,19 +174,19 @@ export const DashboardPage = () => {
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1.5">
-                <CardTitle>Tabla de posiciones</CardTitle>
+                <CardTitle>{t("standings")}</CardTitle>
                 <CardDescription>
                   {currentSeason
                     ? formatSeason(
                         currentSeason.start_date,
-                        currentSeason.end_date,
+                        currentSeason.end_date, dateLocale, t("undefined"),
                       )
-                    : "Sin temporada activa"}
+                    : t("noActiveSeason")}
                 </CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="-mt-1 shrink-0" asChild>
                 <Link href="/reports/standings">
-                  Ver tabla completa
+                  {t("viewFullStandings")}
                   <ArrowRight />
                 </Link>
               </Button>
@@ -194,7 +198,7 @@ export const DashboardPage = () => {
 
             {!isLoadingStandings && standings.length === 0 && (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                Sin datos de clasificación
+                {t("noStandings")}
               </p>
             )}
 

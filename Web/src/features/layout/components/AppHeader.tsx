@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, UserRound } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,13 +23,16 @@ import {
 import { Separator } from "@/shared/components/ui/separator";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { LanguageToggle } from "@/shared/components/LanguageToggle";
 import { buildBreadcrumbs } from "@/shared/config/navigation";
 import { useAuth } from "@/shared/contexts/AuthContext";
 
 export const AppHeader = () => {
   const pathname = usePathname();
   const { logout } = useAuth();
-  const crumbs = buildBreadcrumbs(pathname);
+  const navigation = useTranslations("Navigation");
+  const t = useTranslations("Header");
+  const crumbs = buildBreadcrumbs(pathname, navigation);
 
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
@@ -59,19 +63,20 @@ export const AppHeader = () => {
       </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-1">
+        <LanguageToggle />
         <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Cuenta">
+            <Button variant="ghost" size="icon" aria-label={t("account")}>
               <UserRound className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Administrador</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("administrator")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => logout()}>
               <LogOut className="mr-2 size-4" />
-              Cerrar sesión
+              {t("logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

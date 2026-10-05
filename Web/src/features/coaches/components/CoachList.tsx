@@ -16,6 +16,7 @@ import { coachesApiService } from "../services/api";
 import { CoachForm } from "./CoachForm";
 import type { Coach } from "../types";
 import { usePermission } from "@/shared/hooks/use-permission";
+import { useTranslations } from "next-intl";
 
 interface CoachListProps {
   readonly teamId: number;
@@ -30,6 +31,10 @@ export const CoachList = ({
   autoCreate = false,
   onFormClose,
 }: CoachListProps) => {
+  const t = useTranslations("TeamDetail");
+  const common = useTranslations("Common");
+  const lists = useTranslations("Lists");
+  const team = useTranslations("Team");
   const canEdit = usePermission("coaches:write");
   const [isFormOpen, setIsFormOpen] = useState(autoCreate && canEdit);
   const [editingCoach, setEditingCoach] = useState<Coach | undefined>();
@@ -65,15 +70,15 @@ export const CoachList = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold">Entrenadores</h2>
+          <h2 className="font-semibold">{t("coaches")}</h2>
           <p className="text-sm text-muted-foreground">
-            {coaches.length} asignados
+            {t("coachesAssigned", { count: coaches.length })}
           </p>
         </div>
         {canEdit && (
           <Button size="sm" onClick={handleCreate}>
             <Plus />
-            Nuevo entrenador
+            {lists("newCoach")}
           </Button>
         )}
       </div>
@@ -82,10 +87,10 @@ export const CoachList = ({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead>Nombre</TableHead>
-              <TableHead>Experiencia</TableHead>
-              <TableHead>Campeonatos</TableHead>
-              <TableHead>Años en equipo</TableHead>
+              <TableHead>{common("name")}</TableHead>
+              <TableHead>{lists("years")}</TableHead>
+              <TableHead>{team("championshipsWon")}</TableHead>
+              <TableHead>{common("yearsInTeam")}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -96,7 +101,7 @@ export const CoachList = ({
                   colSpan={5}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  No hay entrenadores en este equipo
+                  {t("noCoaches")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -104,7 +109,7 @@ export const CoachList = ({
                 <TableRow key={coach.id}>
                   <TableCell className="font-medium">{coach.name}</TableCell>
                   <TableCell className="tabular-nums">
-                    {coach.experience_years ?? 0} años
+                    {coach.experience_years ?? 0} {lists("years")}
                   </TableCell>
                   <TableCell className="tabular-nums">
                     {coach.championships_won ?? 0}
@@ -146,9 +151,9 @@ export const CoachList = ({
           deleteMutation.reset();
         }}
         onConfirm={() => coachToDelete && deleteMutation.mutate(coachToDelete)}
-        title="Eliminar entrenador"
-        description="¿Seguro que quieres eliminar este entrenador? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
+        title={t("deleteCoach")}
+        description={t("deleteCoachDescription")}
+        confirmText={common("delete")}
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError

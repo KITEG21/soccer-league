@@ -1,4 +1,5 @@
 import { FilterX, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { AdvancedFiltersDialog } from "./AdvancedFiltersDialog";
@@ -14,9 +15,11 @@ interface DataTableToolbarProps {
 
 export const DataTableToolbar = ({
   query,
-  searchPlaceholder = "Buscar…",
+  searchPlaceholder,
   searchable = true,
 }: DataTableToolbarProps) => {
+  const t = useTranslations("Common");
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t("search");
   const quickFilters = query.filters.filter((filter) => !filter.advanced);
   const advancedFilters = query.filters.filter((filter) => filter.advanced);
   const hasActiveCriteria = query.activeFilters.length > 0 || query.search.trim() !== "";
@@ -32,8 +35,8 @@ export const DataTableToolbar = ({
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <DebouncedInput
                 type="search"
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
+                placeholder={resolvedSearchPlaceholder}
+                aria-label={resolvedSearchPlaceholder}
                 className="pl-9"
                 value={query.search}
                 onValueChange={query.setSearch}
@@ -62,13 +65,13 @@ export const DataTableToolbar = ({
 
       {hasActiveCriteria && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">Filtros activos:</span>
+          <span className="text-xs text-muted-foreground">{t("actions")}:</span>
           {query.search.trim() && (
             <Badge variant="secondary" className="gap-1 pr-1">
-              Búsqueda: {query.search}
+              {t("search")} {query.search}
               <button
                 type="button"
-                aria-label="Quitar búsqueda"
+                aria-label={t("clearFilters")}
                 className="rounded-sm p-0.5 hover:bg-background/60"
                 onClick={() => query.setSearch("")}
               >
@@ -81,7 +84,7 @@ export const DataTableToolbar = ({
               {filter.label}: {filter.value}
               <button
                 type="button"
-                aria-label={`Quitar filtro ${filter.label}`}
+                aria-label={`${t("clearFilters")}: ${filter.label}`}
                 className="rounded-sm p-0.5 hover:bg-background/60"
                 onClick={() => query.setFilter(filter.paramKey, "")}
               >
@@ -96,7 +99,7 @@ export const DataTableToolbar = ({
             onClick={query.clearFilters}
           >
             <FilterX className="size-3.5" />
-            Limpiar todo
+            {t("clearAll")}
           </Button>
         </div>
       )}

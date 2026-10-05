@@ -15,10 +15,11 @@ import {
   type ListQueryState,
 } from "@/shared/components/data-table";
 import type { Season } from "../types";
+import { useTranslations } from "next-intl";
 
-export const SEASON_FILTERS: readonly FilterDefinition[] = [
-  { key: "start_date", label: "Inicio", type: "date-range" },
-  { key: "end_date", label: "Fin", type: "date-range" },
+export const getSeasonFilters = (t: (key: string) => string): readonly FilterDefinition[] => [
+  { key: "start_date", label: t("Common.start"), type: "date-range" },
+  { key: "end_date", label: t("Common.end"), type: "date-range" },
 ];
 
 const formatDate = (value?: string) => {
@@ -66,10 +67,12 @@ export function SeasonList({
   onEdit,
   onDelete,
 }: SeasonListProps) {
+  const t = useTranslations("Lists");
+  const common = useTranslations("Common");
   const columns = columnHelper.columns([
     columnHelper.accessor((season) => season.start_date ?? "", {
       id: "title",
-      header: "Temporada",
+      header: common("season"),
       cell: ({ row }) => (
         <AppLink href={APP_ROUTES.matches({ season_id: row.original.id })}>
           {getSeasonTitle(row.original)}
@@ -78,12 +81,12 @@ export function SeasonList({
       meta: { cellClassName: "font-medium capitalize" },
     }),
     columnHelper.accessor("start_date", {
-      header: "Inicio",
+      header: common("start"),
       cell: ({ getValue }) => formatDate(getValue()),
       meta: { cellClassName: "tabular-nums text-muted-foreground" },
     }),
     columnHelper.accessor("end_date", {
-      header: "Fin",
+      header: common("end"),
       cell: ({ getValue }) => formatDate(getValue()),
       meta: { cellClassName: "tabular-nums text-muted-foreground" },
     }),
@@ -103,13 +106,13 @@ export function SeasonList({
   return (
     <>
       <PageHeader
-        title="Temporadas"
-        description="Define los periodos de competición de la liga"
+        title={t("seasonsTitle")}
+        description={t("seasonsDescription")}
         actions={
           onCreate && (
             <Button onClick={onCreate}>
               <Plus />
-              Nueva temporada
+              {t("newSeason")}
             </Button>
           )
         }
@@ -126,12 +129,12 @@ export function SeasonList({
         isLoading={isLoading}
         isFetching={isFetching}
         error={error}
-        errorMessage="Error al cargar temporadas"
-        emptyMessage="No hay temporadas registradas"
+        errorMessage={t("seasonsLoadError")}
+        emptyMessage={t("seasonsEmpty")}
         emptyAction={
           onCreate && (
             <Button size="sm" onClick={onCreate}>
-              Crear primera temporada
+              {t("createFirstSeason")}
             </Button>
           )
         }

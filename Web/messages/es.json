@@ -1,0 +1,170 @@
+{
+  "Navigation": {
+    "general": "General",
+    "management": "Gestión",
+    "reports": "Reportes",
+    "dashboard": "Resumen",
+    "users": "Usuarios",
+    "seasons": "Temporadas",
+    "teams": "Equipos",
+    "players": "Jugadores",
+    "coaches": "Entrenadores",
+    "matches": "Partidos",
+    "stadiums": "Estadios",
+    "standings": "Posiciones",
+    "headToHead": "Cara a cara",
+    "schedule": "Calendario",
+    "attendance": "Asistencia",
+    "teamStatus": "Estado del equipo",
+    "coachExperience": "Experiencia",
+    "allStar": "Equipo ideal",
+    "detail": "Detalle"
+  },
+  "Header": {
+    "account": "Cuenta",
+    "administrator": "Administrador",
+    "logout": "Cerrar sesión",
+    "switchToLight": "Activar tema claro",
+    "switchToDark": "Activar tema oscuro"
+  },
+  "Language": {
+    "label": "Idioma",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "Auth": {
+    "adminPanel": "Panel administrativo",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@correo.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Tu contraseña",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "signIn": "Iniciar sesión",
+    "signingIn": "Iniciando sesión…"
+  },
+  "Common": {
+    "reports": "Reportes",
+    "season": "Temporada",
+    "team": "Equipo",
+    "selectSeason": "Seleccionar temporada",
+    "selectTeam": "Seleccionar equipo",
+    "noData": "No hay datos disponibles",
+    "date": "Fecha",
+    "stadium": "Estadio",
+    "home": "Local",
+    "away": "Visitante",
+    "result": "Resultado",
+    "viewMore": "Ver más",
+    "create": "Crear", "update": "Actualizar", "save": "Guardar", "saving": "Guardando…", "cancel": "Cancelar",
+    "edit": "Editar", "delete": "Eliminar", "confirm": "Confirmar", "processing": "Procesando…",
+    "search": "Buscar…", "clearFilters": "Limpiar filtros", "clearAll": "Limpiar todo",
+    "noRecords": "No hay registros", "loadError": "No se pudieron cargar los datos",
+    "actions": "Acciones", "name": "Nombre", "status": "Estado", "capacity": "Capacidad",
+    "start": "Inicio", "end": "Fin", "role": "Rol", "created": "Creado",
+    "home": "Local", "away": "Visitante", "attendance": "Asistencia", "position": "Posición",
+    "number": "Número", "yearsInTeam": "Años en el equipo", "province": "Provincia", "mascot": "Mascota",
+    "rowsPerPage": "Filas por página", "noFilteredResults": "No hay resultados con los filtros aplicados",
+    "email": "Correo electrónico", "password": "Contraseña", "user": "Usuario", "coach": "Entrenador",
+    "player": "Jugador", "goals": "Goles", "assists": "Asistencias", "shots": "Remates",
+    "passes": "Pases", "tackles": "Entradas", "interceptions": "Intercepciones", "statistics": "Estadísticas",
+    "advancedFilters": "Filtros avanzados", "accept": "Aceptar", "backHome": "Volver al inicio",
+    "notFound": "Página no encontrada", "notFoundDescription": "La página que buscas no existe o fue movida.", "accessDenied": "Acceso denegado", "noTeam": "Sin equipo"
+  },
+  "Reports": {
+    "standings": {
+      "title": "Tabla de posiciones",
+      "pos": "Pos",
+      "team": "Equipo",
+      "pts": "Pts",
+      "empty": "Por favor selecciona una temporada para ver la tabla de posiciones.",
+      "error": "Error al cargar la tabla de posiciones. Intenta de nuevo."
+    },
+    "attendance": {
+      "title": "Asistencia a estadios",
+      "breadcrumb": "Asistencia",
+      "capacity": "Capacidad",
+      "matches": "Partidos",
+      "totalAttendance": "Asistencia total",
+      "percentage": "% Audiencia",
+      "empty": "Por favor selecciona una temporada para ver las estadísticas de asistencia.",
+      "error": "Error al cargar las estadísticas de asistencia. Intenta de nuevo."
+    },
+    "coachExperience": {
+      "title": "Ranking de experiencia de entrenadores",
+      "breadcrumb": "Ranking de experiencia",
+      "number": "Número",
+      "coach": "Entrenador",
+      "currentTeam": "Equipo actual",
+      "yearsExperience": "Años de experiencia",
+      "championships": "Campeonatos ganados",
+      "noTeam": "Sin equipo",
+      "error": "Error al cargar el ranking de entrenadores. Intenta de nuevo."
+    },
+    "allStar": {
+      "title": "Equipo ideal de la temporada",
+      "breadcrumb": "Equipo ideal",
+      "keyMetric": "Métrica clave",
+      "noData": "No hay datos disponibles para esta temporada.",
+      "empty": "Por favor selecciona una temporada para ver el equipo ideal.",
+      "error": "Error al cargar el equipo ideal.",
+      "statLabels": {
+        "goals_scored": "Goles",
+        "assists": "Asistencias",
+        "shots_on_goal": "Tiros a puerta",
+        "passes_completed": "Pases completados",
+        "interceptions": "Intercepciones",
+        "tackles": "Entradas",
+        "blocks": "Bloqueos",
+        "saves": "Paradas",
+        "goals_conceded": "Goles encajados"
+      },
+      "metricLabels": {
+        "shots_on_goal": "Tiros a puerta",
+        "passes_completed_plus_interceptions": "Pases + intercepciones",
+        "tackles_plus_blocks": "Entradas + bloqueos",
+        "saves_minus_goals_conceded": "Paradas - goles encajados"
+      }
+    },
+    "headToHead": {
+      "title": "Enfrentamientos directos",
+      "selectTeam1": "Seleccionar equipo 1",
+      "selectTeam2": "Seleccionar equipo 2",
+      "allSeasons": "Todas las temporadas",
+      "empty": "Selecciona dos equipos para ver sus enfrentamientos directos.",
+      "error": "Error al cargar los enfrentamientos. Intenta de nuevo.",
+      "noMatches": "No hay enfrentamientos entre estos equipos",
+      "homeAssists": "Asistencias local",
+      "awayAssists": "Asistencias visitante"
+    },
+    "schedule": {
+      "title": "Calendario y sedes",
+      "selectDate": "Selecciona una fecha",
+      "allStadiums": "Todos los estadios",
+      "empty": "Selecciona una fecha para ver los partidos programados.",
+      "error": "Error al cargar los partidos. Intenta de nuevo.",
+      "attendance": "Asistencia",
+      "noMatches": "No hay partidos en esta fecha"
+    },
+    "teamStatus": {
+      "title": "Estado del equipo",
+      "stat": "Estadística",
+      "total": "Total",
+      "empty": "Selecciona un equipo y una temporada para ver su estado.",
+      "error": "Error al cargar el estado del equipo. Intenta de nuevo.",
+      "wins": "Victorias",
+      "draws": "Empates",
+      "losses": "Derrotas"
+    }
+  },
+  "Forms": {"editStadium":"Editar estadio","newStadium":"Nuevo estadio","editStadiumDescription":"Edita la información del estadio.","newStadiumDescription":"Completa el formulario para crear un nuevo estadio.","stadiumName":"Nombre del estadio","exampleCapacity":"Ej. 25000","editSeason":"Editar temporada","newSeason":"Nueva temporada","editSeasonDescription":"Edita las fechas de la temporada.","newSeasonDescription":"Completa el formulario para crear una nueva temporada.","startDate":"Fecha de inicio","endDate":"Fecha de fin","selectDate":"Selecciona una fecha","seasonError":"Error en la temporada","editPlayer":"Editar jugador","newPlayer":"Nuevo jugador","editPlayerDescription":"Edita la información del jugador.","newPlayerDescription":"Completa el formulario para inscribir un nuevo jugador.","playerName":"Nombre completo del jugador","select":"Seleccionar","example10":"Ej. 10","example3":"Ej. 3"}
+  ,"Coach": {"edit":"Editar entrenador","new":"Nuevo entrenador","editDescription":"Edita la informaci\u00f3n del entrenador.","newDescription":"Completa el formulario para asignar un nuevo entrenador.","name":"Nombre completo del entrenador","numberExample":"Ej. 12","yearsExperience":"A\u00f1os de experiencia","championshipsWon":"Campeonatos ganados","twoExample":"Ej. 2"}
+  ,"Team": {"edit":"Editar equipo","new":"Nuevo equipo","editDescription":"Edita la informaci\u00f3n del equipo.","newDescription":"Completa el formulario para crear un nuevo equipo.","name":"Nombre del equipo","provinceExample":"Ej. La Habana","mascotExample":"Ej. Leones","championshipsPlayed":"Campeonatos jugados","championshipsWon":"Campeonatos ganados","fiveExample":"Ej. 5","twoExample":"Ej. 2"}
+  ,"User": {"new":"Nuevo usuario","description":"Crea una cuenta y as\u00edgnale un rol.","changeRole":"Cambiar rol","visitor":"Visitante","passwordHint":"M\u00ednimo 8 caracteres","emailPlaceholder":"usuario@ejemplo.com"},
+  "Dashboard": {"title":"Resumen","description":"Estado general de la liga","teams":"Equipos","players":"Jugadores","matches":"Partidos","currentSeason":"Temporada actual","upcoming":"Próximos partidos","upcomingDescription":"Encuentros programados más cercanos","noUpcoming":"No hay partidos programados","standings":"Tabla de posiciones","noStandings":"Sin datos de clasificación","viewFullStandings":"Ver tabla completa","noSeason":"Sin temporadas","noActiveSeason":"Sin temporada activa","registered":"registradas","toPlay":"por disputar","undefined":"Sin definir","teamFallback":"Equipo {id}","stadiumFallback":"Estadio {id}"},
+  "Matches": {"title":"Partidos","description":"Programación, resultados y estadísticas de cada encuentro","new":"Nuevo partido","edit":"Editar partido","editDescription":"Edita la información del partido.","newDescription":"Completa el formulario para registrar un nuevo partido.","homeTeam":"Equipo local *","awayTeam":"Equipo visitante *","season":"Temporada *","stadium":"Estadio *","schedule":"Programación del encuentro *","attendance":"Asistencia","disputed":"Partido disputado","selectTeam":"Seleccionar equipo","selectSeason":"Seleccionar temporada","selectStadium":"Seleccionar estadio","noTeams":"Sin equipos","noSeasons":"Sin temporadas","noStadiums":"Sin estadios","noResults":"No hay resultados","selectSeasonToEnable":"Selecciona una temporada para habilitar la fecha y hora","capacity":"Capacidad","search":"Buscar por equipo o estadio…","loadError":"Error al cargar partidos","empty":"No hay partidos registrados","createFirst":"Crear primer partido","completed":"Finalizado","pending":"Pendiente","back":"Volver a partidos","notFound":"Partido no encontrado","playerStats":"Estadísticas de jugadores","markPlayed":"Marca el partido como disputado para registrar estadísticas","add":"Agregar","player":"Jugador","statsEmpty":"No hay estadísticas registradas para este partido","statsUnavailable":"El partido aún no se ha disputado. Marca el partido como disputado para poder agregar estadísticas.","unknown":"Desconocido","editStat":"Editar estadística","addStat":"Agregar estadística","selectPlayer":"Seleccionar jugador","completedPasses":"Pases completados","tackles":"Entradas","interceptions":"Intercepciones","saveStats":"Guardar estadísticas","deleteStat":"Eliminar estadística","deleteStatDescription":"¿Seguro que quieres eliminar esta estadística? Esta acción no se puede deshacer.","delete":"Eliminar","deleteTitle":"Eliminar partido","deleteDescription":"¿Estás seguro de que quieres eliminar este partido? Esta acción no se puede deshacer.","home":"Local","away":"Visitante","date":"Fecha","result":"Resultado","status":"Estado"},
+  "Lists": {"teamsTitle":"Equipos","teamsDescription":"Administra los clubes participantes y sus plantillas","newTeam":"Nuevo equipo","searchTeams":"Buscar por nombre, provincia o mascota…","teamsLoadError":"Error al cargar equipos","teamsEmpty":"No hay equipos registrados","createFirstTeam":"Crear primer equipo","playersTitle":"Jugadores","playersDescription":"Listado global de jugadores registrados en la liga","newPlayer":"Nuevo jugador","searchPlayers":"Buscar por nombre, posición o equipo…","playersLoadError":"Error al cargar jugadores","playersEmpty":"No hay jugadores registrados","coachesTitle":"Entrenadores","coachesDescription":"Listado global de entrenadores registrados en la liga","newCoach":"Nuevo entrenador","searchCoaches":"Buscar por nombre o equipo…","coachesLoadError":"Error al cargar entrenadores","coachesEmpty":"No hay entrenadores registrados","stadiumsTitle":"Estadios","stadiumsDescription":"Gestiona las sedes donde se disputan los partidos","newStadium":"Nuevo estadio","searchStadiums":"Buscar estadio…","stadiumsLoadError":"Error al cargar estadios","stadiumsEmpty":"No hay estadios registrados","createFirstStadium":"Crear primer estadio","seasonsTitle":"Temporadas","seasonsDescription":"Define los periodos de competición de la liga","newSeason":"Nueva temporada","seasonsLoadError":"Error al cargar temporadas","seasonsEmpty":"No hay temporadas registradas","createFirstSeason":"Crear primera temporada","noTeam":"Sin equipo","teamFallback":"Equipo {id}","years":"años","chooseTeam":"Elige el equipo","playerTeamDescription":"Un jugador pertenece a un equipo. Selecciona uno para continuar con el alta.","coachTeamDescription":"Un entrenador pertenece a un equipo. Selecciona uno para continuar con el alta.","searchTeam":"Buscar equipo por nombre o provincia","noTeamsFound":"No se encontraron equipos","noProvince":"Sin provincia","playersCount":"{count} jugadores"},
+  "TeamDetail": {"loadError":"Error al cargar el equipo","back":"Volver a equipos","province":"Provincia","mascot":"Mascota","championshipsPlayed":"Campeonatos jugados","championshipsWon":"Campeonatos ganados","players":"Jugadores","coaches":"Entrenadores","description":"Ficha del equipo y gestión de su plantilla","viewMatches":"Ver partidos","playersInSquad":"{count} en plantilla","noPlayers":"No hay jugadores en este equipo","coachesAssigned":"{count} asignados","noCoaches":"No hay entrenadores en este equipo","deletePlayer":"Eliminar jugador","deleteCoach":"Eliminar entrenador","deletePlayerDescription":"¿Seguro que quieres eliminar este jugador? Esta acción no se puede deshacer.","deleteCoachDescription":"¿Seguro que quieres eliminar este entrenador? Esta acción no se puede deshacer."},
+  "DateTime": {"selectDate":"Seleccionar fecha","selectTime":"Seleccionar hora","matchTime":"Hora del partido","timeFormat":"Formato de 24 horas (00–23 : 00–59)"},
+  "Footer": {"copyright":"© {year} Soccer League Manager. Todos los derechos reservados.","developedBy":"Desarrollado por"}
+}

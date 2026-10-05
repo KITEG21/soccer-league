@@ -14,6 +14,7 @@ import {
 } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
 import type { User } from "../types";
+import { useLocale, useTranslations } from "next-intl";
 
 const ROLE_LABELS: Record<User["role"], string> = {
   superadmin: "Superadmin",
@@ -58,16 +59,20 @@ export function UserList({
   onDelete,
 }: UserListProps) {
   const canWrite = usePermission("users:write");
+  const t = useTranslations("User");
+  const common = useTranslations("Common");
+  const navigation = useTranslations("Navigation");
+  const locale = useLocale();
 
   const columns = columnHelper.columns([
     columnHelper.accessor("email", {
-      header: "Email",
+      header: common("email"),
       cell: ({ row }) => (
         <>
           {row.original.email}
           {row.original.id === currentUserId && (
             <Badge variant="outline" className="ml-2">
-              Tú
+              {locale === "es" ? "Tú" : "You"}
             </Badge>
           )}
         </>
@@ -75,11 +80,11 @@ export function UserList({
       meta: { cellClassName: "font-medium" },
     }),
     columnHelper.accessor("role", {
-      header: "Rol",
+      header: common("role"),
       cell: ({ getValue }) => <Badge variant="secondary">{ROLE_LABELS[getValue()]}</Badge>,
     }),
     columnHelper.accessor("created_at", {
-      header: "Creado",
+      header: common("created"),
       cell: ({ getValue }) => {
         const value = getValue();
         return value ? format(parseISO(value), "dd/MM/yyyy") : "—";
@@ -94,7 +99,7 @@ export function UserList({
           <RowActions
             onEdit={() => onEdit(row.original)}
             onDelete={() => onDelete(row.original.id)}
-            editLabel="Cambiar rol"
+            editLabel={t("changeRole")}
           />
         ) : null,
       meta: { cellClassName: "text-right" },
@@ -104,19 +109,18 @@ export function UserList({
   return (
     <>
       <PageHeader
-        title="Usuarios"
-        description="Gestiona quién puede acceder al panel y con qué rol"
+        title={navigation("users")}
         actions={
           canWrite && (
             <Button onClick={onCreate}>
               <Plus />
-              Nuevo usuario
+              {t("new")}
             </Button>
           )
         }
       />
 
-      <DataTableToolbar query={query} searchPlaceholder="Buscar por email…" />
+      <DataTableToolbar query={query} searchPlaceholder={common("search")} />
 
       <ServerDataTable
         columns={columns}
@@ -127,8 +131,8 @@ export function UserList({
         isLoading={isLoading}
         isFetching={isFetching}
         error={error}
-        errorMessage="Error al cargar usuarios"
-        emptyMessage="No hay usuarios registrados"
+        errorMessage={common("loadError")}
+        emptyMessage={common("noRecords")}
       />
     </>
   );

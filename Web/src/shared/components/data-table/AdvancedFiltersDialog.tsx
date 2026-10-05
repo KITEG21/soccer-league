@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -19,6 +20,7 @@ interface AdvancedFiltersDialogProps {
 }
 
 export const AdvancedFiltersDialog = ({ query, filters }: AdvancedFiltersDialogProps) => {
+  const t = useTranslations("Common");
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<Record<string, string>>({});
   const paramKeys = filters.flatMap(filterParamKeys);
@@ -48,7 +50,7 @@ export const AdvancedFiltersDialog = ({ query, filters }: AdvancedFiltersDialogP
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Filtros avanzados</DialogTitle>
+            <DialogTitle>{t("advancedFilters")}</DialogTitle>
             <DialogDescription>
               Los cambios se aplican al pulsar &quot;Aceptar&quot;.
             </DialogDescription>
@@ -82,7 +84,7 @@ export const AdvancedFiltersDialog = ({ query, filters }: AdvancedFiltersDialogP
               <Button variant="outline" onClick={() => setIsOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={apply}>Aceptar</Button>
+              <Button onClick={apply}>{t("accept")}</Button>
             </div>
           </DialogFooter>
         </DialogContent>

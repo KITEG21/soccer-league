@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +34,7 @@ interface PlayerFormProps {
 }
 
 export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps) => {
+  const t = useTranslations();
   const queryClient = useQueryClient();
 
   const {
@@ -117,19 +119,18 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{player ? "Editar Jugador" : "Nuevo Jugador"}</DialogTitle>
+          <DialogTitle>{player ? t("Forms.editPlayer") : t("Forms.newPlayer")}</DialogTitle>
           <DialogDescription>
             {player
-              ? "Edita la información del jugador."
-              : "Completa el formulario para inscribir un nuevo jugador."}
+              ? t("Forms.editPlayerDescription") : t("Forms.newPlayerDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="player-name">Nombre *</Label>
+            <Label htmlFor="player-name">{t("Common.name")} *</Label>
             <Input
               id="player-name"
-              placeholder="Nombre completo del jugador"
+              placeholder={t("Forms.playerName")}
               {...register("name")}
               disabled={isLoading}
             />
@@ -146,12 +147,12 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="player-number">Número</Label>
+              <Label htmlFor="player-number">{t("Common.number")}</Label>
               <Input
                 id="player-number"
                 type="number"
                 min="0"
-                placeholder="Ej. 10"
+                placeholder={t("Forms.example10")}
                 {...register("number", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -166,7 +167,7 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="player-position">Posición *</Label>
+              <Label htmlFor="player-position">{t("Common.position")} *</Label>
               <Controller
                 name="position"
                 control={control}
@@ -177,7 +178,7 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
                     disabled={isLoading}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar" />
+                      <SelectValue placeholder={t("Forms.select")} />
                     </SelectTrigger>
                     <SelectContent>
                       {PLAYER_POSITIONS.map((pos) => (
@@ -196,12 +197,12 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="player-years">Años en Equipo</Label>
+            <Label htmlFor="player-years">{t("Common.yearsInTeam")}</Label>
             <Input
               id="player-years"
               type="number"
               min="0"
-              placeholder="Ej. 3"
+              placeholder={t("Forms.example3")}
               {...register("years_in_team", { valueAsNumber: true })}
               disabled={isLoading}
             />
@@ -223,10 +224,10 @@ export const PlayerForm = ({ teamId, player, isOpen, onClose }: PlayerFormProps)
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancelar
+              {t("Common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Guardando..." : player ? "Actualizar" : "Crear"}
+              {isLoading ? t("Common.saving") : player ? t("Common.update") : t("Common.create")}
             </Button>
           </div>
         </form>

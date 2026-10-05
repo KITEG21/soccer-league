@@ -4,6 +4,8 @@ import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { AlertCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
 import type { Match } from "../types";
 import {
@@ -44,6 +46,8 @@ interface MatchFormProps {
 }
 
 export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
+  const t = useTranslations("Matches");
+  const locale = useLocale();
   const queryClient = useQueryClient();
 
   const { data: teams = [] } = useQuery({
@@ -161,27 +165,27 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{match ? "Editar Partido" : "Nuevo Partido"}</DialogTitle>
+          <DialogTitle>{match ? t("edit") : t("new")}</DialogTitle>
           <DialogDescription>
             {match
-              ? "Edita la información del partido."
-              : "Completa el formulario para registrar un nuevo partido."}
+              ? t("editDescription")
+              : t("newDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Equipo Local *</Label>
+              <Label>{t("homeTeam")}</Label>
               <Select
                 value={homeTeamId?.toString() || ""}
                 onValueChange={(v) => setValue("home_team_id", parseInt(v), { shouldValidate: true })}
                 disabled={isLoading}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={teams.length > 0 ? "Seleccionar equipo" : "Sin equipos"} />
+                  <SelectValue placeholder={teams.length > 0 ? t("selectTeam") : t("noTeams")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {teams.length === 0 && <SelectItem value="0" disabled>No hay resultados</SelectItem>}
+                  {teams.length === 0 && <SelectItem value="0" disabled>{t("noResults")}</SelectItem>}
                   {teams.map((t) => (
                     <SelectItem key={t.id} value={t.id.toString()}>
                       {t.name}
@@ -195,17 +199,17 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label>Equipo Visitante *</Label>
+              <Label>{t("awayTeam")}</Label>
               <Select
                 value={awayTeamId?.toString() || ""}
                 onValueChange={(v) => setValue("away_team_id", parseInt(v), { shouldValidate: true })}
                 disabled={isLoading}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={teams.length > 0 ? "Seleccionar equipo" : "Sin equipos"} />
+                  <SelectValue placeholder={teams.length > 0 ? t("selectTeam") : t("noTeams")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {teams.length === 0 && <SelectItem value="0" disabled>No hay resultados</SelectItem>}
+                  {teams.length === 0 && <SelectItem value="0" disabled>{t("noResults")}</SelectItem>}
                   {teams.map((t) => (
                     <SelectItem key={t.id} value={t.id.toString()}>
                       {t.name}
@@ -221,7 +225,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Temporada *</Label>
+              <Label>{t("season")}</Label>
               <Select
                 value={selectedSeasonId?.toString() || ""}
                 onValueChange={(v) => {
@@ -231,10 +235,10 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
                 disabled={isLoading}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={seasons.length > 0 ? "Seleccionar temporada" : "Sin temporadas"} />
+                  <SelectValue placeholder={seasons.length > 0 ? t("selectSeason") : t("noSeasons")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {seasons.length === 0 && <SelectItem value="0" disabled>No hay resultados</SelectItem>}
+                  {seasons.length === 0 && <SelectItem value="0" disabled>{t("noResults")}</SelectItem>}
                   {seasons.map((s) => (
                     <SelectItem key={s.id} value={s.id.toString()}>
                       {s.start_date && s.end_date ? `${format(new Date(s.start_date), "dd/MM/yyyy")} - ${format(new Date(s.end_date), "dd/MM/yyyy")}` : `Temporada ${s.id}`}
@@ -248,7 +252,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label>Estadio *</Label>
+              <Label>{t("stadium")}</Label>
               <Select
                 value={selectedStadiumId?.toString() || ""}
                 onValueChange={(v) => {
@@ -261,10 +265,10 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
                 disabled={isLoading}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={stadiums.length > 0 ? "Seleccionar estadio" : "Sin estadios"} />
+                  <SelectValue placeholder={stadiums.length > 0 ? t("selectStadium") : t("noStadiums")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {stadiums.length === 0 && <SelectItem value="0" disabled>No hay resultados</SelectItem>}
+                  {stadiums.length === 0 && <SelectItem value="0" disabled>{t("noResults")}</SelectItem>}
                   {stadiums.map((st) => (
                     <SelectItem key={st.id} value={st.id.toString()}>
                       {st.name} (Cap: {st.capacity})
@@ -279,11 +283,11 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Programación del Encuentro *</Label>
+              <Label>{t("schedule")}</Label>
             {!selectedSeasonId ? (
                 <div className="flex items-center gap-2 p-3 border rounded-xl bg-muted/50 text-muted-foreground text-sm italic">
                     <AlertCircle size={16} />
-                    Selecciona una temporada para habilitar la fecha y hora
+                    {t("selectSeasonToEnable")}
                 </div>
             ) : (
                 <Controller
@@ -310,7 +314,7 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="attendance">Asistencia</Label>
+              <Label htmlFor="attendance">{t("attendance")}</Label>
               <Input
                 id="attendance"
                 type="number"
@@ -318,16 +322,16 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
                 max={selectedStadium?.capacity}
                 {...register("attendance", {
                     validate: (val) => {
-                        if (!selectedStadiumId) return "Selecciona estadio";
+                        if (!selectedStadiumId) return t("selectStadium");
                         const attendanceVal = Number(val || 0);
                         if (selectedStadium && attendanceVal > (selectedStadium.capacity || 0)) {
-                            return `Máx ${selectedStadium.capacity}`;
+                            return `${locale === "es" ? "Máx." : "Max."} ${selectedStadium.capacity}`;
                         }
                         return true;
                     }
                 })}
                 disabled={isLoading || !selectedStadiumId}
-                placeholder={selectedStadium ? `Máx ${selectedStadium.capacity}` : "..."}
+                placeholder={selectedStadium ? `${locale === "es" ? "Máx." : "Max."} ${selectedStadium.capacity}` : "..."}
                 className="rounded-xl h-12"
               />
               {errors.attendance && (
@@ -343,10 +347,10 @@ export const MatchForm = ({ match, isOpen, onClose }: MatchFormProps) => {
                   disabled={isLoading}
                   className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <span className="text-sm font-medium">Partido Disputado</span>
+                <span className="text-sm font-medium">{t("disputed")}</span>
               </Label>
               <p className="text-xs text-muted-foreground">
-                Marca esta casilla si el partido ya se ha jugado. Solo así se podrán registrar estadísticas de jugadores.
+                {t("markPlayed")}
               </p>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +25,8 @@ interface TeamFormProps {
 }
 
 export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
+  const t = useTranslations("Team");
+  const common = useTranslations("Common");
   const queryClient = useQueryClient();
 
   const {
@@ -108,19 +111,18 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>{team ? "Editar Equipo" : "Nuevo Equipo"}</DialogTitle>
+          <DialogTitle>{team ? t("edit") : t("new")}</DialogTitle>
           <DialogDescription>
             {team
-              ? "Edita la información del equipo."
-              : "Completa el formulario para crear un nuevo equipo."}
+              ? t("editDescription") : t("newDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre *</Label>
+            <Label htmlFor="name">{common("name")} *</Label>
             <Input
               id="name"
-              placeholder="Nombre del equipo"
+              placeholder={t("name")}
               {...register("name")}
               disabled={isLoading}
             />
@@ -130,10 +132,10 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="province">Provincia</Label>
+            <Label htmlFor="province">{common("province")}</Label>
             <Input
               id="province"
-              placeholder="Ej. La Habana"
+              placeholder={t("provinceExample")}
               {...register("province")}
               disabled={isLoading}
             />
@@ -145,10 +147,10 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mascot">Mascota</Label>
+            <Label htmlFor="mascot">{common("mascot")}</Label>
             <Input
               id="mascot"
-              placeholder="Ej. Leones"
+              placeholder={t("mascotExample")}
               {...register("mascot")}
               disabled={isLoading}
             />
@@ -175,12 +177,12 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="championships_played">Campeonatos Jugados</Label>
+              <Label htmlFor="championships_played">{t("championshipsPlayed")}</Label>
               <Input
                 id="championships_played"
                 type="number"
                 min="0"
-                placeholder="Ej. 5"
+                placeholder={t("fiveExample")}
                 {...register("championships_played", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -192,12 +194,12 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="championships_won">Campeonatos Ganados</Label>
+              <Label htmlFor="championships_won">{t("championshipsWon")}</Label>
               <Input
                 id="championships_won"
                 type="number"
                 min="0"
-                placeholder="Ej. 2"
+                placeholder={t("twoExample")}
                 {...register("championships_won", { valueAsNumber: true })}
                 disabled={isLoading}
               />
@@ -222,10 +224,10 @@ export const TeamForm = ({ team, isOpen, onClose }: TeamFormProps) => {
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancelar
+              {common("cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Guardando..." : team ? "Actualizar" : "Crear"}
+              {isLoading ? common("saving") : team ? common("update") : common("create")}
             </Button>
           </div>
         </form>

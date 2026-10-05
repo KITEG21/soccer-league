@@ -13,9 +13,10 @@ import {
   type ListQueryState,
 } from "@/shared/components/data-table";
 import type { Stadium } from "../types";
+import { useLocale, useTranslations } from "next-intl";
 
-export const STADIUM_FILTERS: readonly FilterDefinition[] = [
-  { key: "capacity", label: "Capacidad", type: "number-range" },
+export const getStadiumFilters = (t: (key: string) => string): readonly FilterDefinition[] => [
+  { key: "capacity", label: t("Common.capacity"), type: "number-range" },
 ];
 
 const columnHelper = createColumnHelper<typeof dataTableFeatures, Stadium>();
@@ -43,9 +44,12 @@ export function StadiumList({
   onEdit,
   onDelete,
 }: StadiumListProps) {
+  const t = useTranslations("Lists");
+  const common = useTranslations("Common");
+  const locale = useLocale();
   const columns = columnHelper.columns([
     columnHelper.accessor("name", {
-      header: "Estadio",
+      header: common("stadium"),
       cell: ({ row }) => (
         <AppLink href={APP_ROUTES.matches({ stadium_id: row.original.id })}>
           {row.original.name}
@@ -54,8 +58,8 @@ export function StadiumList({
       meta: { cellClassName: "font-medium" },
     }),
     columnHelper.accessor("capacity", {
-      header: "Capacidad",
-      cell: ({ getValue }) => getValue()?.toLocaleString("es") ?? 0,
+      header: common("capacity"),
+      cell: ({ getValue }) => getValue()?.toLocaleString(locale) ?? 0,
       meta: { cellClassName: "tabular-nums text-muted-foreground" },
     }),
     columnHelper.display({
@@ -74,19 +78,19 @@ export function StadiumList({
   return (
     <>
       <PageHeader
-        title="Estadios"
-        description="Gestiona las sedes donde se disputan los partidos"
+        title={t("stadiumsTitle")}
+        description={t("stadiumsDescription")}
         actions={
           onCreate && (
             <Button onClick={onCreate}>
               <Plus />
-              Nuevo estadio
+              {t("newStadium")}
             </Button>
           )
         }
       />
 
-      <DataTableToolbar query={query} searchPlaceholder="Buscar estadio…" />
+      <DataTableToolbar query={query} searchPlaceholder={t("searchStadiums")} />
 
       <ServerDataTable
         columns={columns}
@@ -97,12 +101,12 @@ export function StadiumList({
         isLoading={isLoading}
         isFetching={isFetching}
         error={error}
-        errorMessage="Error al cargar estadios"
-        emptyMessage="No hay estadios registrados"
+        errorMessage={t("stadiumsLoadError")}
+        emptyMessage={t("stadiumsEmpty")}
         emptyAction={
           onCreate && (
             <Button size="sm" onClick={onCreate}>
-              Crear primer estadio
+              {t("createFirstStadium")}
             </Button>
           )
         }

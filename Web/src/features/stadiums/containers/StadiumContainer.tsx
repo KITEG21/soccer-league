@@ -9,19 +9,22 @@ import {
 } from "@tanstack/react-query";
 import type { Stadium } from "../types";
 import { stadiumsApiService } from "../services/api";
-import { STADIUM_FILTERS, StadiumList } from "../components/StadiumList";
+import { getStadiumFilters, StadiumList } from "../components/StadiumList";
 import { StadiumForm } from "../components/StadiumForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { useListQuery } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
+import { useTranslations } from "next-intl";
 
 export const StadiumContainer = () => {
+  const t = useTranslations();
+  const common = useTranslations("Common");
   const canEdit = usePermission("stadiums:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStadium, setEditingStadium] = useState<Stadium | undefined>();
   const [stadiumToDelete, setStadiumToDelete] = useState<number | undefined>();
   const queryClient = useQueryClient();
-  const query = useListQuery({ filters: STADIUM_FILTERS });
+  const query = useListQuery({ filters: getStadiumFilters(t) });
 
   const {
     data: stadiumsPage,
@@ -91,16 +94,16 @@ export const StadiumContainer = () => {
         isOpen={stadiumToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
         onConfirm={() => stadiumToDelete !== undefined && deleteMutation.mutate(stadiumToDelete)}
-        title="Eliminar Estadio"
-        description="¿Estás seguro de que quieres eliminar este estadio? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title={`${common("delete")} ${common("stadium")}`}
+        description={common("confirm")}
+        confirmText={common("delete")}
+        cancelText={common("cancel")}
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError
             ? deleteMutation.error instanceof Error
               ? deleteMutation.error.message
-              : "Error al eliminar"
+              : common("loadError")
             : null
         }
       />

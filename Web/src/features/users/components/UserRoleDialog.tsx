@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -32,6 +33,8 @@ interface UserRoleDialogProps {
 }
 
 export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) => {
+  const t = useTranslations("User");
+  const common = useTranslations("Common");
   const queryClient = useQueryClient();
 
   const { control, handleSubmit, reset, formState: { isSubmitting } } =
@@ -62,7 +65,7 @@ export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) =
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Cambiar rol</DialogTitle>
+          <DialogTitle>{t("changeRole")}</DialogTitle>
           <DialogDescription>{user?.email}</DialogDescription>
         </DialogHeader>
         <form
@@ -70,7 +73,7 @@ export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) =
           className="space-y-4"
         >
           <div className="space-y-2">
-            <Label htmlFor="role">Rol *</Label>
+            <Label htmlFor="role">{common("role")} *</Label>
             <Controller
               name="role"
               control={control}
@@ -84,7 +87,7 @@ export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) =
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="visitante">Visitante</SelectItem>
+                    <SelectItem value="visitante">{t("visitor")}</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="superadmin">Superadmin</SelectItem>
                   </SelectContent>
@@ -106,10 +109,10 @@ export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) =
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancelar
+              {common("cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Guardando..." : "Guardar"}
+              {isLoading ? common("saving") : common("save")}
             </Button>
           </div>
         </form>

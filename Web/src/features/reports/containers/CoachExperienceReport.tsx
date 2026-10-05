@@ -1,6 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/shared/components/PageHeader";
+import { useTranslations } from "next-intl";
 import { AppLink } from "@/shared/components/AppLink";
 import { APP_ROUTES } from "@/shared/config/routes";
 import { useQuery } from "@tanstack/react-query";
@@ -8,9 +9,9 @@ import { reportsApiService } from "../services/api";
 import { Loading } from "@/shared/components/Loading";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { t } from "@/shared/translations";
 
 export const CoachExperienceReport = () => {
+  const t = useTranslations();
   const { data: coachesData, isLoading, isError } = useQuery({
     queryKey: ["reports", "coach-experience"],
     queryFn: () => reportsApiService.getCoachExperience(),
@@ -20,14 +21,14 @@ export const CoachExperienceReport = () => {
   return (
     <div className="space-y-6">
       
-      <PageHeader title={t.coachExperience.title} />
+      <PageHeader title={t("Reports.coachExperience.title")} />
 
       {isLoading ? (
         <Loading />
       ) : isError ? (
         <Card className="bg-destructive/10 border-destructive">
           <CardContent className="py-8 text-center text-destructive">
-            {t.coachExperience.error}
+            {t("Reports.coachExperience.error")}
           </CardContent>
         </Card>
       ) : (
@@ -37,17 +38,17 @@ export const CoachExperienceReport = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12 text-center">#</TableHead>
-                  <TableHead>{t.coachExperience.coach}</TableHead>
-                  <TableHead className="text-center">{t.coachExperience.number}</TableHead>
-                  <TableHead>{t.coachExperience.currentTeam}</TableHead>
-                  <TableHead className="text-center">{t.coachExperience.yearsExperience}</TableHead>
-                  <TableHead className="text-center">{t.coachExperience.championships}</TableHead>
+                  <TableHead>{t("Reports.coachExperience.coach")}</TableHead>
+                  <TableHead className="text-center">{t("Reports.coachExperience.number")}</TableHead>
+                  <TableHead>{t("Reports.coachExperience.currentTeam")}</TableHead>
+                  <TableHead className="text-center">{t("Reports.coachExperience.yearsExperience")}</TableHead>
+                  <TableHead className="text-center">{t("Reports.coachExperience.championships")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {coaches.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">{t.common.noData}</TableCell>
+                    <TableCell colSpan={6} className="text-center py-8">{t("Common.noData")}</TableCell>
                   </TableRow>
                 ) : (
                   coaches.map((coach, index) => (
@@ -61,10 +62,10 @@ export const CoachExperienceReport = () => {
                         {coach.team_id ? (
                           <AppLink href={APP_ROUTES.team(coach.team_id)}>{coach.team_name}</AppLink>
                         ) : (
-                          t.coachExperience.noTeam
+                          t("Reports.coachExperience.noTeam")
                         )}
                       </TableCell>
-                      <TableCell className="text-center font-bold text-primary">{coach.experience_years} años</TableCell>
+                      <TableCell className="text-center font-bold text-primary">{coach.experience_years} {t("Lists.years")}</TableCell>
                       <TableCell className="text-center">{coach.championships_won}</TableCell>
                     </TableRow>
                   ))

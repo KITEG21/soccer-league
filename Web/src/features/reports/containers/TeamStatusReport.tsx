@@ -4,6 +4,7 @@ import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
 import { Field } from "@/shared/components/Field";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { reportsApiService } from "../services/api";
 import { seasonsApiService } from "@/features/seasons/services/api";
@@ -13,9 +14,9 @@ import { Loading } from "@/shared/components/Loading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { t } from "@/shared/translations";
 
 export const TeamStatusReport = () => {
+  const t = useTranslations();
   const [teamChoice, setTeamChoice] = useState<string>();
   const [seasonChoice, setSeasonChoice] = useState<string>();
 
@@ -52,13 +53,13 @@ export const TeamStatusReport = () => {
   return (
     <div className="space-y-6">
       
-      <PageHeader title={t.teamStatus.title} />
+      <PageHeader title={t("Reports.teamStatus.title")} />
 
       <div className="flex flex-wrap items-end gap-4">
-        <Field label={t.common.team} className="w-64">
+        <Field label={t("Common.team")} className="w-64">
           <Select value={selectedTeam} onValueChange={setTeamChoice}>
             <SelectTrigger>
-              <SelectValue placeholder={t.common.selectTeam} />
+              <SelectValue placeholder={t("Common.selectTeam")} />
             </SelectTrigger>
             <SelectContent>
               {teams.map((t) => (
@@ -69,10 +70,10 @@ export const TeamStatusReport = () => {
             </SelectContent>
           </Select>
         </Field>
-        <Field label={t.common.season} className="w-64">
+        <Field label={t("Common.season")} className="w-64">
           <Select value={selectedSeason} onValueChange={setSeasonChoice}>
             <SelectTrigger>
-              <SelectValue placeholder={t.common.selectSeason} />
+              <SelectValue placeholder={t("Common.selectSeason")} />
             </SelectTrigger>
             <SelectContent>
               {seasons.map((s) => (
@@ -88,7 +89,7 @@ export const TeamStatusReport = () => {
       {!selectedTeam || !selectedSeason ? (
         <Card className="bg-muted/50 border-dashed">
           <CardContent className="py-12 text-center text-muted-foreground">
-            {t.teamStatus.empty}
+            {t("Reports.teamStatus.empty")}
           </CardContent>
         </Card>
       ) : isLoading ? (
@@ -96,7 +97,7 @@ export const TeamStatusReport = () => {
       ) : isError ? (
         <Card className="bg-destructive/10 border-destructive">
           <CardContent className="py-8 text-center text-destructive">
-            {t.teamStatus.error}
+            {t("Reports.teamStatus.error")}
           </CardContent>
         </Card>
       ) : status ? (
@@ -110,16 +111,16 @@ export const TeamStatusReport = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t.teamStatus.stat}</TableHead>
-                  <TableHead className="text-center">{t.common.home}</TableHead>
-                  <TableHead className="text-center">{t.common.away}</TableHead>
-                  <TableHead className="text-center font-bold">{t.teamStatus.total}</TableHead>
+                  <TableHead>{t("Reports.teamStatus.stat")}</TableHead>
+                  <TableHead className="text-center">{t("Common.home")}</TableHead>
+                  <TableHead className="text-center">{t("Common.away")}</TableHead>
+                  <TableHead className="text-center font-bold">{t("Reports.teamStatus.total")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {statRow(t.teamStatus.wins, status.home_wins, status.away_wins, status.total_wins)}
-                {statRow(t.teamStatus.draws, status.home_draws, status.away_draws, status.total_draws)}
-                {statRow(t.teamStatus.losses, status.home_losses, status.away_losses, status.total_losses)}
+                {statRow(t("Reports.teamStatus.wins"), status.home_wins, status.away_wins, status.total_wins)}
+                {statRow(t("Reports.teamStatus.draws"), status.home_draws, status.away_draws, status.total_draws)}
+                {statRow(t("Reports.teamStatus.losses"), status.home_losses, status.away_losses, status.total_losses)}
               </TableBody>
             </Table>
           </CardContent>

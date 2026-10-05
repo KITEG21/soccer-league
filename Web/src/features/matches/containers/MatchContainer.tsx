@@ -18,8 +18,11 @@ import { MatchForm } from "../components/MatchForm";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { useListQuery, type FilterDefinition } from "@/shared/components/data-table";
 import { usePermission } from "@/shared/hooks/use-permission";
+import { useTranslations } from "next-intl";
 
 export const MatchContainer = () => {
+  const t = useTranslations("Matches");
+  const common = useTranslations("Common");
   const canEdit = usePermission("matches:write");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMatch, setEditingMatch] = useState<Match | undefined>();
@@ -41,28 +44,28 @@ export const MatchContainer = () => {
     () => [
       {
         key: "season_id",
-        label: "Temporada",
+        label: t("season"),
         type: "select",
         options: seasons.map((season) => ({
           value: String(season.id),
           label: getSeasonLabel(season),
         })),
       },
-      { key: "team_id", label: "Equipo", type: "select", options: teamOptions },
-      { key: "disputed", label: "Disputado", type: "boolean" },
+      { key: "team_id", label: common("team"), type: "select", options: teamOptions },
+      { key: "disputed", label: t("disputed"), type: "boolean" },
       {
         key: "stadium_id",
-        label: "Estadio",
+        label: t("stadium"),
         type: "select",
         options: stadiums.map((stadium) => ({ value: String(stadium.id), label: stadium.name })),
         advanced: true,
       },
-      { key: "home_team_id", label: "Equipo local", type: "select", options: teamOptions, advanced: true },
-      { key: "away_team_id", label: "Equipo visitante", type: "select", options: teamOptions, advanced: true },
-      { key: "date", label: "Fecha", type: "date-range", advanced: true },
-      { key: "attendance", label: "Asistencia", type: "number-range", advanced: true },
+      { key: "home_team_id", label: t("home"), type: "select", options: teamOptions, advanced: true },
+      { key: "away_team_id", label: t("away"), type: "select", options: teamOptions, advanced: true },
+      { key: "date", label: t("date"), type: "date-range", advanced: true },
+      { key: "attendance", label: t("attendance"), type: "number-range", advanced: true },
     ],
-    [seasons, stadiums, teamOptions],
+    [seasons, stadiums, teamOptions, t, common],
   );
   const query = useListQuery({ filters });
 
@@ -134,16 +137,16 @@ export const MatchContainer = () => {
         isOpen={matchToDelete !== undefined}
         onClose={handleCloseDeleteDialog}
         onConfirm={() => matchToDelete !== undefined && deleteMutation.mutate(matchToDelete)}
-        title="Eliminar Partido"
-        description="¿Estás seguro de que quieres eliminar este partido? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title={t("deleteTitle")}
+        description={t("deleteDescription")}
+        confirmText={t("delete")}
+        cancelText={common("cancel")}
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError
             ? deleteMutation.error instanceof Error
               ? deleteMutation.error.message
-              : "Error al eliminar"
+              : t("loadError")
             : null
         }
       />

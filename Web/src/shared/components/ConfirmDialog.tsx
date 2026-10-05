@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { cn } from "@/shared/utils";
 
@@ -29,11 +30,12 @@ export const ConfirmDialog = ({
   onConfirm,
   title,
   description,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
+  confirmText,
+  cancelText,
   isLoading = false,
   error = null,
 }: ConfirmDialogProps) => {
+  const t = useTranslations("Common");
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
@@ -49,7 +51,7 @@ export const ConfirmDialog = ({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{cancelText ?? t("cancel")}</AlertDialogCancel>
           <AlertDialogAction
             disabled={isLoading}
             onClick={(event) => {
@@ -58,7 +60,7 @@ export const ConfirmDialog = ({
             }}
             className={cn(buttonVariants({ variant: "destructive" }))}
           >
-            {isLoading ? "Procesando…" : confirmText}
+            {isLoading ? t("processing") : (confirmText ?? t("confirm"))}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 const CREATORS = [
   {
@@ -34,15 +35,16 @@ const CREATORS = [
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const AppFooter = () => {
+  const t = useTranslations("Footer");
   return (
     <footer className="sticky bottom-0 z-10 mt-auto border-t bg-background/95 px-4 py-3 backdrop-blur md:px-6">
       <div className="flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground sm:flex-row">
         <p>
-          © {CURRENT_YEAR} Soccer League Manager. Todos los derechos reservados.
+          {t("copyright", { year: CURRENT_YEAR })}
         </p>
 
         <div className="flex items-center gap-2">
-          <span>Desarrollado por</span>
+          <span>{t("developedBy")}</span>
           <div className="flex items-center gap-1">
             {CREATORS.map((creator) => (
               <Tooltip key={creator.name}>

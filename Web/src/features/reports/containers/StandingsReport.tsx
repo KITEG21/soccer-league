@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/shared/utils";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
@@ -17,12 +18,9 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { TableCell, TableRow } from "@/shared/components/ui/table";
-import { t } from "@/shared/translations";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { reportsApiService } from "../services/api";
-
-const COLUMNS = [t.standings.pos, t.standings.team, t.standings.pts];
 
 const PODIUM = [
   { row: "border-amber-500 bg-amber-500/10", rank: "text-amber-600 dark:text-amber-400" },
@@ -31,6 +29,8 @@ const PODIUM = [
 ] as const;
 
 export const StandingsReport = () => {
+  const t = useTranslations();
+  const columns = [t("Reports.standings.pos"), t("Reports.standings.team"), t("Reports.standings.pts")];
   const [seasonChoice, setSeasonChoice] = useState<string>();
 
   const { data: seasons = [] } = useQuery({
@@ -53,12 +53,12 @@ export const StandingsReport = () => {
   return (
     <>
       <PageHeader
-        title={t.standings.title}
+        title={t("Reports.standings.title")}
         actions={
-          <Field label={t.common.season}>
+          <Field label={t("Common.season")}>
             <Select value={selectedSeason} onValueChange={setSeasonChoice}>
               <SelectTrigger className="w-56">
-                <SelectValue placeholder={t.common.selectSeason} />
+                <SelectValue placeholder={t("Common.selectSeason")} />
               </SelectTrigger>
               <SelectContent>
                 {seasons.map((season) => (
@@ -73,12 +73,12 @@ export const StandingsReport = () => {
       />
 
       <DataTable
-        columns={COLUMNS}
+        columns={columns}
         isLoading={isLoading || !selectedSeason}
         error={isError || null}
-        errorMessage={t.standings.error}
+        errorMessage={t("Reports.standings.error")}
         isEmpty={standings.length === 0}
-        emptyMessage={t.common.noData}
+        emptyMessage={t("Common.noData")}
       >
         {standings.map((row, index) => {
           const podium = PODIUM[index];

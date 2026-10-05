@@ -17,6 +17,7 @@ import { playersApiService } from "../services/api";
 import { PlayerForm } from "./PlayerForm";
 import type { Player } from "../types";
 import { usePermission } from "@/shared/hooks/use-permission";
+import { useTranslations } from "next-intl";
 
 interface PlayerListProps {
   readonly teamId: number;
@@ -31,6 +32,9 @@ export const PlayerList = ({
   autoCreate = false,
   onFormClose,
 }: PlayerListProps) => {
+  const t = useTranslations("TeamDetail");
+  const common = useTranslations("Common");
+  const lists = useTranslations("Lists");
   const canEdit = usePermission("players:write");
   const [isFormOpen, setIsFormOpen] = useState(autoCreate && canEdit);
   const [editingPlayer, setEditingPlayer] = useState<Player | undefined>();
@@ -66,15 +70,15 @@ export const PlayerList = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold">Jugadores</h2>
+          <h2 className="font-semibold">{t("players")}</h2>
           <p className="text-sm text-muted-foreground">
-            {players.length} en plantilla
+            {t("playersInSquad", { count: players.length })}
           </p>
         </div>
         {canEdit && (
           <Button size="sm" onClick={handleCreate}>
             <Plus />
-            Nuevo jugador
+            {lists("newPlayer")}
           </Button>
         )}
       </div>
@@ -84,9 +88,9 @@ export const PlayerList = ({
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
               <TableHead className="w-16">#</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Posición</TableHead>
-              <TableHead>Años en equipo</TableHead>
+              <TableHead>{common("name")}</TableHead>
+              <TableHead>{common("position")}</TableHead>
+              <TableHead>{common("yearsInTeam")}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -97,7 +101,7 @@ export const PlayerList = ({
                   colSpan={5}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  No hay jugadores en este equipo
+                  {t("noPlayers")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -149,9 +153,9 @@ export const PlayerList = ({
           deleteMutation.reset();
         }}
         onConfirm={() => playerToDelete && deleteMutation.mutate(playerToDelete)}
-        title="Eliminar jugador"
-        description="¿Seguro que quieres eliminar este jugador? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
+        title={t("deletePlayer")}
+        description={t("deletePlayerDescription")}
+        confirmText={common("delete")}
         isLoading={deleteMutation.isPending}
         error={
           deleteMutation.isError

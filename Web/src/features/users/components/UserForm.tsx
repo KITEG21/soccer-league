@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserSchema, type CreateUserFormData } from "../schemas/userSchema";
@@ -28,6 +29,8 @@ interface UserFormProps {
 }
 
 export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
+  const t = useTranslations("User");
+  const common = useTranslations("Common");
   const queryClient = useQueryClient();
 
   const {
@@ -73,18 +76,18 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Nuevo usuario</DialogTitle>
+          <DialogTitle>{t("new")}</DialogTitle>
           <DialogDescription>
-            Crea una cuenta y asígnale un rol.
+            {t("description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{common("email")} *</Label>
             <Input
               id="email"
               type="email"
-              placeholder="usuario@ejemplo.com"
+              placeholder={t("emailPlaceholder")}
               {...register("email")}
               disabled={isLoading}
             />
@@ -94,11 +97,11 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Contraseña *</Label>
+            <Label htmlFor="password">{common("password")} *</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Mínimo 8 caracteres"
+              placeholder={t("passwordHint")}
               {...register("password")}
               disabled={isLoading}
             />
@@ -110,7 +113,7 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">Rol *</Label>
+            <Label htmlFor="role">{common("role")} *</Label>
             <Controller
               name="role"
               control={control}
@@ -124,7 +127,7 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="visitante">Visitante</SelectItem>
+                    <SelectItem value="visitante">{t("visitor")}</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="superadmin">Superadmin</SelectItem>
                   </SelectContent>
@@ -146,10 +149,10 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancelar
+              {common("cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creando..." : "Crear"}
+              {isLoading ? common("saving") : common("create")}
             </Button>
           </div>
         </form>

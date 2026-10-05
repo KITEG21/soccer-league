@@ -5,6 +5,7 @@ import { AppLink } from "@/shared/components/AppLink";
 import { APP_ROUTES } from "@/shared/config/routes";
 import { Field } from "@/shared/components/Field";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -37,9 +38,9 @@ import {
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
 import { cn } from "@/shared/utils";
-import { t } from "@/shared/translations";
 
 export const ScheduleReport = () => {
+  const t = useTranslations();
   const [dateChoice, setDateChoice] = useState<Date>();
   const [selectedStadium, setSelectedStadium] = useState<string>("");
 
@@ -72,10 +73,10 @@ export const ScheduleReport = () => {
   return (
     <div className="space-y-6">
 
-      <PageHeader title={t.schedule.title} />
+      <PageHeader title={t("Reports.schedule.title")} />
 
       <div className="flex flex-wrap gap-4 items-end">
-        <Field label={t.common.date} className="w-64">
+        <Field label={t("Common.date")} className="w-64">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -89,7 +90,7 @@ export const ScheduleReport = () => {
                 {selectedDate ? (
                   format(selectedDate, "PPP", { locale: es })
                 ) : (
-                  <span>{t.schedule.selectDate}</span>
+                  <span>{t("Reports.schedule.selectDate")}</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -104,7 +105,7 @@ export const ScheduleReport = () => {
             </PopoverContent>
           </Popover>
         </Field>
-        <Field label={t.common.stadium} className="w-64">
+        <Field label={t("Common.stadium")} className="w-64">
           <Select
             value={selectedStadium || "all"}
             onValueChange={(v) =>
@@ -112,10 +113,10 @@ export const ScheduleReport = () => {
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder={t.schedule.allStadiums} />
+              <SelectValue placeholder={t("Reports.schedule.allStadiums")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t.schedule.allStadiums}</SelectItem>
+              <SelectItem value="all">{t("Reports.schedule.allStadiums")}</SelectItem>
               {stadiums.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>
                   {s.name}
@@ -131,7 +132,7 @@ export const ScheduleReport = () => {
       ) : !selectedDate ? (
         <Card className="bg-muted/50 border-dashed">
           <CardContent className="py-12 text-center text-muted-foreground">
-            {t.schedule.empty}
+            {t("Reports.schedule.empty")}
           </CardContent>
         </Card>
       ) : isLoading ? (
@@ -139,7 +140,7 @@ export const ScheduleReport = () => {
       ) : isError ? (
         <Card className="bg-destructive/10 border-destructive">
           <CardContent className="py-8 text-center text-destructive">
-            {t.schedule.error}
+            {t("Reports.schedule.error")}
           </CardContent>
         </Card>
       ) : (
@@ -148,19 +149,19 @@ export const ScheduleReport = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t.common.date}</TableHead>
-                  <TableHead>{t.common.stadium}</TableHead>
-                  <TableHead>{t.common.home}</TableHead>
-                  <TableHead className="text-center">{t.common.result}</TableHead>
-                  <TableHead>{t.common.away}</TableHead>
-                  <TableHead className="text-center">{t.schedule.attendance}</TableHead>
+                  <TableHead>{t("Common.date")}</TableHead>
+                  <TableHead>{t("Common.stadium")}</TableHead>
+                  <TableHead>{t("Common.home")}</TableHead>
+                  <TableHead className="text-center">{t("Common.result")}</TableHead>
+                  <TableHead>{t("Common.away")}</TableHead>
+                  <TableHead className="text-center">{t("Reports.schedule.attendance")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {matches.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
-                      {t.schedule.noMatches}
+                      {t("Reports.schedule.noMatches")}
                     </TableCell>
                   </TableRow>
                 ) : (

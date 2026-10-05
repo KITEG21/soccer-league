@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
@@ -22,13 +23,10 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 import { cn } from "@/shared/utils";
-import { t } from "@/shared/translations";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { reportsApiService } from "../services/api";
 import type { AllStarPlayer } from "../types";
-
-const METRIC_LABELS: Record<string, string> = t.allStar.metricLabels;
 
 const STATS = [
   { key: "goals_scored", short: "GOL" },
@@ -49,9 +47,20 @@ const METRIC_SOURCES: Record<string, readonly string[]> = {
   saves_minus_goals_conceded: ["saves", "goals_conceded"],
 };
 
-const STAT_LABELS: Record<string, string> = t.allStar.statLabels;
-
 const PlayerCard = ({ player }: { readonly player: AllStarPlayer }) => {
+  const t = useTranslations("Reports.allStar");
+  const metricLabels: Record<string, string> = {
+    shots_on_goal: t("metricLabels.shots_on_goal"),
+    passes_completed_plus_interceptions: t("metricLabels.passes_completed_plus_interceptions"),
+    tackles_plus_blocks: t("metricLabels.tackles_plus_blocks"),
+    saves_minus_goals_conceded: t("metricLabels.saves_minus_goals_conceded"),
+  };
+  const statLabels: Record<string, string> = {
+    goals_scored: t("statLabels.goals_scored"), assists: t("statLabels.assists"),
+    shots_on_goal: t("statLabels.shots_on_goal"), passes_completed: t("statLabels.passes_completed"),
+    interceptions: t("statLabels.interceptions"), tackles: t("statLabels.tackles"), blocks: t("statLabels.blocks"),
+    saves: t("statLabels.saves"), goals_conceded: t("statLabels.goals_conceded"),
+  };
   const sources = METRIC_SOURCES[player.metric_name] ?? [];
 
   return (
@@ -77,7 +86,7 @@ const PlayerCard = ({ player }: { readonly player: AllStarPlayer }) => {
               {player.metric_value}
             </p>
             <p className="mt-1 max-w-28 text-[11px] leading-tight text-muted-foreground">
-              {METRIC_LABELS[player.metric_name] || player.metric_name}
+              {metricLabels[player.metric_name] || player.metric_name}
             </p>
           </div>
         </div>
@@ -111,10 +120,10 @@ const PlayerCard = ({ player }: { readonly player: AllStarPlayer }) => {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  <span className="font-medium">{STAT_LABELS[stat.key]}</span>
+                  <span className="font-medium">{statLabels[stat.key]}</span>
                   <span className="ml-1.5 font-mono tabular-nums">{value}</span>
                   {isSource && (
-                    <span className="ml-1.5 opacity-70">· define el puesto</span>
+                    <span className="ml-1.5 opacity-70">· {t("keyMetric")}</span>
                   )}
                 </TooltipContent>
               </Tooltip>
@@ -127,6 +136,7 @@ const PlayerCard = ({ player }: { readonly player: AllStarPlayer }) => {
 };
 
 export const AllStarReport = () => {
+  const t = useTranslations();
   const [seasonChoice, setSeasonChoice] = useState<string>();
 
   const { data: seasons = [] } = useQuery({
@@ -151,7 +161,7 @@ export const AllStarReport = () => {
       return (
         <Card className="border-dashed bg-muted/50">
           <CardContent className="py-12 text-center text-muted-foreground">
-            {t.allStar.empty}
+            {t("Reports.allStar.empty")}
           </CardContent>
         </Card>
       );
@@ -163,7 +173,7 @@ export const AllStarReport = () => {
       return (
         <Card className="border-destructive bg-destructive/10">
           <CardContent className="py-8 text-center text-destructive">
-            {t.allStar.error}
+            {t("Reports.allStar.error")}
           </CardContent>
         </Card>
       );
@@ -173,7 +183,7 @@ export const AllStarReport = () => {
       return (
         <Card className="border-dashed bg-muted/50">
           <CardContent className="py-12 text-center text-muted-foreground">
-            {t.allStar.noData}
+            {t("Reports.allStar.noData")}
           </CardContent>
         </Card>
       );
@@ -194,12 +204,12 @@ export const AllStarReport = () => {
   return (
     <>
       <PageHeader
-        title={t.allStar.title}
+        title={t("Reports.allStar.title")}
         actions={
-          <Field label={t.common.season}>
+          <Field label={t("Common.season")}>
             <Select value={selectedSeason} onValueChange={setSeasonChoice}>
               <SelectTrigger className="w-56">
-                <SelectValue placeholder={t.common.selectSeason} />
+                <SelectValue placeholder={t("Common.selectSeason")} />
               </SelectTrigger>
               <SelectContent>
                 {seasons.map((season) => (

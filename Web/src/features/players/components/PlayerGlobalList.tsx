@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
@@ -22,23 +21,27 @@ import { useTeamOptions } from "@/features/teams/hooks/useTeamOptions";
 import { playersApiService } from "../services/api";
 import { PLAYER_POSITIONS } from "../constants";
 import type { Player } from "../types";
+import { useTranslations } from "next-intl";
+import { PlayerForm } from "./PlayerForm";
 
 const columnHelper = createColumnHelper<typeof dataTableFeatures, Player>();
 
 export const PlayerGlobalList = () => {
+  const t = useTranslations("Lists");
+  const common = useTranslations("Common");
   const canEdit = usePermission("players:write");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const router = useRouter();
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const { options: teamOptions } = useTeamOptions();
 
   const filters = useMemo<readonly FilterDefinition[]>(
     () => [
-      { key: "team_id", label: "Equipo", type: "select", options: teamOptions },
-      { key: "position", label: "Posición", type: "select", options: PLAYER_POSITIONS },
-      { key: "years_in_team", label: "Años en equipo", type: "number-range", advanced: true },
-      { key: "number", label: "Dorsal", type: "text", placeholder: "Número exacto", advanced: true },
+      { key: "team_id", label: common("team"), type: "select", options: teamOptions },
+      { key: "position", label: common("position"), type: "select", options: PLAYER_POSITIONS },
+      { key: "years_in_team", label: common("yearsInTeam"), type: "number-range", advanced: true },
+      { key: "number", label: common("number"), type: "text", placeholder: common("number"), advanced: true },
     ],
-    [teamOptions],
+    [teamOptions, common],
   );
   const query = useListQuery({ filters });
 
@@ -63,28 +66,28 @@ export const PlayerGlobalList = () => {
       ),
     }),
     columnHelper.accessor("name", {
-      header: "Nombre",
+      header: common("name"),
       meta: { cellClassName: "font-medium" },
     }),
     columnHelper.accessor("team_name", {
-      header: "Equipo",
+      header: common("team"),
       cell: ({ row }) =>
         row.original.team_id ? (
           <AppLink href={`/teams/${row.original.team_id}`}>
-            {row.original.team_name ?? `Equipo ${row.original.team_id}`}
+            {row.original.team_name ?? t("teamFallback", { id: row.original.team_id })}
           </AppLink>
         ) : (
-          <span className="text-muted-foreground">Sin equipo</span>
+          <span className="text-muted-foreground">{t("noTeam")}</span>
         ),
     }),
     columnHelper.accessor("position", {
-      header: "Posición",
+      header: common("position"),
       cell: ({ getValue }) => (
         <span className="text-xs font-semibold uppercase text-primary">{getValue()}</span>
       ),
     }),
     columnHelper.accessor("years_in_team", {
-      header: "Años en equipo",
+      header: common("yearsInTeam"),
       cell: ({ getValue }) => getValue() ?? 0,
       meta: { cellClassName: "tabular-nums" },
     }),
@@ -93,13 +96,13 @@ export const PlayerGlobalList = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Jugadores"
-        description="Listado global de jugadores registrados en la liga"
+        title={t("playersTitle")}
+        description={t("playersDescription")}
         actions={
           canEdit && (
             <Button onClick={() => setIsPickerOpen(true)}>
               <Plus />
-              Nuevo jugador
+              {t("newPlayer")}
             </Button>
           )
         }
@@ -108,12 +111,23 @@ export const PlayerGlobalList = () => {
       <TeamPickerDialog
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}
-        onSelect={(teamId) => router.push(`/teams/${teamId}?create=player`)}
-        title="Elige el equipo"
-        description="Un jugador pertenece a un equipo. Selecciona uno para continuar con el alta."
+        onSelect={(teamId) => {
+          setSelectedTeamId(teamId);
+          setIsPickerOpen(false);
+        }}
+        title={t("chooseTeam")}
+        description={t("playerTeamDescription")}
       />
 
-      <DataTableToolbar query={query} searchPlaceholder="Buscar por nombre, posición o equipo…" />
+      {selectedTeamId !== null && (
+        <PlayerForm
+          teamId={selectedTeamId}
+          isOpen
+          onClose={() => setSelectedTeamId(null)}
+        />
+      )}
+
+      <DataTableToolbar query={query} searchPlaceholder={t("searchPlayers")} />
 
       <ServerDataTable
         columns={columns}
@@ -124,8 +138,8 @@ export const PlayerGlobalList = () => {
         isLoading={isLoadingPlayers}
         isFetching={isFetching}
         error={error}
-        errorMessage="Error al cargar jugadores"
-        emptyMessage="No hay jugadores registrados"
+        errorMessage={t("playersLoadError")}
+        emptyMessage={t("playersEmpty")}
       />
     </div>
   );

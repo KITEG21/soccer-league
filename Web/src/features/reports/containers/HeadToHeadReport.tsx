@@ -5,6 +5,7 @@ import { AppLink } from "@/shared/components/AppLink";
 import { APP_ROUTES } from "@/shared/config/routes";
 import { Field } from "@/shared/components/Field";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { reportsApiService } from "../services/api";
@@ -28,9 +29,9 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { t } from "@/shared/translations";
 
 export const HeadToHeadReport = () => {
+  const t = useTranslations();
   const [team1Choice, setTeam1] = useState<string>();
   const [team2Choice, setTeam2] = useState<string>();
   const [selectedSeason, setSelectedSeason] = useState<string>("");
@@ -65,13 +66,13 @@ export const HeadToHeadReport = () => {
   return (
     <div className="space-y-6">
 
-      <PageHeader title={t.headToHead.title} />
+      <PageHeader title={t("Reports.headToHead.title")} />
 
       <div className="flex flex-wrap items-end gap-4">
-        <Field label={t.headToHead.selectTeam1} className="w-64">
+        <Field label={t("Reports.headToHead.selectTeam1")} className="w-64">
           <Select value={team1} onValueChange={setTeam1}>
             <SelectTrigger>
-              <SelectValue placeholder={t.headToHead.selectTeam1} />
+              <SelectValue placeholder={t("Reports.headToHead.selectTeam1")} />
             </SelectTrigger>
             <SelectContent>
               {teams
@@ -84,10 +85,10 @@ export const HeadToHeadReport = () => {
             </SelectContent>
           </Select>
         </Field>
-        <Field label={t.headToHead.selectTeam2} className="w-64">
+        <Field label={t("Reports.headToHead.selectTeam2")} className="w-64">
           <Select value={team2} onValueChange={setTeam2}>
             <SelectTrigger>
-              <SelectValue placeholder={t.headToHead.selectTeam2} />
+              <SelectValue placeholder={t("Reports.headToHead.selectTeam2")} />
             </SelectTrigger>
             <SelectContent>
               {teams
@@ -100,16 +101,16 @@ export const HeadToHeadReport = () => {
             </SelectContent>
           </Select>
         </Field>
-        <Field label={t.common.season} className="w-64">
+        <Field label={t("Common.season")} className="w-64">
           <Select
             value={selectedSeason || "all"}
             onValueChange={(v) => setSelectedSeason(v === "all" ? "" : v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t.headToHead.allSeasons} />
+              <SelectValue placeholder={t("Reports.headToHead.allSeasons")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t.headToHead.allSeasons}</SelectItem>
+              <SelectItem value="all">{t("Reports.headToHead.allSeasons")}</SelectItem>
               {seasons.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>
                   {getSeasonLabel(s)}
@@ -123,7 +124,7 @@ export const HeadToHeadReport = () => {
       {!team1 || !team2 ? (
         <Card className="bg-muted/50 border-dashed">
           <CardContent className="py-12 text-center text-muted-foreground">
-            {t.headToHead.empty}
+            {t("Reports.headToHead.empty")}
           </CardContent>
         </Card>
       ) : isLoading ? (
@@ -131,7 +132,7 @@ export const HeadToHeadReport = () => {
       ) : isError ? (
         <Card className="bg-destructive/10 border-destructive">
           <CardContent className="py-8 text-center text-destructive">
-            {t.headToHead.error}
+            {t("Reports.headToHead.error")}
           </CardContent>
         </Card>
       ) : (
@@ -140,16 +141,16 @@ export const HeadToHeadReport = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t.common.date}</TableHead>
-                  <TableHead>{t.common.stadium}</TableHead>
-                  <TableHead>{t.common.home}</TableHead>
-                  <TableHead className="text-center">{t.common.result}</TableHead>
-                  <TableHead>{t.common.away}</TableHead>
+                  <TableHead>{t("Common.date")}</TableHead>
+                  <TableHead>{t("Common.stadium")}</TableHead>
+                  <TableHead>{t("Common.home")}</TableHead>
+                  <TableHead className="text-center">{t("Common.result")}</TableHead>
+                  <TableHead>{t("Common.away")}</TableHead>
                   <TableHead className="text-center">
-                    {t.headToHead.homeAssists}
+                    {t("Reports.headToHead.homeAssists")}
                   </TableHead>
                   <TableHead className="text-center">
-                    {t.headToHead.awayAssists}
+                    {t("Reports.headToHead.awayAssists")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -157,7 +158,7 @@ export const HeadToHeadReport = () => {
                 {matches.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
-                      {t.headToHead.noMatches}
+                      {t("Reports.headToHead.noMatches")}
                     </TableCell>
                   </TableRow>
                 ) : (

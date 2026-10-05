@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { RootProviders } from "./providers";
 import { getServerSession } from "@/shared/auth/server-session";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Liga de Fútbol", template: "%s | Liga de Fútbol" },
+  title: { default: "Soccer League", template: "%s | Soccer League" },
   icons: { icon: "/favicon.svg" },
 };
 
@@ -15,23 +17,26 @@ export default async function RootLayout({
   readonly children: ReactNode;
 }) {
   const claims = await getServerSession();
+  const locale = await getLocale();
 
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body>
-        <RootProviders
-          session={
-            claims
-              ? {
-                  userId: claims.sub,
-                  role: claims.role,
-                  permissions: claims.permissions,
-                }
-              : null
-          }
-        >
-          {children}
-        </RootProviders>
+        <NextIntlClientProvider>
+          <RootProviders
+            session={
+              claims
+                ? {
+                    userId: claims.sub,
+                    role: claims.role,
+                    permissions: claims.permissions,
+                  }
+                : null
+            }
+          >
+            {children}
+          </RootProviders>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

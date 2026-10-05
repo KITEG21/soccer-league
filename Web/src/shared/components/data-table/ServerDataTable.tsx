@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import {
   rowSortingFeature,
   tableFeatures,
@@ -93,11 +94,14 @@ export const ServerDataTable = <TData extends RowData>({
   isLoading = false,
   isFetching = false,
   error = null,
-  errorMessage = "No se pudieron cargar los datos",
-  emptyMessage = "No hay registros",
+  errorMessage,
+  emptyMessage,
   emptyAction,
   getRowClassName,
 }: ServerDataTableProps<TData>) => {
+  const t = useTranslations("Common");
+  const resolvedErrorMessage = errorMessage ?? t("loadError");
+  const resolvedEmptyMessage = emptyMessage ?? t("noRecords");
   const sorting: SortingState = query.sort
     ? [{ id: query.sort, desc: query.order === "desc" }]
     : [];
@@ -145,7 +149,7 @@ export const ServerDataTable = <TData extends RowData>({
       return (
         <TableRow>
           <TableCell colSpan={columnCount} className="h-24 text-center text-destructive">
-            {errorMessage}
+            {resolvedErrorMessage}
           </TableCell>
         </TableRow>
       );
@@ -158,7 +162,7 @@ export const ServerDataTable = <TData extends RowData>({
           <TableCell colSpan={columnCount} className="h-32 text-center">
             <div className="flex flex-col items-center gap-3 text-muted-foreground">
               <span className="text-sm">
-                {filtered ? "No hay resultados con los filtros aplicados" : emptyMessage}
+                {filtered ? t("noFilteredResults") : resolvedEmptyMessage}
               </span>
               {filtered ? (
                 <button
@@ -166,7 +170,7 @@ export const ServerDataTable = <TData extends RowData>({
                   className="text-sm font-medium text-primary hover:underline"
                   onClick={query.clearFilters}
                 >
-                  Limpiar filtros
+                  {t("clearFilters")}
                 </button>
               ) : (
                 emptyAction
@@ -239,12 +243,12 @@ export const ServerDataTable = <TData extends RowData>({
 
       <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Filas por página</span>
+          <span>{t("rowsPerPage")}</span>
           <Select
             value={String(query.pageSize)}
             onValueChange={(value) => query.setPageSize(Number(value))}
           >
-            <SelectTrigger className="h-8 w-20" aria-label="Filas por página">
+            <SelectTrigger className="h-8 w-20" aria-label={t("rowsPerPage")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

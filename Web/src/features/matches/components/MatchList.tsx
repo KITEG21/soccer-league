@@ -1,5 +1,6 @@
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -41,28 +42,32 @@ export function MatchList({
   onEdit,
   onDelete,
 }: MatchListProps) {
+  const t = useTranslations("Matches");
+  const root = useTranslations();
+  const locale = useLocale();
+  const dateLocale = locale === "es" ? es : enUS;
   const columns = columnHelper.columns([
     columnHelper.accessor("match_date", {
-      header: "Fecha",
+      header: t("date"),
       cell: ({ row }) => (
         <Link href={`/matches/${row.original.id}`} className="after:absolute after:inset-0">
-          {format(new Date(row.original.match_date), "dd/MM/yyyy HH:mm", { locale: es })}
+          {format(new Date(row.original.match_date), "dd/MM/yyyy HH:mm", { locale: dateLocale })}
         </Link>
       ),
       meta: { cellClassName: "whitespace-nowrap tabular-nums text-muted-foreground" },
     }),
     columnHelper.accessor("home_team_name", {
-      header: "Local",
+      header: t("home"),
       cell: ({ row }) => (
         <AppLink href={`/teams/${row.original.home_team_id}`}>
-          {row.original.home_team_name || `Equipo ${row.original.home_team_id}`}
+          {row.original.home_team_name || root("Dashboard.teamFallback", { id: row.original.home_team_id })}
         </AppLink>
       ),
       meta: { cellClassName: "font-medium" },
     }),
     columnHelper.accessor((match) => match.home_goals - match.away_goals, {
       id: "result",
-      header: "Resultado",
+      header: t("result"),
       cell: ({ row }) => (
         <Badge variant="secondary" className="font-mono tabular-nums">
           {row.original.home_goals} - {row.original.away_goals}
@@ -70,29 +75,29 @@ export function MatchList({
       ),
     }),
     columnHelper.accessor("away_team_name", {
-      header: "Visitante",
+      header: t("away"),
       cell: ({ row }) => (
         <AppLink href={`/teams/${row.original.away_team_id}`}>
-          {row.original.away_team_name || `Equipo ${row.original.away_team_id}`}
+          {row.original.away_team_name || root("Dashboard.teamFallback", { id: row.original.away_team_id })}
         </AppLink>
       ),
       meta: { cellClassName: "font-medium" },
     }),
     columnHelper.accessor("stadium_name", {
-      header: "Estadio",
-      cell: ({ row }) => row.original.stadium_name || `Estadio ${row.original.stadium_id}`,
+      header: t("stadium"),
+      cell: ({ row }) => row.original.stadium_name || root("Dashboard.stadiumFallback", { id: row.original.stadium_id }),
       meta: { cellClassName: "text-muted-foreground" },
     }),
     columnHelper.accessor("attendance", {
-      header: "Asistencia",
-      cell: ({ getValue }) => (getValue() ?? 0).toLocaleString("es"),
+      header: t("attendance"),
+      cell: ({ getValue }) => (getValue() ?? 0).toLocaleString(locale),
       meta: { cellClassName: "tabular-nums text-muted-foreground" },
     }),
     columnHelper.accessor("disputed", {
-      header: "Estado",
+      header: t("status"),
       cell: ({ getValue }) => (
         <Badge variant={getValue() ? "default" : "outline"}>
-          {getValue() ? "Finalizado" : "Pendiente"}
+          {getValue() ? t("completed") : t("pending")}
         </Badge>
       ),
     }),
@@ -112,19 +117,19 @@ export function MatchList({
   return (
     <>
       <PageHeader
-        title="Partidos"
-        description="Programación, resultados y estadísticas de cada encuentro"
+        title={t("title")}
+        description={t("description")}
         actions={
           onCreate && (
             <Button onClick={onCreate}>
               <Plus />
-              Nuevo partido
+              {t("new")}
             </Button>
           )
         }
       />
 
-      <DataTableToolbar query={query} searchPlaceholder="Buscar por equipo o estadio…" />
+      <DataTableToolbar query={query} searchPlaceholder={t("search")} />
 
       <ServerDataTable
         columns={columns}
@@ -136,12 +141,12 @@ export function MatchList({
         isLoading={isLoading}
         isFetching={isFetching}
         error={error}
-        errorMessage="Error al cargar partidos"
-        emptyMessage="No hay partidos registrados"
+        errorMessage={t("loadError")}
+        emptyMessage={t("empty")}
         emptyAction={
           onCreate && (
             <Button size="sm" onClick={onCreate}>
-              Crear primer partido
+              {t("createFirst")}
             </Button>
           )
         }

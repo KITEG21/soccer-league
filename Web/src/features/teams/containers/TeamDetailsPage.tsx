@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { teamsApiService } from "../services/api";
 import { CoachList } from "@/features/coaches/components/CoachList";
 import { PlayerList } from "@/features/players/components/PlayerList";
+import { useTranslations } from "next-intl";
 
 interface TeamDetailsPageProps {
   readonly teamId: number;
@@ -18,6 +19,7 @@ interface TeamDetailsPageProps {
 }
 
 export const TeamDetailsPage = ({ teamId, createIntent }: TeamDetailsPageProps) => {
+  const t = useTranslations("TeamDetail");
   const router = useRouter();
 
   const clearCreateIntent = () => {
@@ -39,9 +41,9 @@ export const TeamDetailsPage = ({ teamId, createIntent }: TeamDetailsPageProps) 
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-4 py-12">
-          <p className="text-destructive">Error al cargar el equipo</p>
+          <p className="text-destructive">{t("loadError")}</p>
           <Button onClick={() => router.push("/teams")}>
-            Volver a equipos
+            {t("back")}
           </Button>
         </CardContent>
       </Card>
@@ -49,26 +51,26 @@ export const TeamDetailsPage = ({ teamId, createIntent }: TeamDetailsPageProps) 
   }
 
   const details = [
-    { label: "Provincia", value: team.province || "—" },
-    { label: "Mascota", value: team.mascot || "—" },
-    { label: "Campeonatos jugados", value: team.championships_played ?? 0 },
-    { label: "Campeonatos ganados", value: team.championships_won ?? 0 },
-    { label: "Jugadores", value: team.players?.length ?? 0 },
-    { label: "Entrenadores", value: team.coaches?.length ?? 0 },
+    { label: t("province"), value: team.province || "—" },
+    { label: t("mascot"), value: team.mascot || "—" },
+    { label: t("championshipsPlayed"), value: team.championships_played ?? 0 },
+    { label: t("championshipsWon"), value: team.championships_won ?? 0 },
+    { label: t("players"), value: team.players?.length ?? 0 },
+    { label: t("coaches"), value: team.coaches?.length ?? 0 },
   ];
 
   return (
     <>
       <PageHeader
         title={team.name}
-        description="Ficha del equipo y gestión de su plantilla"
+        description={t("description")}
         actions={
           <>
             <Button variant="outline" asChild>
-              <Link href={APP_ROUTES.matches({ team_id: team.id })}>Ver partidos</Link>
+              <Link href={APP_ROUTES.matches({ team_id: team.id })}>{t("viewMatches")}</Link>
             </Button>
             <Button variant="outline" onClick={() => router.push(APP_ROUTES.teams())}>
-              Volver a equipos
+              {t("back")}
             </Button>
           </>
         }

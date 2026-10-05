@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import { useLocale } from "next-intl";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
@@ -31,6 +32,10 @@ export const FilterField = ({
   showLabel = false,
   className,
 }: FilterFieldProps) => {
+  const locale = useLocale();
+  const labels = locale === "es"
+    ? { all: "Todos", min: "Mín.", max: "Máx.", minimum: "mínimo", maximum: "máximo", from: "desde", to: "hasta" }
+    : { all: "All", min: "Min.", max: "Max.", minimum: "minimum", maximum: "maximum", from: "from", to: "to" };
   const [firstKey, secondKey] = filterParamKeys(filter);
   const inputId = `filter-${filter.key}${showLabel ? "-advanced" : ""}`;
 
@@ -67,7 +72,7 @@ export const FilterField = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL_VALUE}>
-                {showLabel ? "Todos" : `${filter.label}: todos`}
+                {showLabel ? labels.all : `${filter.label}: ${labels.all}`}
               </SelectItem>
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
@@ -86,16 +91,16 @@ export const FilterField = ({
               id: inputId,
               type: "number",
               inputMode: "numeric",
-              placeholder: showLabel ? "Mín." : `${filter.label} mín.`,
-              "aria-label": `${filter.label} mínimo`,
+              placeholder: showLabel ? labels.min : `${filter.label} ${labels.min}`,
+              "aria-label": `${filter.label} ${labels.minimum}`,
             })}
             <span className="text-muted-foreground">–</span>
             {renderTextInput({
               paramKey: secondKey,
               type: "number",
               inputMode: "numeric",
-              placeholder: showLabel ? "Máx." : `${filter.label} máx.`,
-              "aria-label": `${filter.label} máximo`,
+              placeholder: showLabel ? labels.max : `${filter.label} ${labels.max}`,
+              "aria-label": `${filter.label} ${labels.maximum}`,
             })}
           </div>
         );
@@ -105,7 +110,7 @@ export const FilterField = ({
             <Input
               id={inputId}
               type="date"
-              aria-label={`${filter.label} desde`}
+              aria-label={`${filter.label} ${labels.from}`}
               value={values[firstKey] ?? ""}
               max={values[secondKey] || undefined}
               onChange={(event) => onChange(firstKey, event.target.value)}
@@ -113,7 +118,7 @@ export const FilterField = ({
             <span className="text-muted-foreground">–</span>
             <Input
               type="date"
-              aria-label={`${filter.label} hasta`}
+              aria-label={`${filter.label} ${labels.to}`}
               value={values[secondKey] ?? ""}
               min={values[firstKey] || undefined}
               onChange={(event) => onChange(secondKey, event.target.value)}

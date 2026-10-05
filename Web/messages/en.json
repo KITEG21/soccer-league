@@ -1,0 +1,170 @@
+{
+  "Navigation": {
+    "general": "General",
+    "management": "Management",
+    "reports": "Reports",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "seasons": "Seasons",
+    "teams": "Teams",
+    "players": "Players",
+    "coaches": "Coaches",
+    "matches": "Matches",
+    "stadiums": "Stadiums",
+    "standings": "Standings",
+    "headToHead": "Head to head",
+    "schedule": "Schedule",
+    "attendance": "Attendance",
+    "teamStatus": "Team status",
+    "coachExperience": "Experience",
+    "allStar": "All-star team",
+    "detail": "Details"
+  },
+  "Header": {
+    "account": "Account",
+    "administrator": "Administrator",
+    "logout": "Log out",
+    "switchToLight": "Enable light theme",
+    "switchToDark": "Enable dark theme"
+  },
+  "Language": {
+    "label": "Language",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "Auth": {
+    "adminPanel": "Administration panel",
+    "email": "Email",
+    "emailPlaceholder": "you@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…"
+  },
+  "Common": {
+    "reports": "Reports",
+    "season": "Season",
+    "team": "Team",
+    "selectSeason": "Select season",
+    "selectTeam": "Select team",
+    "noData": "No data available",
+    "date": "Date",
+    "stadium": "Stadium",
+    "home": "Home",
+    "away": "Away",
+    "result": "Result",
+    "viewMore": "View more",
+    "create": "Create", "update": "Update", "save": "Save", "saving": "Saving…", "cancel": "Cancel",
+    "edit": "Edit", "delete": "Delete", "confirm": "Confirm", "processing": "Processing…",
+    "search": "Search…", "clearFilters": "Clear filters", "clearAll": "Clear all",
+    "noRecords": "No records found", "loadError": "Unable to load data",
+    "actions": "Actions", "name": "Name", "status": "Status", "capacity": "Capacity",
+    "start": "Start", "end": "End", "role": "Role", "created": "Created",
+    "home": "Home", "away": "Away", "attendance": "Attendance", "position": "Position",
+    "number": "Number", "yearsInTeam": "Years with team", "province": "Province", "mascot": "Mascot",
+    "rowsPerPage": "Rows per page", "noFilteredResults": "No results match the applied filters",
+    "email": "Email", "password": "Password", "user": "User", "coach": "Coach",
+    "player": "Player", "goals": "Goals", "assists": "Assists", "shots": "Shots",
+    "passes": "Passes", "tackles": "Tackles", "interceptions": "Interceptions", "statistics": "Statistics",
+    "advancedFilters": "Advanced filters", "accept": "Accept", "backHome": "Back to home",
+    "notFound": "Page not found", "notFoundDescription": "The page you are looking for does not exist or has moved.", "accessDenied": "Access denied", "noTeam": "No team"
+  },
+  "Reports": {
+    "standings": {
+      "title": "League standings",
+      "pos": "Pos",
+      "team": "Team",
+      "pts": "Pts",
+      "empty": "Select a season to view the league standings.",
+      "error": "Unable to load the league standings. Please try again."
+    },
+    "attendance": {
+      "title": "Stadium attendance",
+      "breadcrumb": "Attendance",
+      "capacity": "Capacity",
+      "matches": "Matches",
+      "totalAttendance": "Total attendance",
+      "percentage": "% Attendance",
+      "empty": "Select a season to view attendance statistics.",
+      "error": "Unable to load attendance statistics. Please try again."
+    },
+    "coachExperience": {
+      "title": "Coach experience ranking",
+      "breadcrumb": "Experience ranking",
+      "number": "Number",
+      "coach": "Coach",
+      "currentTeam": "Current team",
+      "yearsExperience": "Years of experience",
+      "championships": "Championships won",
+      "noTeam": "No team",
+      "error": "Unable to load the coach ranking. Please try again."
+    },
+    "allStar": {
+      "title": "Season all-star team",
+      "breadcrumb": "All-star team",
+      "keyMetric": "Key metric",
+      "noData": "No data is available for this season.",
+      "empty": "Select a season to view the all-star team.",
+      "error": "Unable to load the all-star team.",
+      "statLabels": {
+        "goals_scored": "Goals",
+        "assists": "Assists",
+        "shots_on_goal": "Shots on goal",
+        "passes_completed": "Completed passes",
+        "interceptions": "Interceptions",
+        "tackles": "Tackles",
+        "blocks": "Blocks",
+        "saves": "Saves",
+        "goals_conceded": "Goals conceded"
+      },
+      "metricLabels": {
+        "shots_on_goal": "Shots on goal",
+        "passes_completed_plus_interceptions": "Passes + interceptions",
+        "tackles_plus_blocks": "Tackles + blocks",
+        "saves_minus_goals_conceded": "Saves - goals conceded"
+      }
+    },
+    "headToHead": {
+      "title": "Head-to-head",
+      "selectTeam1": "Select team 1",
+      "selectTeam2": "Select team 2",
+      "allSeasons": "All seasons",
+      "empty": "Select two teams to view their head-to-head matches.",
+      "error": "Unable to load head-to-head matches. Please try again.",
+      "noMatches": "There are no matches between these teams",
+      "homeAssists": "Home assists",
+      "awayAssists": "Away assists"
+    },
+    "schedule": {
+      "title": "Schedule and venues",
+      "selectDate": "Select a date",
+      "allStadiums": "All stadiums",
+      "empty": "Select a date to view scheduled matches.",
+      "error": "Unable to load scheduled matches. Please try again.",
+      "attendance": "Attendance",
+      "noMatches": "There are no matches on this date"
+    },
+    "teamStatus": {
+      "title": "Team status",
+      "stat": "Statistic",
+      "total": "Total",
+      "empty": "Select a team and season to view its status.",
+      "error": "Unable to load the team status. Please try again.",
+      "wins": "Wins",
+      "draws": "Draws",
+      "losses": "Losses"
+    }
+  },
+  "Forms": {"editStadium":"Edit stadium","newStadium":"New stadium","editStadiumDescription":"Edit stadium information.","newStadiumDescription":"Complete the form to create a new stadium.","stadiumName":"Stadium name","exampleCapacity":"E.g. 25000","editSeason":"Edit season","newSeason":"New season","editSeasonDescription":"Edit the season dates.","newSeasonDescription":"Complete the form to create a new season.","startDate":"Start date","endDate":"End date","selectDate":"Select a date","seasonError":"Season error","editPlayer":"Edit player","newPlayer":"New player","editPlayerDescription":"Edit player information.","newPlayerDescription":"Complete the form to register a new player.","playerName":"Player full name","select":"Select","example10":"E.g. 10","example3":"E.g. 3"}
+  ,"Coach": {"edit":"Edit coach","new":"New coach","editDescription":"Edit coach information.","newDescription":"Complete the form to assign a new coach.","name":"Coach full name","numberExample":"E.g. 12","yearsExperience":"Years of experience","championshipsWon":"Championships won","twoExample":"E.g. 2"}
+  ,"Team": {"edit":"Edit team","new":"New team","editDescription":"Edit team information.","newDescription":"Complete the form to create a new team.","name":"Team name","provinceExample":"E.g. Havana","mascotExample":"E.g. Lions","championshipsPlayed":"Championships played","championshipsWon":"Championships won","fiveExample":"E.g. 5","twoExample":"E.g. 2"}
+  ,"User": {"new":"New user","description":"Create an account and assign it a role.","changeRole":"Change role","visitor":"Visitor","passwordHint":"Minimum 8 characters","emailPlaceholder":"user@example.com"},
+  "Dashboard": {"title":"Dashboard","description":"League overview","teams":"Teams","players":"Players","matches":"Matches","currentSeason":"Current season","upcoming":"Upcoming matches","upcomingDescription":"Nearest scheduled matches","noUpcoming":"There are no scheduled matches","standings":"League standings","noStandings":"No standings data","viewFullStandings":"View full standings","noSeason":"No seasons","noActiveSeason":"No active season","registered":"registered","toPlay":"to play","undefined":"Not defined","teamFallback":"Team {id}","stadiumFallback":"Stadium {id}"},
+  "Matches": {"title":"Matches","description":"Schedule, results and statistics for each match","new":"New match","edit":"Edit match","editDescription":"Edit match information.","newDescription":"Complete the form to register a new match.","homeTeam":"Home team *","awayTeam":"Away team *","season":"Season *","stadium":"Stadium *","schedule":"Match schedule *","attendance":"Attendance","disputed":"Match played","selectTeam":"Select team","selectSeason":"Select season","selectStadium":"Select stadium","noTeams":"No teams","noSeasons":"No seasons","noStadiums":"No stadiums","noResults":"No results","selectSeasonToEnable":"Select a season to enable date and time","capacity":"Capacity","search":"Search by team or stadium…","loadError":"Unable to load matches","empty":"No matches registered","createFirst":"Create first match","completed":"Completed","pending":"Pending","back":"Back to matches","notFound":"Match not found","playerStats":"Player statistics","markPlayed":"Mark the match as played to register statistics","add":"Add","player":"Player","statsEmpty":"No statistics have been registered for this match","statsUnavailable":"The match has not been played yet. Mark it as played to add statistics.","unknown":"Unknown","editStat":"Edit statistic","addStat":"Add statistic","selectPlayer":"Select player","completedPasses":"Completed passes","tackles":"Tackles","interceptions":"Interceptions","saveStats":"Save statistics","deleteStat":"Delete statistic","deleteStatDescription":"Are you sure you want to delete this statistic? This action cannot be undone.","delete":"Delete","deleteTitle":"Delete match","deleteDescription":"Are you sure you want to delete this match? This action cannot be undone.","home":"Home","away":"Away","date":"Date","result":"Result","status":"Status"},
+  "Lists": {"teamsTitle":"Teams","teamsDescription":"Manage participating clubs and their squads","newTeam":"New team","searchTeams":"Search by name, province or mascot…","teamsLoadError":"Unable to load teams","teamsEmpty":"No teams registered","createFirstTeam":"Create first team","playersTitle":"Players","playersDescription":"Global list of players registered in the league","newPlayer":"New player","searchPlayers":"Search by name, position or team…","playersLoadError":"Unable to load players","playersEmpty":"No players registered","coachesTitle":"Coaches","coachesDescription":"Global list of coaches registered in the league","newCoach":"New coach","searchCoaches":"Search by name or team…","coachesLoadError":"Unable to load coaches","coachesEmpty":"No coaches registered","stadiumsTitle":"Stadiums","stadiumsDescription":"Manage the venues where matches are played","newStadium":"New stadium","searchStadiums":"Search stadium…","stadiumsLoadError":"Unable to load stadiums","stadiumsEmpty":"No stadiums registered","createFirstStadium":"Create first stadium","seasonsTitle":"Seasons","seasonsDescription":"Define the league competition periods","newSeason":"New season","seasonsLoadError":"Unable to load seasons","seasonsEmpty":"No seasons registered","createFirstSeason":"Create first season","noTeam":"No team","teamFallback":"Team {id}","years":"years","chooseTeam":"Choose a team","playerTeamDescription":"A player belongs to a team. Select one to continue.","coachTeamDescription":"A coach belongs to a team. Select one to continue.","searchTeam":"Search team by name or province","noTeamsFound":"No teams found","noProvince":"No province","playersCount":"{count} players"},
+  "TeamDetail": {"loadError":"Unable to load team","back":"Back to teams","province":"Province","mascot":"Mascot","championshipsPlayed":"Championships played","championshipsWon":"Championships won","players":"Players","coaches":"Coaches","description":"Team profile and squad management","viewMatches":"View matches","playersInSquad":"{count} in squad","noPlayers":"There are no players on this team","coachesAssigned":"{count} assigned","noCoaches":"There are no coaches on this team","deletePlayer":"Delete player","deleteCoach":"Delete coach","deletePlayerDescription":"Are you sure you want to delete this player? This action cannot be undone.","deleteCoachDescription":"Are you sure you want to delete this coach? This action cannot be undone."},
+  "DateTime": {"selectDate":"Select date","selectTime":"Select time","matchTime":"Match time","timeFormat":"24-hour format (00–23 : 00–59)"},
+  "Footer": {"copyright":"© {year} Soccer League Manager. All rights reserved.","developedBy":"Developed by"}
+}

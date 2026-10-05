@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +23,7 @@ export const AppSidebar = () => {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const { can } = useAuth();
+  const t = useTranslations("Navigation");
 
   const closeOnNavigate = () => {
     if (isMobile) setOpenMobile(false);
@@ -61,8 +63,8 @@ export const AppSidebar = () => {
 
       <SidebarContent className="group-data-[collapsible=icon]:overflow-y-auto">
         {visibleGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          <SidebarGroup key={group.labelKey}>
+            <SidebarGroupLabel>{t(group.labelKey)}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
@@ -76,11 +78,11 @@ export const AppSidebar = () => {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
-                        tooltip={item.label}
+                        tooltip={t(item.labelKey)}
                       >
                         <Link href={item.href} onClick={closeOnNavigate}>
                           <item.icon />
-                          <span>{item.label}</span>
+                          <span>{t(item.labelKey)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

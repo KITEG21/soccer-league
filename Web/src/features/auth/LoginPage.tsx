@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Eye, EyeOff, Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -23,6 +24,7 @@ export const LoginPage = () => {
     initialState,
   );
   const [showPass, setShowPass] = useState(false);
+  const t = useTranslations("Auth");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
@@ -37,19 +39,19 @@ export const LoginPage = () => {
           </div>
           <div className="space-y-1">
             <CardTitle className="text-xl">SoccerLeague</CardTitle>
-            <CardDescription>Panel administrativo</CardDescription>
+            <CardDescription>{t("adminPanel")}</CardDescription>
           </div>
         </CardHeader>
 
         <CardContent>
           <form action={formAction} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="tu@email.com"
+                placeholder={t("emailPlaceholder")}
                 autoComplete="username"
                 defaultValue={state.email}
                 required
@@ -57,13 +59,13 @@ export const LoginPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   name="password"
                   type={showPass ? "text" : "password"}
-                  placeholder="Tu contraseña"
+                  placeholder={t("passwordPlaceholder")}
                   autoComplete="current-password"
                   className="pr-10"
                   required
@@ -72,7 +74,7 @@ export const LoginPage = () => {
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   aria-label={
-                    showPass ? "Ocultar contraseña" : "Mostrar contraseña"
+                    showPass ? t("hidePassword") : t("showPassword")
                   }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                 >
@@ -91,7 +93,7 @@ export const LoginPage = () => {
             )}
 
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Entrando…" : "Iniciar sesión"}
+              {isPending ? t("signingIn") : t("signIn")}
             </Button>
           </form>
         </CardContent>
