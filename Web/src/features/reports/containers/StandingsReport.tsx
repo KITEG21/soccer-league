@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/shared/utils";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
-import { Field } from "@/shared/components/Field";
 import { DataTable } from "@/shared/components/DataTable";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -55,20 +54,18 @@ export const StandingsReport = () => {
       <PageHeader
         title={t("Reports.standings.title")}
         actions={
-          <Field label={t("Common.season")}>
-            <Select value={selectedSeason} onValueChange={setSeasonChoice}>
-              <SelectTrigger className="w-56">
-                <SelectValue placeholder={t("Common.selectSeason")} />
-              </SelectTrigger>
-              <SelectContent>
-                {seasons.map((season) => (
-                  <SelectItem key={season.id} value={season.id.toString()}>
-                    {getSeasonLabel(season)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+          <Select value={selectedSeason} onValueChange={setSeasonChoice}>
+            <SelectTrigger className="w-72 sm:w-80" aria-label={t("Common.season")}>
+              <SelectValue placeholder={t("Common.season")} />
+            </SelectTrigger>
+            <SelectContent>
+              {seasons.map((season) => (
+                <SelectItem key={season.id} value={season.id.toString()}>
+                  {`${t("Common.season")}: ${getSeasonLabel(season)}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         }
       />
 

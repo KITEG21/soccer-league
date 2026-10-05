@@ -22,6 +22,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { Separator } from "@/shared/components/ui/separator";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { LanguageToggle } from "@/shared/components/LanguageToggle";
 import { buildBreadcrumbs } from "@/shared/config/navigation";
@@ -35,7 +36,8 @@ export const AppHeader = () => {
   const crumbs = buildBreadcrumbs(pathname, navigation);
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
+    <TooltipProvider delayDuration={300}>
+      <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
 
@@ -63,8 +65,8 @@ export const AppHeader = () => {
       </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-1">
-        <LanguageToggle />
-        <ThemeToggle />
+        <LanguageToggle showTooltip />
+        <ThemeToggle showTooltip />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label={t("account")}>
@@ -81,6 +83,7 @@ export const AppHeader = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header>
+      </header>
+    </TooltipProvider>
   );
 };

@@ -3,7 +3,6 @@
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
 import { APP_ROUTES } from "@/shared/config/routes";
-import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
@@ -68,57 +67,57 @@ export const HeadToHeadReport = () => {
 
       <PageHeader title={t("Reports.headToHead.title")} />
 
-      <div className="flex flex-wrap items-end gap-4">
-        <Field label={t("Reports.headToHead.selectTeam1")} className="w-64">
+      <div className="flex flex-wrap gap-4">
+        <div className="min-w-52 flex-1 basis-56">
           <Select value={team1} onValueChange={setTeam1}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("Reports.headToHead.selectTeam1")} />
+            <SelectTrigger aria-label={t("Common.home")}>
+              <SelectValue placeholder={t("Common.home")} />
             </SelectTrigger>
             <SelectContent>
               {teams
-                .filter((t) => t.id.toString() !== team2)
-                .map((t) => (
-                  <SelectItem key={t.id} value={t.id.toString()}>
-                    {t.name}
+                .filter((team) => team.id.toString() !== team2)
+                .map((team) => (
+                  <SelectItem key={team.id} value={team.id.toString()}>
+                    {`${t("Common.home")}: ${team.name}`}
                   </SelectItem>
                 ))}
             </SelectContent>
           </Select>
-        </Field>
-        <Field label={t("Reports.headToHead.selectTeam2")} className="w-64">
+        </div>
+        <div className="min-w-52 flex-1 basis-56">
           <Select value={team2} onValueChange={setTeam2}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("Reports.headToHead.selectTeam2")} />
+            <SelectTrigger aria-label={t("Common.away")}>
+              <SelectValue placeholder={t("Common.away")} />
             </SelectTrigger>
             <SelectContent>
               {teams
-                .filter((t) => t.id.toString() !== team1)
-                .map((t) => (
-                  <SelectItem key={t.id} value={t.id.toString()}>
-                    {t.name}
+                .filter((team) => team.id.toString() !== team1)
+                .map((team) => (
+                  <SelectItem key={team.id} value={team.id.toString()}>
+                    {`${t("Common.away")}: ${team.name}`}
                   </SelectItem>
                 ))}
             </SelectContent>
           </Select>
-        </Field>
-        <Field label={t("Common.season")} className="w-64">
+        </div>
+        <div className="min-w-52 flex-1 basis-56">
           <Select
             value={selectedSeason || "all"}
             onValueChange={(v) => setSelectedSeason(v === "all" ? "" : v)}
           >
-            <SelectTrigger>
-              <SelectValue placeholder={t("Reports.headToHead.allSeasons")} />
+            <SelectTrigger aria-label={t("Common.season")}>
+              <SelectValue placeholder={t("Common.season")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("Reports.headToHead.allSeasons")}</SelectItem>
+              <SelectItem value="all">{`${t("Common.season")}: ${t("Reports.headToHead.allSeasons")}`}</SelectItem>
               {seasons.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>
-                  {getSeasonLabel(s)}
+                  {`${t("Common.season")}: ${getSeasonLabel(s)}`}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </Field>
+        </div>
       </div>
 
       {!team1 || !team2 ? (

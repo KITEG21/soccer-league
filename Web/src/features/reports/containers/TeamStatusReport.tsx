@@ -2,7 +2,6 @@
 
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
-import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
@@ -55,35 +54,35 @@ export const TeamStatusReport = () => {
       
       <PageHeader title={t("Reports.teamStatus.title")} />
 
-      <div className="flex flex-wrap items-end gap-4">
-        <Field label={t("Common.team")} className="w-64">
+      <div className="flex flex-wrap gap-4">
+        <div className="min-w-52 flex-1 basis-56">
           <Select value={selectedTeam} onValueChange={setTeamChoice}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("Common.selectTeam")} />
+            <SelectTrigger aria-label={t("Common.team")}>
+              <SelectValue placeholder={t("Common.team")} />
             </SelectTrigger>
             <SelectContent>
-              {teams.map((t) => (
-                <SelectItem key={t.id} value={t.id.toString()}>
-                  {t.name}
+              {teams.map((team) => (
+                <SelectItem key={team.id} value={team.id.toString()}>
+                  {`${t("Common.team")}: ${team.name}`}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </Field>
-        <Field label={t("Common.season")} className="w-64">
+        </div>
+        <div className="min-w-52 flex-1 basis-56">
           <Select value={selectedSeason} onValueChange={setSeasonChoice}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("Common.selectSeason")} />
+            <SelectTrigger aria-label={t("Common.season")}>
+              <SelectValue placeholder={t("Common.season")} />
             </SelectTrigger>
             <SelectContent>
               {seasons.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>
-                  {getSeasonLabel(s)}
+                  {`${t("Common.season")}: ${getSeasonLabel(s)}`}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </Field>
+        </div>
       </div>
 
       {!selectedTeam || !selectedSeason ? (

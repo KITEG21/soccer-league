@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
@@ -31,7 +33,9 @@ interface UserFormProps {
 export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
   const t = useTranslations("User");
   const common = useTranslations("Common");
+  const auth = useTranslations("Auth");
   const queryClient = useQueryClient();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const {
     register,
@@ -98,13 +102,27 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="password">{common("password")} *</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder={t("passwordHint")}
-              {...register("password")}
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={isPasswordVisible ? "text" : "password"}
+                placeholder={t("passwordHint")}
+                className="pr-10"
+                {...register("password")}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setIsPasswordVisible((visible) => !visible)}
+                aria-label={
+                  isPasswordVisible ? auth("hidePassword") : auth("showPassword")
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed"
+                disabled={isLoading}
+              >
+                {isPasswordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-destructive">
                 {errors.password.message}

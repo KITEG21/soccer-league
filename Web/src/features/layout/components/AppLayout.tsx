@@ -7,7 +7,6 @@ import { isPublicRoute } from "@/shared/auth/routes";
 import { AppFooter } from "./AppFooter";
 import { AppHeader } from "./AppHeader";
 import { AppSidebar } from "./AppSidebar";
-import { LanguageToggle } from "@/shared/components/LanguageToggle";
 
 interface AppLayoutProps {
   readonly children: ReactNode;
@@ -19,9 +18,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   if (isPublicRoute(pathname)) {
     return (
       <div className="animate-page-in min-h-screen bg-background">
-        <div className="absolute right-4 top-4">
-          <LanguageToggle />
-        </div>
         {children}
       </div>
     );

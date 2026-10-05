@@ -6,23 +6,12 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
-  useSyncExternalStore,
+  useState,
 } from "react";
-import { createClientStore } from "@/shared/utils/client-store";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
 const THEME_KEY = "theme";
-
-const readTheme = (): Theme => {
-  const saved = localStorage.getItem(THEME_KEY) as Theme | null;
-  if (saved) return saved;
-  return globalThis.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-};
-
-const themeStore = createClientStore<Theme>(readTheme, "light");
 
 interface ThemeContextType {
   theme: Theme;
@@ -41,25 +30,23 @@ export const useTheme = () => {
 
 interface ThemeProviderProps {
   children: React.ReactNode;
+  initialTheme: Theme;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const theme = useSyncExternalStore(
-    themeStore.subscribe,
-    themeStore.getSnapshot,
-    themeStore.getServerSnapshot,
-  );
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme }) => {
+  const [theme, setTheme] = useState<Theme>(initialTheme);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
-    localStorage.setItem(
-      THEME_KEY,
-      readTheme() === "dark" ? "light" : "dark",
-    );
-    themeStore.emit();
+    setTheme((currentTheme) => {
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, nextTheme);
+      document.cookie = `${THEME_KEY}=${nextTheme}; path=/; max-age=31536000; samesite=lax`;
+      return nextTheme;
+    });
   }, []);
 
   const contextValue = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);

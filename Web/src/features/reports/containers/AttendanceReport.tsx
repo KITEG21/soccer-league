@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
 import { APP_ROUTES } from "@/shared/config/routes";
-import { Field } from "@/shared/components/Field";
 import { DataTable } from "@/shared/components/DataTable";
 import {
   Select,
@@ -51,20 +50,18 @@ export const AttendanceReport = () => {
       <PageHeader
         title={t("Reports.attendance.title")}
         actions={
-          <Field label={t("Common.season")}>
-            <Select value={selectedSeason} onValueChange={setSeasonChoice}>
-              <SelectTrigger className="w-56">
-                <SelectValue placeholder={t("Common.selectSeason")} />
-              </SelectTrigger>
-              <SelectContent>
-                {seasons.map((season) => (
-                  <SelectItem key={season.id} value={season.id.toString()}>
-                    {getSeasonLabel(season)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+          <Select value={selectedSeason} onValueChange={setSeasonChoice}>
+            <SelectTrigger className="w-72 sm:w-80" aria-label={t("Common.season")}>
+              <SelectValue placeholder={t("Common.season")} />
+            </SelectTrigger>
+            <SelectContent>
+              {seasons.map((season) => (
+                <SelectItem key={season.id} value={season.id.toString()}>
+                  {`${t("Common.season")}: ${getSeasonLabel(season)}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         }
       />
 

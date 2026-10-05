@@ -3,7 +3,6 @@
 import { PageHeader } from "@/shared/components/PageHeader";
 import { AppLink } from "@/shared/components/AppLink";
 import { APP_ROUTES } from "@/shared/config/routes";
-import { Field } from "@/shared/components/Field";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
@@ -75,12 +74,13 @@ export const ScheduleReport = () => {
 
       <PageHeader title={t("Reports.schedule.title")} />
 
-      <div className="flex flex-wrap gap-4 items-end">
-        <Field label={t("Common.date")} className="w-64">
+      <div className="flex flex-wrap gap-4">
+        <div className="min-w-52 flex-1 basis-56">
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
+                aria-label={t("Common.date")}
                 className={cn(
                   "w-full justify-start text-left font-normal",
                   !selectedDate && "text-muted-foreground",
@@ -88,7 +88,7 @@ export const ScheduleReport = () => {
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {selectedDate ? (
-                  format(selectedDate, "PPP", { locale: es })
+                  `${t("Common.date")}: ${format(selectedDate, "PPP", { locale: es })}`
                 ) : (
                   <span>{t("Reports.schedule.selectDate")}</span>
                 )}
@@ -104,27 +104,27 @@ export const ScheduleReport = () => {
               />
             </PopoverContent>
           </Popover>
-        </Field>
-        <Field label={t("Common.stadium")} className="w-64">
+        </div>
+        <div className="min-w-52 flex-1 basis-56">
           <Select
             value={selectedStadium || "all"}
             onValueChange={(v) =>
               setSelectedStadium(v === "all" ? "" : v)
             }
           >
-            <SelectTrigger>
-              <SelectValue placeholder={t("Reports.schedule.allStadiums")} />
+            <SelectTrigger aria-label={t("Common.stadium")}>
+              <SelectValue placeholder={t("Common.stadium")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("Reports.schedule.allStadiums")}</SelectItem>
+              <SelectItem value="all">{`${t("Common.stadium")}: ${t("Reports.schedule.allStadiums")}`}</SelectItem>
               {stadiums.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>
-                  {s.name}
+                  {`${t("Common.stadium")}: ${s.name}`}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </Field>
+        </div>
       </div>
 
       {isResolvingDefaults ? (

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { RootProviders } from "./providers";
@@ -22,12 +23,16 @@ export default async function RootLayout({
 }) {
   const claims = await getServerSession();
   const locale = await getLocale();
+  const cookieStore = await cookies();
+  const storedTheme = cookieStore.get("theme")?.value;
+  const initialTheme = storedTheme === "dark" ? "dark" : "light";
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className={initialTheme} suppressHydrationWarning>
       <body>
         <NextIntlClientProvider>
           <RootProviders
+            initialTheme={initialTheme}
             session={
               claims
                 ? {
