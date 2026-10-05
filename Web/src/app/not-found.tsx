@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@/shared/components/ui/button";
+import { createPageMetadata } from "@/shared/utils/metadata";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return createPageMetadata({
+    en: { title: "Page not found", description: "The requested page could not be found." },
+    es: { title: "Página no encontrada", description: "No se encontró la página solicitada." },
+  });
+}
 
 export default function NotFound() {
   const t = useTranslations("Common");

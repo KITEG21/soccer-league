@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { RootProviders } from "./providers";
 import { getServerSession } from "@/shared/auth/server-session";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: { default: "Soccer League", template: "%s | Soccer League" },
-  icons: { icon: "/favicon.svg" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Metadata");
+
+  return {
+    title: { default: t("application"), template: `%s | ${t("application")}` },
+    icons: { icon: "/favicon.svg" },
+  };
+}
 
 export default async function RootLayout({
   children,
