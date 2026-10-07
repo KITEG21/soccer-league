@@ -44,6 +44,15 @@ export const errorTranslations: Record<string, string> = {
   "experience years": "años de experiencia",
   "years in team": "años en el equipo",
   "jersey number": "número de dorsal",
+
+  "unknown report": "Reporte no encontrado",
+  "could not generate pdf": "No se pudo generar el PDF",
+  "invalid seasonid": "Temporada inválida",
+  "invalid teamid": "Equipo inválido",
+  "invalid stadiumid": "Estadio inválido",
+  "invalid team1": "Equipo local inválido",
+  "invalid team2": "Equipo visitante inválido",
+  "date is required": "La fecha es requerida",
 };
 
 export function translateError(message: string): string {

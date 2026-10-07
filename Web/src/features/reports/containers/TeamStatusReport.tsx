@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { reportsApiService } from "../services/api";
+import { ReportPdfButton } from "../components/ReportPdfButton";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { teamsApiService } from "@/features/teams/services/api";
@@ -52,7 +53,18 @@ export const TeamStatusReport = () => {
   return (
     <div className="space-y-6">
       
-      <PageHeader title={t("Reports.teamStatus.title")} />
+      <PageHeader
+        title={t("Reports.teamStatus.title")}
+        actions={
+            <ReportPdfButton
+              url={reportsApiService.teamStatusPdfUrl(
+                Number(selectedTeam),
+                Number(selectedSeason),
+              )}
+              disabled={!selectedTeam || !selectedSeason || isLoading || !status}
+            />
+        }
+      />
 
       <div className="flex flex-wrap gap-4">
         <div className="min-w-52 flex-1 basis-56">

@@ -164,6 +164,7 @@ func main() {
 
 		r.Route("/reports", func(r chi.Router) {
 			r.Use(handler.AuthorizeResource(service.ResourceReports))
+			r.Get("/pdf/{report}", reportsHandler.PDF)
 			r.Get("/standings", reportsHandler.Standings)
 			r.Get("/matches-between-teams", reportsHandler.MatchesBetweenTeams)
 			r.Get("/matches-by-date", reportsHandler.MatchesByDate)

@@ -814,6 +814,28 @@ func ServeScalarUI(r chi.Router) {
         "parameters": [ { "name": "seasonId", "in": "query", "required": true, "schema": { "type": "integer" } } ],
         "responses": { "200": { "description": "All-star team", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AllStarRow" } } } } } }
       }
+    },
+    "/reports/pdf/{report}": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Download a report as a PDF file",
+        "description": "Supported report keys: standings, matches-between-teams, matches-by-date, coaches-by-experience, stadiums-by-attendance, team-status, all-star-team. Accepts the same query parameters as the corresponding JSON report endpoint (teamId is passed as a query parameter for team-status). The PDF is returned with Content-Disposition inline so browsers render a preview; pass lang (es or en, defaults to es or the Accept-Language header) to localize the document.",
+        "parameters": [
+          { "name": "report", "in": "path", "required": true, "schema": { "type": "string", "enum": ["standings", "matches-between-teams", "matches-by-date", "coaches-by-experience", "stadiums-by-attendance", "team-status", "all-star-team"] } },
+          { "name": "seasonId", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "team1", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "team2", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "teamId", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "date", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "stadiumId", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "lang", "in": "query", "required": false, "schema": { "type": "string", "enum": ["es", "en"], "default": "es" } }
+        ],
+        "responses": {
+          "200": { "description": "PDF file", "content": { "application/pdf": { "schema": { "type": "string", "format": "binary" } } } },
+          "400": { "description": "Invalid parameter" },
+          "404": { "description": "Unknown report" }
+        }
+      }
     }
   },
   "components": {

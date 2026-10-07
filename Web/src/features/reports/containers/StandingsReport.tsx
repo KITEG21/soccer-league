@@ -20,6 +20,7 @@ import { TableCell, TableRow } from "@/shared/components/ui/table";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { reportsApiService } from "../services/api";
+import { ReportPdfButton } from "../components/ReportPdfButton";
 
 const PODIUM = [
   { row: "border-amber-500 bg-amber-500/10", rank: "text-amber-600 dark:text-amber-400" },
@@ -54,6 +55,7 @@ export const StandingsReport = () => {
       <PageHeader
         title={t("Reports.standings.title")}
         actions={
+          <>
           <Select value={selectedSeason} onValueChange={setSeasonChoice}>
             <SelectTrigger className="w-72 sm:w-80" aria-label={t("Common.season")}>
               <SelectValue placeholder={t("Common.season")} />
@@ -66,6 +68,11 @@ export const StandingsReport = () => {
               ))}
             </SelectContent>
           </Select>
+          <ReportPdfButton
+            url={reportsApiService.standingsPdfUrl(Number(selectedSeason))}
+            disabled={!selectedSeason || isLoading || standings.length === 0}
+          />
+          </>
         }
       />
 

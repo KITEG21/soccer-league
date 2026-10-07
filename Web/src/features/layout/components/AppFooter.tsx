@@ -30,6 +30,13 @@ const CREATORS = [
     avatar: "https://avatars.githubusercontent.com/u/198116826?v=4",
     initials: "H",
   },
+  {
+    name:"IsaacAlefGarciaBatista",
+    github:"https://github.com/IsaacAlefGarciaBatista",
+    avatar: "https://avatars.githubusercontent.com/u/261979035?v=4",
+    initial: "IAGB"
+
+  }
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();

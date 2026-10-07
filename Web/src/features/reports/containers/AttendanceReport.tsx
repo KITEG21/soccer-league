@@ -18,6 +18,7 @@ import { TableCell, TableRow } from "@/shared/components/ui/table";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { reportsApiService } from "../services/api";
+import { ReportPdfButton } from "../components/ReportPdfButton";
 
 export const AttendanceReport = () => {
   const t = useTranslations();
@@ -50,6 +51,7 @@ export const AttendanceReport = () => {
       <PageHeader
         title={t("Reports.attendance.title")}
         actions={
+          <>
           <Select value={selectedSeason} onValueChange={setSeasonChoice}>
             <SelectTrigger className="w-72 sm:w-80" aria-label={t("Common.season")}>
               <SelectValue placeholder={t("Common.season")} />
@@ -62,6 +64,11 @@ export const AttendanceReport = () => {
               ))}
             </SelectContent>
           </Select>
+          <ReportPdfButton
+            url={reportsApiService.stadiumAttendancePdfUrl(Number(selectedSeason))}
+            disabled={!selectedSeason || isLoading || stats.length === 0}
+          />
+          </>
         }
       />
 

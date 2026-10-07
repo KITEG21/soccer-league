@@ -21,6 +21,11 @@ export const t = {
     away: "Visitante",
     result: "Resultado",
     viewMore: "Ver más",
+    downloadPdf: "Descargar PDF",
+    generatingPdf: "Generando PDF…",
+    pdfError: "No se pudo generar el PDF. Intenta de nuevo.",
+    pdfForbidden: "No tienes permisos para descargar reportes.",
+    sessionExpired: "La sesión expiró. Inicia sesión nuevamente e inténtalo de nuevo.",
   },
   standings: {
     title: "Tabla de Posiciones",

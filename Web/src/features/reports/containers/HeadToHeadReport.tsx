@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { reportsApiService } from "../services/api";
+import { ReportPdfButton } from "../components/ReportPdfButton";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { teamsApiService } from "@/features/teams/services/api";
@@ -65,7 +66,19 @@ export const HeadToHeadReport = () => {
   return (
     <div className="space-y-6">
 
-      <PageHeader title={t("Reports.headToHead.title")} />
+      <PageHeader
+        title={t("Reports.headToHead.title")}
+        actions={
+            <ReportPdfButton
+              url={reportsApiService.headToHeadPdfUrl(
+                Number(team1),
+                Number(team2),
+                selectedSeason ? Number(selectedSeason) : undefined,
+              )}
+              disabled={!team1 || !team2 || isLoading || isError || matches.length === 0}
+            />
+        }
+      />
 
       <div className="flex flex-wrap gap-4">
         <div className="min-w-52 flex-1 basis-56">

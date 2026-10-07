@@ -71,14 +71,29 @@ async function handler(
   if (EMPTY_BODY_STATUS.has(response.status)) {
     nextResponse = new NextResponse(null, { status: response.status });
   } else {
-    const body = await response.text();
-    nextResponse = new NextResponse(body || null, {
-      status: response.status,
-      headers: {
-        "Content-Type":
-          response.headers.get("content-type") ?? "application/json",
-      },
-    });
+    const contentType = response.headers.get("content-type") ?? "";
+    const contentDisposition = response.headers.get("content-disposition");
+
+    if (contentType.includes("application/pdf")) {
+      const buffer = await response.arrayBuffer();
+      const headers = new Headers({ "Content-Type": contentType });
+      if (contentDisposition) {
+        headers.set("Content-Disposition", contentDisposition);
+      }
+      nextResponse = new NextResponse(buffer, {
+        status: response.status,
+        headers,
+      });
+    } else {
+      const body = await response.text();
+      nextResponse = new NextResponse(body || null, {
+        status: response.status,
+        headers: {
+          "Content-Type": contentType || "application/json",
+          ...(contentDisposition && { "Content-Disposition": contentDisposition }),
+        },
+      });
+    }
   }
 
   if (renewedTokens) {

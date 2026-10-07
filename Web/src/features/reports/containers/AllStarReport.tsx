@@ -25,6 +25,7 @@ import { cn } from "@/shared/utils";
 import { seasonsApiService } from "@/features/seasons/services/api";
 import { getSeasonLabel } from "@/features/seasons/utils";
 import { reportsApiService } from "../services/api";
+import { ReportPdfButton } from "../components/ReportPdfButton";
 import type { AllStarPlayer } from "../types";
 
 const STATS = [
@@ -205,6 +206,7 @@ export const AllStarReport = () => {
       <PageHeader
         title={t("Reports.allStar.title")}
         actions={
+          <>
           <Select value={selectedSeason} onValueChange={setSeasonChoice}>
             <SelectTrigger className="w-72 sm:w-80" aria-label={t("Common.season")}>
               <SelectValue placeholder={t("Common.season")} />
@@ -217,6 +219,11 @@ export const AllStarReport = () => {
               ))}
             </SelectContent>
           </Select>
+          <ReportPdfButton
+            url={reportsApiService.allStarPdfUrl(Number(selectedSeason))}
+            disabled={!selectedSeason || isLoading || players.length === 0}
+          />
+          </>
         }
       />
 

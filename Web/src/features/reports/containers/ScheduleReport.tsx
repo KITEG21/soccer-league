@@ -10,6 +10,7 @@ import { CalendarIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { reportsApiService } from "../services/api";
+import { ReportPdfButton } from "../components/ReportPdfButton";
 import { stadiumsApiService } from "@/features/stadiums/services/api";
 import { useLatestMatch } from "@/features/matches/hooks/useLatestMatch";
 import { Loading } from "@/shared/components/Loading";
@@ -72,7 +73,18 @@ export const ScheduleReport = () => {
   return (
     <div className="space-y-6">
 
-      <PageHeader title={t("Reports.schedule.title")} />
+      <PageHeader
+        title={t("Reports.schedule.title")}
+        actions={
+            <ReportPdfButton
+              url={reportsApiService.schedulePdfUrl(
+                dateStr,
+                selectedStadium ? Number(selectedStadium) : undefined,
+              )}
+              disabled={!dateStr || isLoading || isError || matches.length === 0}
+            />
+        }
+      />
 
       <div className="flex flex-wrap gap-4">
         <div className="min-w-52 flex-1 basis-56">

@@ -18,6 +18,15 @@ const resource = (base: string) => ({
   detail: (id: Id) => `${base}/${id}`,
 });
 
+export type ReportKey =
+  | "standings"
+  | "matches-between-teams"
+  | "matches-by-date"
+  | "coaches-by-experience"
+  | "stadiums-by-attendance"
+  | "team-status"
+  | "all-star-team";
+
 export const API_ROUTES = {
   auth: {
     login: "/auth/login",
@@ -46,6 +55,8 @@ export const API_ROUTES = {
       withQuery(`/reports/team-status/${teamId}`, { seasonId }),
     allStarTeam: (seasonId: Id) =>
       withQuery("/reports/all-star-team", { seasonId }),
+    pdf: (report: ReportKey, query?: Query) =>
+      withQuery(`/reports/pdf/${report}`, query),
   },
 } as const;
 

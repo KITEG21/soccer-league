@@ -6,6 +6,7 @@ import { AppLink } from "@/shared/components/AppLink";
 import { APP_ROUTES } from "@/shared/config/routes";
 import { useQuery } from "@tanstack/react-query";
 import { reportsApiService } from "../services/api";
+import { ReportPdfButton } from "../components/ReportPdfButton";
 import { Loading } from "@/shared/components/Loading";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -21,7 +22,15 @@ export const CoachExperienceReport = () => {
   return (
     <div className="space-y-6">
       
-      <PageHeader title={t("Reports.coachExperience.title")} />
+      <PageHeader
+        title={t("Reports.coachExperience.title")}
+        actions={
+            <ReportPdfButton
+              url={reportsApiService.coachExperiencePdfUrl()}
+              disabled={isLoading || isError || coaches.length === 0}
+            />
+        }
+      />
 
       {isLoading ? (
         <Loading />

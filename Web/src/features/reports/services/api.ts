@@ -38,6 +38,34 @@ class ReportsApiService {
   async getAllStarTeam(seasonId: number): Promise<AllStarPlayer[]> {
     return apiRequest<AllStarPlayer[]>(API_ROUTES.reports.allStarTeam(seasonId));
   }
+
+  standingsPdfUrl(seasonId: number): string {
+    return API_ROUTES.reports.pdf("standings", { seasonId });
+  }
+
+  headToHeadPdfUrl(team1: number, team2: number, seasonId?: number): string {
+    return API_ROUTES.reports.pdf("matches-between-teams", { team1, team2, seasonId });
+  }
+
+  schedulePdfUrl(date: string, stadiumId?: number): string {
+    return API_ROUTES.reports.pdf("matches-by-date", { date, stadiumId });
+  }
+
+  coachExperiencePdfUrl(): string {
+    return API_ROUTES.reports.pdf("coaches-by-experience");
+  }
+
+  stadiumAttendancePdfUrl(seasonId: number): string {
+    return API_ROUTES.reports.pdf("stadiums-by-attendance", { seasonId });
+  }
+
+  teamStatusPdfUrl(teamId: number, seasonId: number): string {
+    return API_ROUTES.reports.pdf("team-status", { teamId, seasonId });
+  }
+
+  allStarPdfUrl(seasonId: number): string {
+    return API_ROUTES.reports.pdf("all-star-team", { seasonId });
+  }
 }
 
 export const reportsApiService = new ReportsApiService();
