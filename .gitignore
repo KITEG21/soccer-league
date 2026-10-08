@@ -45,3 +45,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation dependencies and generated site
+docs/node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/

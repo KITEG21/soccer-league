@@ -1,0 +1,46 @@
+:root {
+  --vp-c-brand-1: #059669;
+  --vp-c-brand-2: #047857;
+  --vp-c-brand-3: #059669;
+  --vp-c-brand-soft: #ecfdf5;
+  --vp-c-bg: #fafbfc;
+  --vp-c-bg-alt: #f1f5f9;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f8fafc;
+  --vp-c-text-1: #1e293b;
+  --vp-c-text-2: #475569;
+  --vp-c-text-3: #64748b;
+  --vp-c-border: #e2e8f0;
+  --vp-c-divider: #e2e8f0;
+  --vp-home-hero-name-color: #059669;
+}
+
+.dark {
+  --vp-c-brand-1: #10b981;
+  --vp-c-brand-2: #6ee7b7;
+  --vp-c-brand-3: #047857;
+  --vp-c-brand-soft: #064e3b;
+  --vp-c-bg: #0f172a;
+  --vp-c-bg-alt: #111c33;
+  --vp-c-bg-elv: #1e293b;
+  --vp-c-bg-soft: #1e293b;
+  --vp-c-text-1: #f1f5f9;
+  --vp-c-text-2: #cbd5e1;
+  --vp-c-text-3: #94a3b8;
+  --vp-c-border: #334155;
+  --vp-c-divider: #334155;
+  --vp-home-hero-name-color: #10b981;
+}
+
+.VPNavBarTitle .logo { height: 30px; }
+.VPHero .image-src { max-width: 190px; max-height: 230px; }
+.vp-doc img { border-radius: 8px; }
+.vp-doc td img {
+  display: inline-block;
+  width: 32px;
+  height: 20px;
+  margin: 0 6px 0 0;
+  vertical-align: middle;
+  border-radius: 3px;
+}
+.vp-doc td code { white-space: nowrap; }
