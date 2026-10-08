@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy } from "lucide-react";
+import { SoccerLeagueMark, SoccerLeagueWordmark } from "@/shared/components/SoccerLeagueLogo";
 import { useTranslations } from "next-intl";
 import {
   Sidebar,
@@ -48,13 +48,9 @@ export const AppSidebar = () => {
               asChild
               className="h-10 group-data-[collapsible=icon]:!p-1"
             >
-              <Link href="/" onClick={closeOnNavigate}>
-                <div className="flex aspect-square size-6 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                  <Trophy className="size-3.5" />
-                </div>
-                <span className="truncate text-base font-semibold">
-                  SoccerLeague
-                </span>
+              <Link href="/" onClick={closeOnNavigate} aria-label="SoccerLeague">
+                <SoccerLeagueMark className="h-7 w-6" />
+                <SoccerLeagueWordmark className="truncate text-base group-data-[collapsible=icon]:hidden" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

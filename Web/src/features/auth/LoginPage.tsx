@@ -1,4 +1,4 @@
-import { Trophy } from "lucide-react";
+import { SoccerLeagueMark, SoccerLeagueWordmark } from "@/shared/components/SoccerLeagueLogo";
 import { getTranslations } from "next-intl/server";
 import { LanguageToggle } from "@/shared/components/LanguageToggle";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
@@ -27,11 +27,9 @@ export const LoginPage = async () => {
             <ThemeToggle showTooltip />
           </div>
           <CardHeader className="items-center space-y-3 text-center">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Trophy className="size-6" />
-            </div>
+            <SoccerLeagueMark className="h-16 w-14" />
             <div className="space-y-1">
-              <CardTitle className="text-xl">SoccerLeague</CardTitle>
+              <CardTitle className="text-2xl"><SoccerLeagueWordmark /></CardTitle>
               <CardDescription>{t("adminPanel")}</CardDescription>
             </div>
           </CardHeader>
