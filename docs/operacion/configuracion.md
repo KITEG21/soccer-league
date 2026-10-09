@@ -49,7 +49,7 @@ VALUES ('responsable@example.com', '<HASH_BCRYPT_VALIDO>', 'superadmin');
 
 El marcador no es una contraseña válida ni una credencial de ejemplo utilizable. No se guarda texto plano en `password_hash`. Después del primer login, las cuentas adicionales se crean desde `/users`.
 
-No hay un comando de bootstrap, seed ni recuperación de contraseña implementado en el repositorio. Su automatización es trabajo distinto del sitio documental.
+El repositorio incluye `scripts/seed-db.ps1`: con la API local iniciada y PostgreSQL en un contenedor Docker, habilita pgcrypto e inserta una cuenta superadmin mediante bcrypt si ese correo no existe. Después se autentica y carga datos deportivos de ejemplo. Sus parámetros permiten ajustar URL, correo, contraseña, contenedor, usuario y base. Para una API remota omite la inserción administrativa y requiere credenciales existentes. No hay recuperación de contraseña implementada; el seed no se ejecuta automáticamente al iniciar Go.
 
 ## Documentación
 

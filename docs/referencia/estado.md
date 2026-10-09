@@ -33,7 +33,7 @@ Esta referencia recoge límites observados en el código. No son funciones imple
 
 ## Operación y seguridad
 
-El limitador de login es local al proceso. No hay bootstrap de primera cuenta, recuperación de contraseña, MFA, auditoría de modificaciones, health check ni pipeline de despliegue en el repositorio. Las actualizaciones compuestas de futbolistas no usan una transacción explícita.
+El limitador de login es local al proceso. No hay endpoint público de bootstrap, recuperación de contraseña, MFA, auditoría de modificaciones, health check ni pipeline de despliegue. El script seed-db.ps1 permite preparar la primera cuenta y datos de ejemplo en un entorno PostgreSQL de contenedor local. Las actualizaciones compuestas de futbolistas no usan una transacción explícita.
 
 El logout revoca renovación y elimina cookies, pero no revoca inmediatamente JWT de acceso mediante una lista de bloqueo. La API sí vuelve a comprobar usuario y rol en la base de datos.
 

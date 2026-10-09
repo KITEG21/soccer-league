@@ -20,7 +20,7 @@ La búsqueda actúa sobre correo; el filtro de rol permite uno o varios valores.
 
 La API valida correo, contraseña de 8–72 bytes y rol. Un correo duplicado devuelve conflicto. El actor no puede cambiar su propio rol ni eliminarse. La contraseña se transforma en hash bcrypt antes de guardarse.
 
-No hay una regla explícita que conserve siempre una cantidad mínima de superadministradores entre cuentas distintas. No existe un endpoint de aprovisionamiento del primer usuario ni un seed en las migraciones.
+No hay una regla explícita que conserve siempre una cantidad mínima de superadministradores entre cuentas distintas. No existe un endpoint público para aprovisionar el primer usuario ni un seed dentro de las migraciones. El script `scripts/seed-db.ps1` puede preparar la cuenta inicial en un contenedor PostgreSQL local.
 
 Al eliminar una cuenta se eliminan sus RefreshToken. La API verifica la existencia del usuario incluso si conserva un JWT previamente emitido.
 
