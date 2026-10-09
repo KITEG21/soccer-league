@@ -1,75 +1,107 @@
 # Cómo documentar
 
-El contenido se escribe en Markdown dentro de `docs/`. El sitio permite revisar las páginas y sus imágenes desde el navegador mientras se editan.
+Las páginas se mantienen en Markdown dentro de `docs/`. VitePress convierte el contenido a un sitio con menú lateral, búsqueda local, imágenes y temas claro/oscuro.
 
-## Consultar los cambios
+## Revisar cambios
 
-Desde la raíz del repositorio:
+Desde la raíz:
 
 ```sh
 pnpm --dir docs dev
 ```
 
-Abre `http://localhost:5173` y guarda los cambios en el editor para actualizar la vista.
+Abre `http://localhost:5173`. Guardar un archivo actualiza el sitio. No es necesario iniciar Web, Go o PostgreSQL.
+
+## Elegir la sección
+
+| Tipo de contenido | Carpeta |
+| --- | --- |
+| Concepto, actor, regla o proceso | `negocio/` |
+| Pantalla, operación y comportamiento funcional | `modulos/` |
+| Componente, capa, flujo o seguridad | `arquitectura/` |
+| Esquema, relación o evolución SQL | `datos/` |
+| Ruta, contrato, filtro o error HTTP | `api/` |
+| Configuración, desarrollo y diagnóstico | `operacion/` |
+| Fuentes y diferencias conocidas | `referencia/` |
+
+La documentación de identidad permanece en `identidad-visual.md`; los cálculos de reportes y el diagrama conservan sus rutas existentes para no duplicar referencias.
 
 ## Crear una página
 
-1. Crea un archivo, por ejemplo `docs/guia/partidos.md`.
-2. Escribe un título principal y organiza el contenido con subtítulos.
-3. Añade la página al menú lateral de `docs/.vitepress/config.mts`.
+1. Crear el archivo en su sección, por ejemplo `docs/modulos/nueva-funcion.md`.
+2. Escribir un único título principal y subtítulos descriptivos.
+3. Añadir una entrada en el grupo correspondiente de `.vitepress/config.mts`.
+4. Enlazar desde el índice de módulos o página de referencia pertinente.
+5. Compilar y revisar el resultado.
 
-```md
-# Gestión de partidos
-
-Descripción de la funcionalidad.
-
-## Registrar un partido
-
-Pasos y condiciones para registrar el partido.
-
-## Validaciones
-
-Reglas que debe cumplir la información.
-```
-
-Entrada de ejemplo para el menú lateral:
+Ejemplo de entrada de menú:
 
 ```ts
-{ text: "Gestión de partidos", link: "/guia/partidos" }
+{ text: "Nueva función", link: "/modulos/nueva-funcion" }
 ```
 
-## Imágenes y enlaces
+La navegación no se genera automáticamente al crear el archivo. Una página fuera del menú puede seguir encontrándose mediante enlaces o búsqueda, pero debe incorporarse al recorrido documental.
 
-Guarda las imágenes del contenido en `docs/assets/` y utiliza rutas relativas al documento:
+## Estructura de un módulo
 
 ```md
-![Descripción de la imagen](../assets/captura-partidos.png)
+# Nombre de la función
+
+Propósito de negocio y rutas de pantalla.
+
+## Datos
+
+Campos de entrada y valores calculados.
+
+## Operaciones y proceso
+
+Acciones, precondiciones, estados y efectos.
+
+## Reglas y permisos
+
+Validación de UI, servicio y base de datos por separado.
+
+## Código y dependencias
+
+Archivos fuente y relaciones con otros módulos.
 ```
 
-Para enlazar otra página desde `docs/guia/`:
+Una ampliación puede requerir también actualizar contratos, reglas, diccionario o fórmulas. El [mapa de fuentes](../referencia/mapa.md) identifica qué revisar.
+
+## Imágenes, diagramas y enlaces
+
+Guardar recursos en `docs/assets/` y usar rutas relativas:
 
 ```md
-[Arquitectura](./arquitectura.md)
+![Descripción de la imagen](../assets/captura.png)
+[Modelo de datos](../datos/modelo.md)
 ```
 
-Las imágenes de la identidad visual y las muestras cromáticas están disponibles en esta misma carpeta de recursos.
+Los SVG de arquitectura y relaciones se renderizan como imágenes sin plugins. Las muestras de color están en `assets/colors/`. Para recursos de ruta fija, como favicon, usar `docs/public/`.
+
+Un archivo Markdown con imágenes enlazadas necesita sus recursos asociados. Compartir solamente el MD no los embebe. El build del sitio copia o incorpora las imágenes que utiliza; para distribuirlo se comparte el directorio estático completo.
+
+Los paths de código fuera de docs se escriben como código, por ejemplo `Api/internal/service/match.go`, porque el sitio no sirve archivos de la aplicación.
+
+## Enunciado y fuentes históricas
+
+`Project Specifications.md` conserva el texto original y se incluye en la página publicada mediante la directiva de inclusión de VitePress. Se modifica la implementación documentada y la matriz de trazabilidad, sin reescribir el enunciado como si hubiera especificado las funciones añadidas.
 
 ## Criterios de redacción
 
-- Documentar el comportamiento actual y las reglas concretas de cada funcionalidad.
-- Usar títulos descriptivos y párrafos breves.
-- Reservar las tablas para comparaciones, campos y referencias.
-- Incluir ejemplos verificables y pasos de reproducción cuando sean necesarios.
-- Evitar referencias a conversaciones o al proceso de aprobación.
+- Describir el comportamiento comprobado, usando nombres exactos de campos y rutas.
+- Separar una regla de formulario de una validación real de API o PostgreSQL.
+- Distinguir lo existente de lo pendiente y evitar afirmaciones de cumplimiento no verificadas.
+- Incluir ejemplos con supuestos explícitos, sin credenciales reales.
+- Utilizar tablas para campos, permisos y comparaciones; párrafos para explicar efectos.
+- Mantener las fuentes por nombre de archivo o consulta, evitando números de línea frágiles.
+- No incorporar referencias a conversaciones o aprobaciones.
 
-## Verificar el sitio
+## Validar y distribuir
 
 ```sh
 pnpm --dir docs build
-```
-
-El comando genera el sitio estático y comprueba los enlaces entre páginas. Para revisar el resultado:
-
-```sh
 pnpm --dir docs preview
 ```
+
+El build verifica enlaces y genera `docs/.vitepress/dist/`. La revisión de navegador comprueba presentación, búsqueda, tablas e imágenes. La edición desde un CMS y la publicación automática permanecen pendientes; el flujo actual usa archivos Markdown y ejecución local.

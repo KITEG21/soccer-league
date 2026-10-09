@@ -1,38 +1,36 @@
 # Introducción
 
-SoccerLeague es una aplicación para administrar una liga de fútbol. Centraliza los equipos, los integrantes, las temporadas y los partidos, y permite consultar reportes sobre la competición.
+SoccerLeague gestiona información de una liga de fútbol: equipos, plantillas, estadios, temporadas, partidos y rendimiento de jugadores. La aplicación ofrece acceso por roles, consulta con filtros y siete reportes exportables a PDF.
 
-## Funcionalidades
+Este sitio documenta el comportamiento actual del repositorio. Los requisitos originales se conservan como fuente y las diferencias se señalan en sus páginas correspondientes.
 
-| Área | Información gestionada |
+## Organización del repositorio
+
+| Directorio | Contenido |
 | --- | --- |
-| Temporadas | Fechas de la competición y organización por temporada |
-| Equipos | Datos del equipo y sus integrantes |
-| Jugadores | Posición y estadísticas deportivas |
-| Entrenadores | Información y experiencia |
-| Estadios | Datos y capacidad |
-| Partidos | Equipos participantes, fecha, estadio y estadísticas |
-| Usuarios | Acceso y roles de la aplicación |
+| `Web/` | Interfaz Next.js/React y servidor web de sesión/proxy |
+| `Api/` | Servidor Go, servicios, SQL, migraciones y PDF |
+| `docs/` | Sitio VitePress, Markdown e imágenes |
 
-## Reportes
+PostgreSQL es un servicio necesario para la liga. La documentación funciona por separado, sin iniciar la aplicación ni disponer de una cuenta.
 
-La aplicación incluye tabla de posiciones, enfrentamientos entre equipos, calendario de partidos, audiencia por estadio, estado de un equipo, experiencia de entrenadores y equipo todo estrellas.
+## Recorridos de lectura
 
-## Componentes del proyecto
+| Perfil | Lectura |
+| --- | --- |
+| Negocio | [Contexto](../negocio/contexto.md) → [procesos](../negocio/procesos.md) → [reglas](../negocio/reglas.md) |
+| Uso funcional | [Módulos](../modulos/index.md) → página de la función → [criterios de reportes](../reportes-explicacion.md) |
+| Desarrollo frontend | [Sistema](../arquitectura/general.md) → [frontend](../arquitectura/frontend.md) → [contratos](../api/contratos.md) |
+| Desarrollo backend | [Backend](../arquitectura/backend.md) → [datos](../datos/modelo.md) → [migraciones](../datos/migraciones.md) |
+| Operación | [Instalación](./instalacion.md) → [configuración](../operacion/configuracion.md) → [diagnóstico](../operacion/diagnostico.md) |
 
-| Componente | Tecnología | Carpeta |
-| --- | --- | --- |
-| Aplicación web | Next.js, React, TypeScript y Tailwind CSS | `Web/` |
-| API | Go y Chi | `Api/` |
-| Base de datos | PostgreSQL; consultas generadas con sqlc | `Api/sql/` |
-| Documentación | Markdown y VitePress | `docs/` |
+La [referencia de fuentes](../referencia/mapa.md) conecta temas con archivos del código. Los [límites actuales](../referencia/estado.md) evitan confundir funcionalidades deseadas con capacidades existentes.
 
-## Acceso y presentación
+## Consultar el sitio
 
-La aplicación dispone de autenticación, control de permisos, temas claro y oscuro e interfaz en español e inglés. Los roles definidos en el sistema son `superadmin`, `admin` y `visitante`.
+```sh
+pnpm --dir docs install
+pnpm --dir docs dev
+```
 
-## Siguientes pasos
-
-- [Preparar el entorno de desarrollo](./instalacion.md).
-- [Consultar la arquitectura](./arquitectura.md).
-- [Revisar la identidad visual](../identidad-visual.md).
+Desde la raíz del repositorio, abre `http://localhost:5173`. El menú organiza las áreas y la búsqueda local encuentra conceptos, campos y rutas. Los cambios en Markdown se actualizan en el navegador; la guía de [edición](./documentar.md) explica cómo mantener páginas e imágenes.

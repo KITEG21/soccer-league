@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="630" viewBox="0 0 900 630" role="img" aria-labelledby="title desc">
+<title id="title">Arquitectura de SoccerLeague</title><desc id="desc">Navegador hacia Next.js, API Go y PostgreSQL. VitePress es independiente.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#059669" stroke-width="2"/></marker></defs>
+<rect width="900" height="630" rx="18" fill="#f8fafc"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#1e293b">
+<text x="38" y="48" font-size="26" font-weight="700">Componentes y recorrido de una petición</text>
+<text x="38" y="79" font-size="18" fill="#475569">Sesión web en cookies · Negocio y autorización en Go</text>
+<g stroke="#e2e8f0" stroke-width="2" fill="#ffffff"><rect x="40" y="115" width="230" height="120" rx="12"/><rect x="340" y="115" width="520" height="120" rx="12"/><rect x="340" y="310" width="520" height="120" rx="12"/><rect x="340" y="505" width="520" height="90" rx="12"/><rect x="40" y="340" width="230" height="205" rx="12"/></g>
+<text x="60" y="150" font-size="22" font-weight="700">Navegador</text><text x="60" y="184" font-size="18">React · formularios</text><text x="60" y="213" font-size="18">React Query · nuqs</text>
+<text x="360" y="150" font-size="22" font-weight="700">Next.js · Web/</text><text x="360" y="184" font-size="18">Páginas · Server Actions · sesión HttpOnly</text><text x="360" y="213" font-size="18">Proxy /api/backend/... · verificación JWT</text>
+<text x="360" y="345" font-size="22" font-weight="700">API Go · Api/</text><text x="360" y="379" font-size="18">Chi · autenticación · autorización por recurso</text><text x="360" y="408" font-size="18">Handler → servicio → store sqlc · PDF con fpdf</text>
+<text x="360" y="541" font-size="22" font-weight="700">PostgreSQL</text><text x="360" y="575" font-size="18">Datos · restricciones · triggers · refresh tokens</text>
+<text x="60" y="379" font-size="22" font-weight="700">VitePress · docs/</text><text x="60" y="415" font-size="18">Markdown → sitio</text><text x="60" y="446" font-size="18">Búsqueda local</text><text x="60" y="477" font-size="18">Imágenes y SVG</text><text x="60" y="516" font-size="16" fill="#047857">Proceso independiente</text>
+<g fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arrow)"><path d="M270 175H325"/><path d="M600 235V295"/><path d="M600 430V490"/></g>
+<text x="615" y="274" font-size="17" fill="#047857">HTTP + Bearer JWT</text><text x="615" y="469" font-size="17" fill="#047857">SQL parametrizado</text>
+</g></svg>

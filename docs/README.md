@@ -1,8 +1,8 @@
 # Documentación de SoccerLeague
 
-Sitio local de documentación construido con VitePress. El contenido se mantiene en Markdown y puede consultarse con navegación lateral, búsqueda y temas claro y oscuro.
+Sitio VitePress para documentación funcional y técnica. El contenido se mantiene en Markdown con imágenes locales, búsqueda y temas claro/oscuro. No depende de la API ni de la base de datos.
 
-## Inicio rápido
+## Inicio
 
 Desde la raíz del repositorio:
 
@@ -11,35 +11,45 @@ pnpm --dir docs install
 pnpm --dir docs dev
 ```
 
-Abre http://localhost:5173.
+Abre `http://localhost:5173`. Guardar cambios actualiza la vista. Para generar y revisar el sitio estático:
 
-## Comandos
+```sh
+pnpm --dir docs build
+pnpm --dir docs preview
+```
 
-| Comando | Función |
+La salida es `docs/.vitepress/dist/` y no se guarda en Git.
+
+## Organización
+
+| Ubicación | Contenido |
 | --- | --- |
-| `pnpm --dir docs dev` | Desarrollo con actualización automática |
-| `pnpm --dir docs build` | Generación estática y comprobación de enlaces |
-| `pnpm --dir docs preview` | Consulta del sitio generado |
+| `guia/` | Introducción, instalación, recorrido de arquitectura y edición |
+| `negocio/` | Alcance, procesos, reglas, requisitos y enunciado original |
+| `modulos/` | Acceso, panel, usuarios, catálogos, partidos, estadísticas y reportes |
+| `arquitectura/` | Sistema, frontend, backend y seguridad |
+| `datos/` | Diccionario y migraciones |
+| `api/` | Contratos, rutas, filtros y errores |
+| `operacion/` | Configuración, desarrollo, verificación y diagnóstico |
+| `referencia/` | Fuentes y límites actuales |
+| `database-diagram.md` | Relaciones del modelo vigente |
+| `reportes-explicacion.md` | Cálculos y criterios de los siete reportes |
+| `identidad-visual.md` | Marca y paleta con muestras de color |
+| `assets/`, `public/` | Imágenes, diagramas, muestras y favicon |
+| `.vitepress/` | Navegación, búsqueda y estilos |
 
-## Contenido
+`Project Specifications.md` se conserva como fuente histórica y se incluye en la página de especificación original. Los documentos de modelo y reportes forman parte de la navegación actual. Los paths del código se documentan como referencias del repositorio, sin enlaces fuera del sitio.
 
-- `index.md`: portada.
-- `guia/`: introducción, instalación, arquitectura y guía de edición.
-- `identidad-visual.md`: logotipo y paleta.
-- `assets/`: imágenes y muestras de color.
-- `.vitepress/config.mts`: navegación, búsqueda y configuración.
-- `.vitepress/theme/`: estilos del sitio.
+## Mantenimiento
 
-Los documentos históricos `Project Specifications.md`, `database-diagram.md` y `reportes-explicacion.md` se conservan en el repositorio y quedan fuera de esta primera navegación.
-
-El sitio funciona de manera independiente de la aplicación, la API y la base de datos. No requiere variables de entorno ni servicios externos para buscar contenido.
+La guía `guia/documentar.md` explica cómo crear páginas, incluir recursos y añadirlas al menú. Cada cambio funcional debe revisar su módulo y los contratos, reglas, datos o fórmulas afectados. El build comprueba los enlaces internos; la revisión visual se hace desde el navegador.
 
 ## Evolución pendiente
 
-- Evaluar un editor web gratuito para mantener la documentación en Git: Pages CMS como panel externo o Decap CMS integrado en `/admin`.
-- Configurar la publicación automática cuando se actualice la documentación en la rama de publicación.
-- Comparar GitHub Pages y Cloudflare Pages según la visibilidad del repositorio y los límites de sus planes gratuitos.
-- Automatizar la navegación para crear páginas desde el editor sin modificar manualmente la configuración TypeScript.
-- Preparar una base reutilizable para la documentación de otros proyectos.
+- Evaluar un editor web completamente gratuito: Pages CMS como panel externo o Decap CMS integrado en `/admin`.
+- Configurar publicación automática al actualizar la documentación en la rama destinada a publicación.
+- Comparar GitHub Pages y Cloudflare Pages según visibilidad del repositorio y límites de sus planes gratuitos.
+- Automatizar navegación para crear páginas desde el editor sin editar TypeScript manualmente.
+- Preparar una base reutilizable para otros proyectos.
 
-Estas integraciones quedan pendientes; el sitio actual se utiliza en local.
+Estas integraciones permanecen pendientes. El sitio actual se utiliza en local y la edición se realiza sobre Markdown.

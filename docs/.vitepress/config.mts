@@ -3,28 +3,75 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   lang: "es",
   title: "SoccerLeague",
-  description: "Documentación técnica y guía visual de SoccerLeague.",
-  srcExclude: ["README.md", "Project Specifications.md", "database-diagram.md", "reportes-explicacion.md"],
+  description: "Negocio, módulos, arquitectura, datos y operación de SoccerLeague.",
+  srcExclude: ["README.md", "Project Specifications.md"],
   cleanUrls: true,
   head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
   themeConfig: {
     logo: { src: "/favicon.svg", alt: "SoccerLeague" },
     siteTitle: "SoccerLeague · Docs",
     nav: [
-      { text: "Guía", link: "/guia/introduccion" },
-      { text: "Diseño", link: "/identidad-visual" },
+      { text: "Negocio", link: "/negocio/contexto" },
+      { text: "Módulos", link: "/modulos/" },
+      { text: "Arquitectura", link: "/arquitectura/general" },
+      { text: "API", link: "/api/contratos" },
+      { text: "Operación", link: "/guia/instalacion" },
     ],
     sidebar: [
-      { text: "Proyecto", items: [
+      { text: "Empezar", items: [
         { text: "Introducción", link: "/guia/introduccion" },
-        { text: "Instalación y configuración", link: "/guia/instalacion" },
-        { text: "Arquitectura", link: "/guia/arquitectura" },
+        { text: "Instalación", link: "/guia/instalacion" },
+        { text: "Mapa y fuentes", link: "/referencia/mapa" },
       ] },
-      { text: "Diseño", items: [
+      { text: "Negocio", collapsed: false, items: [
+        { text: "Contexto y alcance", link: "/negocio/contexto" },
+        { text: "Procesos", link: "/negocio/procesos" },
+        { text: "Reglas e integridad", link: "/negocio/reglas" },
+        { text: "Requisitos e implementación", link: "/negocio/requisitos" },
+        { text: "Especificación original", link: "/negocio/especificacion-original" },
+      ] },
+      { text: "Módulos", collapsed: true, items: [
+        { text: "Vista general", link: "/modulos/" },
+        { text: "Acceso y sesión", link: "/modulos/autenticacion" },
+        { text: "Panel y navegación", link: "/modulos/panel" },
+        { text: "Usuarios", link: "/modulos/usuarios" },
+        { text: "Equipos y plantillas", link: "/modulos/equipos" },
+        { text: "Jugadores", link: "/modulos/jugadores" },
+        { text: "Entrenadores", link: "/modulos/entrenadores" },
+        { text: "Estadios", link: "/modulos/estadios" },
+        { text: "Temporadas", link: "/modulos/temporadas" },
+        { text: "Partidos", link: "/modulos/partidos" },
+        { text: "Estadísticas", link: "/modulos/estadisticas" },
+        { text: "Reportes y PDF", link: "/modulos/reportes" },
+        { text: "Fórmulas y criterios", link: "/reportes-explicacion" },
+      ] },
+      { text: "Arquitectura", collapsed: true, items: [
+        { text: "Sistema y flujo", link: "/arquitectura/general" },
+        { text: "Frontend y capas", link: "/arquitectura/frontend" },
+        { text: "Backend y capas", link: "/arquitectura/backend" },
+        { text: "Sesión y permisos", link: "/arquitectura/seguridad" },
+      ] },
+      { text: "Datos", collapsed: true, items: [
+        { text: "Modelo y diccionario", link: "/datos/modelo" },
+        { text: "Diagrama de relaciones", link: "/database-diagram" },
+        { text: "Migraciones y triggers", link: "/datos/migraciones" },
+      ] },
+      { text: "API", collapsed: true, items: [
+        { text: "Contratos", link: "/api/contratos" },
+        { text: "Endpoints", link: "/api/endpoints" },
+        { text: "Búsqueda y filtros", link: "/api/filtros" },
+        { text: "Errores", link: "/api/errores" },
+      ] },
+      { text: "Operación", collapsed: true, items: [
+        { text: "Configuración y primer acceso", link: "/operacion/configuracion" },
+        { text: "Desarrollo", link: "/operacion/desarrollo" },
+        { text: "Verificación", link: "/operacion/verificacion" },
+        { text: "Diagnóstico", link: "/operacion/diagnostico" },
+      ] },
+      { text: "Diseño y documentación", collapsed: true, items: [
         { text: "Identidad visual y colores", link: "/identidad-visual" },
-      ] },
-      { text: "Documentación", items: [
         { text: "Cómo documentar", link: "/guia/documentar" },
+        { text: "Límites actuales", link: "/referencia/estado" },
       ] },
     ],
     search: {
@@ -48,6 +95,6 @@ export default defineConfig({
     lightModeSwitchTitle: "Cambiar a tema claro",
     darkModeSwitchTitle: "Cambiar a tema oscuro",
     skipToContentLabel: "Ir al contenido",
-    footer: { message: "Guía técnica y visual del proyecto SoccerLeague." },
+    footer: { message: "Documentación funcional y técnica de SoccerLeague." },
   },
 });

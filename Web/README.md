@@ -15,8 +15,8 @@ cp .env.example .env
 
 | Variable | Ámbito | Descripción |
 | --- | --- | --- |
-| `API_TARGET` | Servidor | API a usar: `local` (Docker) o `remote` (desplegada). Por defecto `remote` |
-| `API_URL_LOCAL` | Servidor | URL base de la API Go en Docker, p. ej. `http://localhost:8080` |
+| `API_TARGET` | Servidor | API a usar: `local` o `remote` (API remota). Por defecto `remote` |
+| `API_URL_LOCAL` | Servidor | URL base de la API Go local, p. ej. `http://localhost:8080` |
 | `API_URL_REMOTE` | Servidor | URL base de la API Go desplegada |
 | `JWT_SECRET` | Servidor | Clave HMAC-SHA256 para verificar los JWT — debe ser idéntica a `JWT_SECRET` en la API Go, que es quien los emite |
 
@@ -61,3 +61,16 @@ coincide con el host, lo que protege el login frente a CSRF, y el formulario fun
 aquí). `src/proxy.ts` usa esa verificación para redirigir a `/login` las rutas no públicas.
 `src/app/api/backend/[...path]/route.ts` reenvía el access token como `Authorization: Bearer`
 a la API Go en cada llamada, y si expiró, pide uno nuevo con el refresh token antes de reintentar.
+
+## Documentación del proyecto
+
+La referencia completa se encuentra en `../docs/`: negocio y procesos, módulos, arquitectura FE/BE, permisos, datos, API y operación.
+
+Desde la raíz del repositorio:
+
+```sh
+pnpm --dir docs install
+pnpm --dir docs dev
+```
+
+Abre `http://localhost:5173`. Para el primer usuario de una base nueva, consulta la sección de configuración y primer acceso; no hay seed automático.

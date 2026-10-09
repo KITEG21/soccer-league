@@ -1,97 +1,30 @@
-# Diagrama de base de datos - Soccer League
+# Diagrama de relaciones
 
-Diagrama entidad-relación generado a partir de [schema.sql](./schema.sql). Pega el bloque
-en [mermaid.live](https://mermaid.live) para exportarlo como imagen (PNG/SVG) y exponerlo,
-o ábrelo directamente en GitHub/VS Code (con la extensión Mermaid), que lo renderizan en el README.
+El modelo vigente contiene diez tablas: ocho deportivas y dos de seguridad. Las flechas del gráfico indican referencias desde la entidad dependiente hacia la entidad referenciada; la especialización Player/Coach comparte PK con Footballer.
 
-```mermaid
-erDiagram
-    TEAM {
-        bigint id PK
-        text name
-        text province
-        text mascot
-        text color
-        int championships_played
-        int championships_won
-    }
+![Relaciones deportivas y de seguridad](./assets/modelo-datos.svg)
 
-    STADIUM {
-        bigint id PK
-        text name
-        int capacity
-    }
+## Relaciones y cardinalidad
 
-    SEASON {
-        bigint id PK
-        date start_date
-        date end_date
-    }
+| Referencia | Relación | Al eliminar el padre |
+| --- | --- | --- |
+| Footballer.team_id → Team.id | Un equipo puede tener muchos futbolistas; FK nullable | SET NULL en DB; el servicio bloquea la baja en uso |
+| Player.footballer_id → Footballer.id | Cero o una fila Player por Footballer | CASCADE |
+| Coach.footballer_id → Footballer.id | Cero o una fila Coach por Footballer | CASCADE |
+| Match.home_team_id → Team.id | Muchos encuentros como local por equipo | RESTRICT |
+| Match.away_team_id → Team.id | Muchos encuentros como visitante por equipo | RESTRICT |
+| Match.season_id → Season.id | Muchos encuentros por temporada | RESTRICT; trigger exige temporada válida |
+| Match.stadium_id → Stadium.id | Muchos encuentros por estadio | RESTRICT |
+| PlayerStats.player_id → Player.footballer_id | Muchas participaciones por jugador | CASCADE |
+| PlayerStats.match_id → Match.id | Muchas participaciones por partido | CASCADE definido; trigger bloquea borrar partido con estadísticas |
+| RefreshToken.user_id → Users.id | Muchos tokens de renovación por cuenta | CASCADE |
 
-    FOOTBALLER {
-        bigint id PK
-        bigint team_id FK
-        text name
-        int number
-        int years_in_team
-    }
+La combinación jugador/partido es única; equipo/dorsal también es única. No existe una tabla de afiliación histórica ni una relación directa de equipo inscrito en temporada.
 
-    PLAYER {
-        bigint footballer_id PK
-        text position
-    }
+Player y Coach no tienen una exclusión mutua impuesta por SQL. Las FK nullable y las reglas de aplicación se distinguen en el [diccionario](./datos/modelo.md).
 
-    COACH {
-        bigint footballer_id PK
-        int experience_years
-        int championships_won
-    }
+## Fuentes y mantenimiento
 
-    MATCH {
-        bigint id PK
-        bigint home_team_id FK
-        bigint away_team_id FK
-        bigint season_id FK
-        bigint stadium_id FK
-        date match_date
-        int attendance
-        boolean disputed
-    }
+El diccionario se obtiene de `Api/sql/schema.sql`, contrastado con `Api/sql/migrations/`. Los triggers y el CHECK de equipos distintos se mantienen en migraciones, por lo que el esquema de generación no basta para recrear toda la integridad.
 
-    PLAYERSTATS {
-        bigint id PK
-        bigint player_id FK
-        bigint match_id FK
-        int goals_scored
-        int assists
-        int shots_on_goal
-        int passes_completed
-        int interceptions
-        int tackles
-        int blocks
-        int saves
-        int goals_conceded
-    }
-
-    TEAM ||--o{ FOOTBALLER : "tiene"
-    FOOTBALLER ||--o| PLAYER : "es un"
-    FOOTBALLER ||--o| COACH : "es un"
-    TEAM ||--o{ MATCH : "juega de local"
-    TEAM ||--o{ MATCH : "juega de visitante"
-    SEASON ||--o{ MATCH : "incluye"
-    STADIUM ||--o{ MATCH : "alberga"
-    PLAYER ||--o{ PLAYERSTATS : "registra"
-    MATCH ||--o{ PLAYERSTATS : "registra"
-```
-
-## Notas del modelo
-
-- `Footballer` es la tabla base compartida; `Player` y `Coach` son especializaciones 1-a-1
-  (su clave primaria es también FK a `Footballer`), por eso una persona es jugador **o**
-  entrenador según en qué subtabla tenga fila.
-- `Match` tiene dos relaciones independientes con `Team` (local y visitante).
-- Los goles del partido ya no se guardan en `Match`; se calculan a partir de la suma de
-  `goals_scored` en `PlayerStats` (ver migración `000005_match_disputed_and_goals_from_stats`).
-- Triggers en BD impiden registrar `PlayerStats` de partidos no disputados, cambiar un
-  partido disputado a no disputado si ya tiene estadísticas, y borrar partidos con
-  estadísticas asociadas.
+El gráfico es un SVG estático almacenado en `docs/assets/modelo-datos.svg`; se renderiza en el sitio sin extensiones Mermaid ni servicios externos. Al cambiar una relación se actualizan gráfico, tabla y [modelo](./datos/modelo.md).
