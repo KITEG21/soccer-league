@@ -97,6 +97,16 @@ Los paths de código fuera de docs se escriben como código, por ejemplo `Api/in
 - Mantener las fuentes por nombre de archivo o consulta, evitando números de línea frágiles.
 - No incorporar referencias a conversaciones o aprobaciones.
 
+## Créditos y equipo
+
+Los créditos utilizan el footer nativo de VitePress, configurado en `themeConfig.footer` dentro de `docs/.vitepress/config.mts`. Admite contenido HTML inline para los enlaces de los creadores. Un ajuste de CSS mantiene visible ese footer cuando la página tiene menú lateral.
+
+La página `docs/equipo.md` presenta los perfiles con `VPTeamPage`, `VPTeamPageTitle` y `VPTeamMembers`, componentes incluidos en el tema oficial. No hay un componente Vue propio ni una sustitución del layout para los créditos.
+
+Los datos se mantienen una sola vez en `docs/.vitepress/creators.ts`: nombre, avatar y enlace GitHub. Esa lista alimenta tanto las tarjetas de equipo como los enlaces del footer. Al actualizarla se contrasta con `Web/src/features/layout/components/AppFooter.tsx`. Los avatares proceden de GitHub y necesitan conexión para cargarse.
+
+Referencias: [footer](https://vitepress.dev/reference/default-theme-footer) y [página de equipo](https://vitepress.dev/es/reference/default-theme-team-page) de VitePress.
+
 ## Validar y distribuir
 
 ```sh

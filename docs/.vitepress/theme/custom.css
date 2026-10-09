@@ -44,3 +44,18 @@
   border-radius: 3px;
 }
 .vp-doc td code { white-space: nowrap; }
+
+/* Use the built-in footer on documentation pages with a sidebar. */
+div.Layout .VPFooter.has-sidebar { display: block; }
+.VPFooter .message a { color: var(--vp-c-brand-2); }
+.VPFooter .message { overflow-wrap: anywhere; }
+.VPTeamMembers .VPTeamMembersItem .name { overflow-wrap: anywhere; }
+@media (min-width: 960px) {
+  .VPFooter.has-sidebar { padding-left: calc(var(--vp-sidebar-width) + 32px); }
+}
+@media (min-width: 1440px) {
+  .VPFooter.has-sidebar {
+    padding-left: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width) + 32px);
+    padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + 32px);
+  }
+}

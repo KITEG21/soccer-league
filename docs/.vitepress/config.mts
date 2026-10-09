@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import { creatorCredits } from "./creators";
 
 export default defineConfig({
   lang: "es",
@@ -70,6 +71,7 @@ export default defineConfig({
       ] },
       { text: "Diseño y documentación", collapsed: true, items: [
         { text: "Identidad visual y colores", link: "/identidad-visual" },
+        { text: "Creadores de la aplicación", link: "/equipo" },
         { text: "Cómo documentar", link: "/guia/documentar" },
         { text: "Límites actuales", link: "/referencia/estado" },
       ] },
@@ -95,6 +97,9 @@ export default defineConfig({
     lightModeSwitchTitle: "Cambiar a tema claro",
     darkModeSwitchTitle: "Cambiar a tema oscuro",
     skipToContentLabel: "Ir al contenido",
-    footer: { message: "Documentación funcional y técnica de SoccerLeague." },
+    footer: {
+      message: `Creado por ${creatorCredits}<br><a href="/equipo">Conoce al equipo de SoccerLeague</a>`,
+      copyright: `© ${new Date().getFullYear()} SoccerLeague. Todos los derechos reservados.`,
+    },
   },
 });
