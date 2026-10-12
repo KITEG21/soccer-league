@@ -162,11 +162,14 @@ var matchListSpec = ListSpec[*Match]{
 
 var userListSpec = ListSpec[*User]{
 	Sorts: map[string]Comparator[*User]{
+		"first_name": ByText(func(u *User) string { return u.FirstName }),
+		"last_name":  ByText(func(u *User) string { return u.LastName }),
 		"email":      ByText(func(u *User) string { return u.Email }),
 		"role":       ByText(func(u *User) string { return u.Role }),
 		"created_at": ByNumber(func(u *User) int64 { return u.CreatedAt.UnixNano() }),
 	},
 	Search: []func(*User) string{
+		func(u *User) string { return u.FirstName + " " + u.LastName },
 		func(u *User) string { return u.Email },
 	},
 	Filters: map[string]FilterFunc[*User]{

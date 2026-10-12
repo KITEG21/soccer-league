@@ -65,6 +65,14 @@ export function UserList({
   const locale = useLocale();
 
   const columns = columnHelper.columns([
+    columnHelper.accessor("first_name", {
+      header: t("firstName"),
+      cell: ({ getValue }) => getValue() || "—",
+    }),
+    columnHelper.accessor("last_name", {
+      header: t("lastName"),
+      cell: ({ getValue }) => getValue() || "—",
+    }),
     columnHelper.accessor("email", {
       header: common("email"),
       cell: ({ row }) => (
@@ -95,11 +103,11 @@ export function UserList({
       id: "actions",
       header: "",
       cell: ({ row }) =>
-        canWrite && row.original.id !== currentUserId ? (
+        canWrite ? (
           <RowActions
             onEdit={() => onEdit(row.original)}
-            onDelete={() => onDelete(row.original.id)}
-            editLabel={t("changeRole")}
+            onDelete={row.original.id !== currentUserId ? () => onDelete(row.original.id) : undefined}
+            editLabel={t("edit")}
           />
         ) : null,
       meta: { cellClassName: "text-right" },

@@ -811,27 +811,27 @@ WHERE m.away_team_id = $1
 ORDER BY m.match_date, m.id;
 
 -- name: CreateUser :one
-INSERT INTO Users (email, password_hash, role)
-VALUES ($1, $2, $3)
-RETURNING id, email, password_hash, role, created_at;
+INSERT INTO Users (email, password_hash, role, first_name, last_name)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, email, password_hash, role, created_at, first_name, last_name;
 
 -- name: GetUser :one
-SELECT id, email, password_hash, role, created_at FROM Users WHERE id = $1;
+SELECT id, email, password_hash, role, created_at, first_name, last_name FROM Users WHERE id = $1;
 
 -- name: GetUserByEmail :one
-SELECT id, email, password_hash, role, created_at FROM Users WHERE email = $1;
+SELECT id, email, password_hash, role, created_at, first_name, last_name FROM Users WHERE email = $1;
 
 -- name: ListUsers :many
-SELECT id, email, password_hash, role, created_at
+SELECT id, email, password_hash, role, created_at, first_name, last_name
 FROM Users
 ORDER BY id;
 
 -- name: CountUsersByRole :one
 SELECT COUNT(*) FROM Users WHERE role = $1;
 
--- name: UpdateUserRole :one
-UPDATE Users SET role = $2 WHERE id = $1
-RETURNING id, email, password_hash, role, created_at;
+-- name: UpdateUser :one
+UPDATE Users SET first_name = $2, last_name = $3, role = $4 WHERE id = $1
+RETURNING id, email, password_hash, role, created_at, first_name, last_name;
 
 -- name: DeleteUser :execrows
 DELETE FROM Users WHERE id = $1;

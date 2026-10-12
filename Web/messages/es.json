@@ -22,7 +22,9 @@
   },
   "Header": {
     "account": "Cuenta",
-    "administrator": "Administrador",
+    "superadmin": "Superadministrador",
+    "admin": "Administrador",
+    "visitor": "Visitante",
     "logout": "Cerrar sesión",
     "switchToLight": "Activar tema claro",
     "switchToDark": "Activar tema oscuro"
@@ -260,7 +262,9 @@
   "User": {
     "new": "Nuevo usuario",
     "description": "Crea una cuenta y as\u00edgnale un rol.",
-    "changeRole": "Cambiar rol",
+    "edit": "Editar usuario",
+    "firstName": "Nombres",
+    "lastName": "Apellidos",
     "visitor": "Visitante",
     "passwordHint": "M\u00ednimo 8 caracteres",
     "emailPlaceholder": "usuario@ejemplo.com"

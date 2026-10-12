@@ -1,7 +1,7 @@
 import type {
   User,
   CreateUserRequest,
-  UpdateUserRoleRequest,
+  UpdateUserRequest,
 } from "../types";
 import type { PaginatedResponse } from "@/shared/types";
 import { apiRequest } from "@/shared/utils/api-client";
@@ -20,7 +20,7 @@ class UsersApiService {
     });
   }
 
-  async updateUserRole(id: number, data: UpdateUserRoleRequest): Promise<User> {
+  async updateUser(id: number, data: UpdateUserRequest): Promise<User> {
     return apiRequest<User>(API_ROUTES.users.detail(id), {
       method: "PUT",
       body: JSON.stringify(data),

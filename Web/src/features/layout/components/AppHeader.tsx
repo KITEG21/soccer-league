@@ -30,10 +30,12 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 
 export const AppHeader = () => {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, user, email, role } = useAuth();
   const navigation = useTranslations("Navigation");
   const t = useTranslations("Header");
   const crumbs = buildBreadcrumbs(pathname, navigation);
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
+  const currentRole = user?.role ?? role;
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -73,8 +75,14 @@ export const AppHeader = () => {
               <UserRound className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>{t("administrator")}</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuLabel className="flex flex-col gap-1">
+              <span className="break-words">{fullName || email || t("account")}</span>
+              {fullName && <span className="break-all text-xs font-normal text-muted-foreground">{email}</span>}
+              <span className="text-xs font-normal text-muted-foreground">
+                {currentRole === "superadmin" ? t("superadmin") : currentRole === "admin" ? t("admin") : t("visitor")}
+              </span>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => logout()}>
               <LogOut className="mr-2 size-4" />

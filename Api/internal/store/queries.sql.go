@@ -296,19 +296,27 @@ func (q *Queries) CreateTeam(ctx context.Context, arg CreateTeamParams) (int64, 
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO Users (email, password_hash, role)
-VALUES ($1, $2, $3)
-RETURNING id, email, password_hash, role, created_at
+INSERT INTO Users (email, password_hash, role, first_name, last_name)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, email, password_hash, role, created_at, first_name, last_name
 `
 
 type CreateUserParams struct {
 	Email        string
 	PasswordHash string
 	Role         string
+	FirstName    string
+	LastName     string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Email, arg.PasswordHash, arg.Role)
+	row := q.db.QueryRowContext(ctx, createUser,
+		arg.Email,
+		arg.PasswordHash,
+		arg.Role,
+		arg.FirstName,
+		arg.LastName,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -316,6 +324,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.PasswordHash,
 		&i.Role,
 		&i.CreatedAt,
+		&i.FirstName,
+		&i.LastName,
 	)
 	return i, err
 }
@@ -1229,7 +1239,7 @@ func (q *Queries) GetTeamStatus(ctx context.Context, arg GetTeamStatusParams) (G
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, password_hash, role, created_at FROM Users WHERE id = $1
+SELECT id, email, password_hash, role, created_at, first_name, last_name FROM Users WHERE id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
@@ -1241,12 +1251,14 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 		&i.PasswordHash,
 		&i.Role,
 		&i.CreatedAt,
+		&i.FirstName,
+		&i.LastName,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, role, created_at FROM Users WHERE email = $1
+SELECT id, email, password_hash, role, created_at, first_name, last_name FROM Users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -1258,6 +1270,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.PasswordHash,
 		&i.Role,
 		&i.CreatedAt,
+		&i.FirstName,
+		&i.LastName,
 	)
 	return i, err
 }
@@ -2563,7 +2577,7 @@ func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, password_hash, role, created_at
+SELECT id, email, password_hash, role, created_at, first_name, last_name
 FROM Users
 ORDER BY id
 `
@@ -2583,6 +2597,8 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.PasswordHash,
 			&i.Role,
 			&i.CreatedAt,
+			&i.FirstName,
+			&i.LastName,
 		); err != nil {
 			return nil, err
 		}
@@ -2862,18 +2878,25 @@ func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {
 	return err
 }
 
-const updateUserRole = `-- name: UpdateUserRole :one
-UPDATE Users SET role = $2 WHERE id = $1
-RETURNING id, email, password_hash, role, created_at
+const updateUser = `-- name: UpdateUser :one
+UPDATE Users SET first_name = $2, last_name = $3, role = $4 WHERE id = $1
+RETURNING id, email, password_hash, role, created_at, first_name, last_name
 `
 
-type UpdateUserRoleParams struct {
-	ID   int64
-	Role string
+type UpdateUserParams struct {
+	ID        int64
+	FirstName string
+	LastName  string
+	Role      string
 }
 
-func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUserRole, arg.ID, arg.Role)
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser,
+		arg.ID,
+		arg.FirstName,
+		arg.LastName,
+		arg.Role,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -2881,6 +2904,8 @@ func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) 
 		&i.PasswordHash,
 		&i.Role,
 		&i.CreatedAt,
+		&i.FirstName,
+		&i.LastName,
 	)
 	return i, err
 }

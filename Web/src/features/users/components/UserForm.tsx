@@ -46,7 +46,7 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
     formState: { errors, isSubmitting },
   } = useForm<CreateUserFormData>({
     resolver: zodResolver(createUserSchema),
-    defaultValues: { email: "", password: "", role: "visitante" },
+    defaultValues: { first_name: "", last_name: "", email: "", password: "", role: "visitante" },
   });
 
   const createMutation = useMutation({
@@ -59,7 +59,7 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
     onError: (error) => {
       if (!(error instanceof ApiError)) return;
       Object.entries(error.errors).forEach(([field, message]) => {
-        if (field === "email" || field === "password" || field === "role") {
+        if (field === "first_name" || field === "last_name" || field === "email" || field === "password" || field === "role") {
           setError(field, { message });
         }
       });
@@ -78,7 +78,7 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-106.25">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>{t("new")}</DialogTitle>
           <DialogDescription>
@@ -86,6 +86,16 @@ export const UserForm = ({ isOpen, onClose }: UserFormProps) => {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="first-name">{t("firstName")} *</Label>
+            <Input id="first-name" autoComplete="given-name" maxLength={100} {...register("first_name")} disabled={isLoading} />
+            {errors.first_name && <p className="text-sm text-destructive">{errors.first_name.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="last-name">{t("lastName")} *</Label>
+            <Input id="last-name" autoComplete="family-name" maxLength={100} {...register("last_name")} disabled={isLoading} />
+            {errors.last_name && <p className="text-sm text-destructive">{errors.last_name.message}</p>}
+          </div>
           <div className="space-y-2">
             <Label htmlFor="email">{common("email")} *</Label>
             <Input

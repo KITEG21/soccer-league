@@ -73,7 +73,9 @@ CREATE TABLE IF NOT EXISTS Users (
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('superadmin', 'admin', 'visitante')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    first_name TEXT NOT NULL DEFAULT '' CHECK (char_length(first_name) <= 100),
+    last_name TEXT NOT NULL DEFAULT '' CHECK (char_length(last_name) <= 100)
 );
 
 CREATE TABLE IF NOT EXISTS RefreshToken (

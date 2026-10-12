@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE Users DROP COLUMN last_name, DROP COLUMN first_name;
+COMMIT;

@@ -20,6 +20,10 @@ export const errorTranslations: Record<string, string> = {
   "password must be at least 8 characters": "La contraseña debe tener al menos 8 caracteres",
   "password must be at most 72 characters": "La contraseña no puede superar los 72 caracteres",
   "invalid role": "Rol inválido",
+  "first_name is required": "El nombre es requerido",
+  "last_name is required": "Los apellidos son requeridos",
+  "first_name must be at most 100 characters": "El nombre no puede exceder 100 caracteres",
+  "last_name must be at most 100 characters": "Los apellidos no pueden exceder 100 caracteres",
 
   name: "Nombre",
   start_date: "Fecha de inicio",

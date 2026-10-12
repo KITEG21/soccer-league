@@ -11,7 +11,7 @@ import type { User } from "../types";
 import { usersApiService } from "../services/api";
 import { USER_FILTERS, UserList } from "../components/UserList";
 import { UserForm } from "../components/UserForm";
-import { UserRoleDialog } from "../components/UserRoleDialog";
+import { UserEditDialog } from "../components/UserEditDialog";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { useListQuery } from "@/shared/components/data-table";
 import { useAuth } from "@/shared/contexts/AuthContext";
@@ -65,8 +65,10 @@ export const UserContainer = () => {
         onDelete={handleDelete}
       />
       <UserForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
-      <UserRoleDialog
+      <UserEditDialog
+        key={editingUser?.id ?? "closed"}
         user={editingUser}
+        isCurrentUser={editingUser?.id === userId}
         isOpen={Boolean(editingUser)}
         onClose={() => setEditingUser(undefined)}
       />

@@ -37,6 +37,7 @@ export default async function RootLayout({
               claims
                 ? {
                     userId: claims.sub,
+                    email: claims.email,
                     role: claims.role,
                     permissions: claims.permissions,
                   }

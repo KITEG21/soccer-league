@@ -22,7 +22,9 @@
   },
   "Header": {
     "account": "Account",
-    "administrator": "Administrator",
+    "superadmin": "Super administrator",
+    "admin": "Administrator",
+    "visitor": "Visitor",
     "logout": "Log out",
     "switchToLight": "Enable light theme",
     "switchToDark": "Enable dark theme"
@@ -260,7 +262,9 @@
   "User": {
     "new": "New user",
     "description": "Create an account and assign it a role.",
-    "changeRole": "Change role",
+    "edit": "Edit user",
+    "firstName": "First name",
+    "lastName": "Last name",
     "visitor": "Visitor",
     "passwordHint": "Minimum 8 characters",
     "emailPlaceholder": "user@example.com"

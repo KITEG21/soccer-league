@@ -29,6 +29,7 @@ export type ReportKey =
 
 export const API_ROUTES = {
   auth: {
+    me: "/auth/me",
     login: "/auth/login",
     refresh: "/auth/refresh",
     logout: "/auth/logout",

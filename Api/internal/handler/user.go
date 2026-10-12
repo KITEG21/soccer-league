@@ -56,13 +56,13 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, user)
 }
 
-func (h *UserHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	var req service.UpdateUserRoleRequest
+	var req service.UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request")
 		return
@@ -72,7 +72,7 @@ func (h *UserHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
-	user, err := h.svc.UpdateRole(r.Context(), actor, id, req)
+	user, err := h.svc.Update(r.Context(), actor, id, req)
 	if err != nil {
 		h.writeServiceError(w, err)
 		return

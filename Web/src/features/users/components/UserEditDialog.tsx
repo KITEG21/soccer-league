@@ -3,8 +3,8 @@ import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  updateUserRoleSchema,
-  type UpdateUserRoleFormData,
+  updateUserSchema,
+  type UpdateUserFormData,
 } from "../schemas/userSchema";
 import { usersApiService } from "../services/api";
 import type { User } from "../types";
@@ -25,31 +25,44 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Label } from "@/shared/components/ui/label";
+import { Input } from "@/shared/components/ui/input";
 
-interface UserRoleDialogProps {
+interface UserEditDialogProps {
   readonly user?: User;
   readonly isOpen: boolean;
   readonly onClose: () => void;
+  readonly isCurrentUser: boolean;
 }
 
-export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) => {
+export const UserEditDialog = ({ user, isOpen, onClose, isCurrentUser }: UserEditDialogProps) => {
   const t = useTranslations("User");
   const common = useTranslations("Common");
   const queryClient = useQueryClient();
 
-  const { control, handleSubmit, reset, formState: { isSubmitting } } =
-    useForm<UpdateUserRoleFormData>({
-      resolver: zodResolver(updateUserRoleSchema),
-      values: { role: user?.role ?? "visitante" },
+  const { register, control, handleSubmit, reset, setError, formState: { errors, isSubmitting } } =
+    useForm<UpdateUserFormData>({
+      resolver: zodResolver(updateUserSchema),
+      values: { first_name: user?.first_name ?? "", last_name: user?.last_name ?? "", role: user?.role ?? "visitante" },
     });
 
   const updateMutation = useMutation({
-    mutationFn: (data: UpdateUserRoleFormData) =>
-      usersApiService.updateUserRole(user!.id, data),
+    mutationFn: (data: UpdateUserFormData) =>
+      usersApiService.updateUser(user!.id, isCurrentUser
+        ? { first_name: data.first_name, last_name: data.last_name }
+        : data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
       onClose();
       reset();
+    },
+    onError: (error) => {
+      if (!(error instanceof ApiError)) return;
+      Object.entries(error.errors).forEach(([field, message]) => {
+        if (field === "first_name" || field === "last_name" || field === "role") {
+          setError(field, { message });
+        }
+      });
     },
   });
 
@@ -63,15 +76,25 @@ export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-106.25">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>{t("changeRole")}</DialogTitle>
+          <DialogTitle>{t("edit")}</DialogTitle>
           <DialogDescription>{user?.email}</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={handleSubmit((data) => updateMutation.mutate(data))}
           className="space-y-4"
         >
+          <div className="space-y-2">
+            <Label htmlFor="edit-first-name">{t("firstName")} *</Label>
+            <Input id="edit-first-name" autoComplete="given-name" maxLength={100} {...register("first_name")} disabled={isLoading} />
+            {errors.first_name && <p className="text-sm text-destructive">{errors.first_name.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-last-name">{t("lastName")} *</Label>
+            <Input id="edit-last-name" autoComplete="family-name" maxLength={100} {...register("last_name")} disabled={isLoading} />
+            {errors.last_name && <p className="text-sm text-destructive">{errors.last_name.message}</p>}
+          </div>
           <div className="space-y-2">
             <Label htmlFor="role">{common("role")} *</Label>
             <Controller
@@ -81,7 +104,7 @@ export const UserRoleDialog = ({ user, isOpen, onClose }: UserRoleDialogProps) =
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
-                  disabled={isLoading}
+                  disabled={isLoading || isCurrentUser}
                 >
                   <SelectTrigger id="role" className="w-full">
                     <SelectValue />

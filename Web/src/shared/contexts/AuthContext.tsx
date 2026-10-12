@@ -7,7 +7,10 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { User } from "@/features/users/types";
+import { apiRequest } from "@/shared/utils/api-client";
+import { API_ROUTES } from "@/shared/config/routes";
 import type { Role } from "@/shared/auth/session";
 import {
   hasPermission,
@@ -17,12 +20,15 @@ import {
 import { logoutAction } from "@/features/auth/actions/logout";
 
 export interface AuthSession {
+  readonly email: string;
   readonly userId: number | null;
   readonly role: Role;
   readonly permissions: readonly Permission[];
 }
 
 interface AuthContextType {
+  user: User | null;
+  email: string | null;
   isAuthenticated: boolean;
   role: Role | null;
   userId: number | null;
@@ -40,6 +46,11 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children, session }: AuthProviderProps) => {
   const queryClient = useQueryClient();
+  const { data: user } = useQuery({
+    queryKey: ["auth", "me", session?.userId],
+    queryFn: () => apiRequest<User>(API_ROUTES.auth.me),
+    enabled: session !== null,
+  });
 
   const logout = useCallback(async () => {
     queryClient.clear();
@@ -54,6 +65,8 @@ export const AuthProvider = ({ children, session }: AuthProviderProps) => {
 
   const value = useMemo(
     () => ({
+      user: session ? user ?? null : null,
+      email: session?.email ?? null,
       isAuthenticated: session !== null,
       role: session?.role ?? null,
       userId: session?.userId ?? null,
@@ -61,7 +74,7 @@ export const AuthProvider = ({ children, session }: AuthProviderProps) => {
       can,
       logout,
     }),
-    [session, can, logout],
+    [session, user, can, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

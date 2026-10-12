@@ -89,13 +89,14 @@ func main() {
 
 	r.Group(func(r chi.Router) {
 		r.Use(handler.RequireAuth(authSvc))
+		r.Get("/auth/me", authHandler.Me)
 
 		r.Route("/users", func(r chi.Router) {
 			r.Use(handler.AuthorizeResource(service.ResourceUsers))
 			r.Get("/", userHandler.List)
 			r.Post("/", userHandler.Create)
 			r.Get("/{id}", userHandler.Get)
-			r.Put("/{id}", userHandler.UpdateRole)
+			r.Put("/{id}", userHandler.Update)
 			r.Delete("/{id}", userHandler.Delete)
 		})
 

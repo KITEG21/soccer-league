@@ -127,6 +127,64 @@ func ServeScalarUI(r chi.Router) {
     { "name": "Reports", "description": "Analytical and summary reports" }
   ],
   "paths": {
+    "/auth/me": {
+      "get": {
+        "summary": "Get the authenticated user profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Current user", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+          "401": { "description": "Authentication required" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "List users",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" } },
+          { "name": "sort", "in": "query", "schema": { "type": "string", "enum": ["first_name", "last_name", "email", "role", "created_at"] } }
+        ],
+        "responses": {
+          "200": { "description": "User page", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }, "total": { "type": "integer" }, "limit": { "type": "integer" }, "offset": { "type": "integer" } } } } } },
+          "403": { "description": "Superadmin permission required" }
+        }
+      },
+      "post": {
+        "summary": "Create a user",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateUserRequest" } } } },
+        "responses": {
+          "201": { "description": "User created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+          "400": { "description": "Invalid user data" },
+          "403": { "description": "Superadmin permission required" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+      "get": {
+        "summary": "Get a user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "User profile", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } } }
+      },
+      "put": {
+        "summary": "Update user names and role",
+        "description": "Omitted fields keep their values. Self role changes are prohibited.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateUserRequest" } } } },
+        "responses": {
+          "200": { "description": "User updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+          "400": { "description": "Invalid user data" },
+          "403": { "description": "Forbidden operation" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "204": { "description": "User deleted" }, "403": { "description": "Forbidden operation" } }
+      }
+    },
     "/teams": {
       "get": {
         "tags": ["Teams"],
@@ -839,7 +897,40 @@ func ServeScalarUI(r chi.Router) {
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
     "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "first_name": { "type": "string", "maxLength": 100 },
+          "last_name": { "type": "string", "maxLength": 100 },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["superadmin", "admin", "visitante"] },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": ["first_name", "last_name", "email", "password", "role"],
+        "properties": {
+          "first_name": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "last_name": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 8, "maxLength": 72, "writeOnly": true },
+          "role": { "type": "string", "enum": ["superadmin", "admin", "visitante"] }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "first_name": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "last_name": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "role": { "type": "string", "enum": ["superadmin", "admin", "visitante"] }
+        }
+      },
       "Team": {
         "type": "object",
         "properties": {
