@@ -71,6 +71,10 @@ func (h *MatchHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	match, err := h.svc.Update(r.Context(), id, req)
 	if err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

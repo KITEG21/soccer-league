@@ -25,6 +25,10 @@ func (h *PlayerStatsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	stat, err := h.svc.Create(r.Context(), req)
 	if err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -87,6 +91,10 @@ func (h *PlayerStatsHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.svc.Update(r.Context(), id, req); err != nil {
+		if service.IsValidationError(err) {
+			handleValidationError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/football-api/internal/store"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type PlayerService struct {
@@ -169,7 +171,18 @@ func (s *PlayerService) UpdatePlayer(ctx context.Context, id int64, req CreatePl
 }
 
 func (s *PlayerService) DeletePlayer(ctx context.Context, id int64) error {
+	count, err := s.store.CountPlayerStatsByPlayer(ctx, int64ToNullInt64(id))
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return NewEntityInUseError("player", id, map[string]int{"player_stats": int(count)})
+	}
 	if err := s.store.DeletePlayerRecord(ctx, id); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+			return NewEntityInUseError("player", id, map[string]int{"player_stats": 1})
+		}
 		return err
 	}
 	return s.store.DeleteFootballer(ctx, id)
@@ -203,12 +216,12 @@ func (s *PlayerService) GetCoach(ctx context.Context, id int64) (*Coach, error) 
 		return nil, err
 	}
 	return &Coach{
-		ID:              row.ID,
-		TeamID:          nullInt64ToInt64(row.TeamID),
-		Name:            row.Name,
-		Number:          nullInt32ToInt32(row.Number),
-		YearsInTeam:     nullInt32ToInt32(row.YearsInTeam),
-		ExperienceYears: nullInt32ToInt32(row.ExperienceYears),
+		ID:               row.ID,
+		TeamID:           nullInt64ToInt64(row.TeamID),
+		Name:             row.Name,
+		Number:           nullInt32ToInt32(row.Number),
+		YearsInTeam:      nullInt32ToInt32(row.YearsInTeam),
+		ExperienceYears:  nullInt32ToInt32(row.ExperienceYears),
 		ChampionshipsWon: nullInt32ToInt32(row.ChampionshipsWon),
 	}, nil
 }
@@ -264,8 +277,8 @@ func (s *PlayerService) UpdateCoach(ctx context.Context, id int64, req CreateCoa
 		return err
 	}
 	return s.store.UpdateCoachDetails(ctx, store.UpdateCoachDetailsParams{
-		FootballerID:    id,
-		ExperienceYears: int32ToNullInt32(req.ExperienceYears),
+		FootballerID:     id,
+		ExperienceYears:  int32ToNullInt32(req.ExperienceYears),
 		ChampionshipsWon: int32ToNullInt32(req.ChampionshipsWon),
 	})
 }

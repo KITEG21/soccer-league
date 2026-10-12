@@ -1008,6 +1008,7 @@ func ServeScalarUI(r chi.Router) {
           "id": { "type": "integer" },
           "player_id": { "type": "integer" },
           "match_id": { "type": "integer" },
+          "team_id": { "type": "integer", "readOnly": true, "description": "Equipo del jugador al registrar la participación; se conserva tras una transferencia." },
           "goals_scored": { "type": "integer" },
           "assists": { "type": "integer" },
           "shots_on_goal": { "type": "integer" },

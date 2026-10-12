@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/football-api/internal/store"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type PlayerStatsService struct {
@@ -18,6 +20,7 @@ type PlayerStat struct {
 	ID              int64 `json:"id"`
 	PlayerID        int64 `json:"player_id"`
 	MatchID         int64 `json:"match_id"`
+	TeamID          int64 `json:"team_id"`
 	GoalsScored     int32 `json:"goals_scored"`
 	Assists         int32 `json:"assists"`
 	ShotsOnGoal     int32 `json:"shots_on_goal"`
@@ -50,6 +53,7 @@ func playerStatFromStore(row store.Playerstat) *PlayerStat {
 		ID:              row.ID,
 		PlayerID:        fromNullInt64(row.PlayerID),
 		MatchID:         fromNullInt64(row.MatchID),
+		TeamID:          row.TeamID,
 		GoalsScored:     fromNullInt32(row.GoalsScored),
 		Assists:         fromNullInt32(row.Assists),
 		ShotsOnGoal:     fromNullInt32(row.ShotsOnGoal),
@@ -80,7 +84,7 @@ func (s *PlayerStatsService) Create(ctx context.Context, req CreatePlayerStatReq
 		GoalsConceded:   int32ToNullInt32(req.GoalsConceded),
 	})
 	if err != nil {
-		return nil, err
+		return nil, historyValidationError(err)
 	}
 	row, err := s.store.GetPlayerStat(ctx, id)
 	if err != nil {
@@ -126,7 +130,7 @@ func (s *PlayerStatsService) Update(ctx context.Context, id int64, req UpdatePla
 	if ve := ValidateMatchDisputed(ctx, s.store, req.MatchID); ve != nil {
 		return ve
 	}
-	return s.store.UpdatePlayerStat(ctx, store.UpdatePlayerStatParams{
+	return historyValidationError(s.store.UpdatePlayerStat(ctx, store.UpdatePlayerStatParams{
 		ID:              id,
 		PlayerID:        int64ToNullInt64(req.PlayerID),
 		MatchID:         int64ToNullInt64(req.MatchID),
@@ -139,7 +143,18 @@ func (s *PlayerStatsService) Update(ctx context.Context, id int64, req UpdatePla
 		Blocks:          int32ToNullInt32(req.Blocks),
 		Saves:           int32ToNullInt32(req.Saves),
 		GoalsConceded:   int32ToNullInt32(req.GoalsConceded),
-	})
+	}))
+}
+
+// Translate database history rules into errors the client can display.
+func historyValidationError(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23514" {
+		ve := NewValidationError()
+		ve.Add("statistics", pgErr.Message)
+		return ve
+	}
+	return err
 }
 
 func (s *PlayerStatsService) Delete(ctx context.Context, id int64) error {

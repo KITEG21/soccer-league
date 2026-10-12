@@ -179,7 +179,7 @@ func (s *MatchService) Update(ctx context.Context, id int64, req UpdateMatchRequ
 		Attendance: int32ToNullInt32(req.Attendance),
 		Disputed:   req.Disputed,
 	}); err != nil {
-		return nil, err
+		return nil, historyValidationError(err)
 	}
 	return s.Get(ctx, id)
 }

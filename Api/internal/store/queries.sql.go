@@ -11,6 +11,17 @@ import (
 	"time"
 )
 
+const countPlayerStatsByPlayer = `-- name: CountPlayerStatsByPlayer :one
+SELECT COUNT(*) FROM PlayerStats WHERE player_id = $1
+`
+
+func (q *Queries) CountPlayerStatsByPlayer(ctx context.Context, playerID sql.NullInt64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countPlayerStatsByPlayer, playerID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUsersByRole = `-- name: CountUsersByRole :one
 SELECT COUNT(*) FROM Users WHERE role = $1
 `
@@ -828,14 +839,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.id = $1
 `
@@ -882,14 +893,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.away_team_id = $1
 ORDER BY m.match_date, m.id
@@ -953,14 +964,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.home_team_id = $1
 ORDER BY m.match_date, m.id
@@ -1045,7 +1056,7 @@ func (q *Queries) GetPlayer(ctx context.Context, id int64) (GetPlayerRow, error)
 }
 
 const getPlayerStat = `-- name: GetPlayerStat :one
-SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
+SELECT id, player_id, match_id, team_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
 FROM PlayerStats
 WHERE id = $1
 `
@@ -1057,6 +1068,7 @@ func (q *Queries) GetPlayerStat(ctx context.Context, id int64) (Playerstat, erro
 		&i.ID,
 		&i.PlayerID,
 		&i.MatchID,
+		&i.TeamID,
 		&i.GoalsScored,
 		&i.Assists,
 		&i.ShotsOnGoal,
@@ -1148,14 +1160,14 @@ WITH match_scores AS (
         FROM PlayerStats ps
         JOIN Player p ON p.footballer_id = ps.player_id
         JOIN Footballer f ON f.id = p.footballer_id
-        WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+        WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
     ) hg ON true
     LEFT JOIN LATERAL (
         SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
         FROM PlayerStats ps
         JOIN Player p ON p.footballer_id = ps.player_id
         JOIN Footballer f ON f.id = p.footballer_id
-        WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+        WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
     ) ag ON true
     WHERE m.season_id = $2
 )
@@ -1417,14 +1429,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 ORDER BY m.match_date, m.id
 `
@@ -1498,14 +1510,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.match_date BETWEEN $1 AND $2
 ORDER BY m.match_date, m.id
@@ -1588,14 +1600,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.match_date BETWEEN $1 AND $2
   AND m.stadium_id = $3
@@ -1674,14 +1686,14 @@ SELECT
         FROM PlayerStats ps
         JOIN Player p ON p.footballer_id = ps.player_id
         JOIN Footballer f ON f.id = p.footballer_id
-        WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+        WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
     ), 0) AS home_assists,
     COALESCE((
         SELECT SUM(ps.assists)
         FROM PlayerStats ps
         JOIN Player p ON p.footballer_id = ps.player_id
         JOIN Footballer f ON f.id = p.footballer_id
-        WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+        WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
     ), 0) AS away_assists
 FROM Match m
 JOIN Team ht ON m.home_team_id = ht.id
@@ -1692,14 +1704,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE ((m.home_team_id = $1 AND m.away_team_id = $2) OR (m.home_team_id = $2 AND m.away_team_id = $1))
   AND m.season_id = $3
@@ -1781,14 +1793,14 @@ SELECT
         FROM PlayerStats ps
         JOIN Player p ON p.footballer_id = ps.player_id
         JOIN Footballer f ON f.id = p.footballer_id
-        WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+        WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
     ), 0) AS home_assists,
     COALESCE((
         SELECT SUM(ps.assists)
         FROM PlayerStats ps
         JOIN Player p ON p.footballer_id = ps.player_id
         JOIN Footballer f ON f.id = p.footballer_id
-        WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+        WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
     ), 0) AS away_assists
 FROM Match m
 JOIN Team ht ON m.home_team_id = ht.id
@@ -1799,14 +1811,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE (m.home_team_id = $1 AND m.away_team_id = $2) OR (m.home_team_id = $2 AND m.away_team_id = $1)
 ORDER BY m.match_date, m.id
@@ -1879,14 +1891,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.match_date = $1
 ORDER BY m.id
@@ -1950,14 +1962,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.match_date = $1 AND m.stadium_id = $2
 ORDER BY m.id
@@ -2026,14 +2038,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.season_id = $1
 ORDER BY m.match_date, m.id
@@ -2097,14 +2109,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 WHERE m.home_team_id = $1 OR m.away_team_id = $1
 ORDER BY m.match_date, m.id
@@ -2158,7 +2170,7 @@ func (q *Queries) ListMatchesByTeam(ctx context.Context, homeTeamID sql.NullInt6
 }
 
 const listPlayerStats = `-- name: ListPlayerStats :many
-SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
+SELECT id, player_id, match_id, team_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
 FROM PlayerStats
 ORDER BY id
 `
@@ -2176,6 +2188,7 @@ func (q *Queries) ListPlayerStats(ctx context.Context) ([]Playerstat, error) {
 			&i.ID,
 			&i.PlayerID,
 			&i.MatchID,
+			&i.TeamID,
 			&i.GoalsScored,
 			&i.Assists,
 			&i.ShotsOnGoal,
@@ -2200,7 +2213,7 @@ func (q *Queries) ListPlayerStats(ctx context.Context) ([]Playerstat, error) {
 }
 
 const listPlayerStatsByMatch = `-- name: ListPlayerStatsByMatch :many
-SELECT id, player_id, match_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
+SELECT id, player_id, match_id, team_id, goals_scored, assists, shots_on_goal, passes_completed, interceptions, tackles, blocks, saves, goals_conceded
 FROM PlayerStats
 WHERE match_id = $1
 ORDER BY id
@@ -2219,6 +2232,7 @@ func (q *Queries) ListPlayerStatsByMatch(ctx context.Context, matchID sql.NullIn
 			&i.ID,
 			&i.PlayerID,
 			&i.MatchID,
+			&i.TeamID,
 			&i.GoalsScored,
 			&i.Assists,
 			&i.ShotsOnGoal,
@@ -2468,14 +2482,14 @@ LEFT JOIN LATERAL (
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.home_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.home_team_id
 ) hg ON true
 LEFT JOIN LATERAL (
     SELECT COALESCE(SUM(ps.goals_scored), 0) AS total
     FROM PlayerStats ps
     JOIN Player p ON p.footballer_id = ps.player_id
     JOIN Footballer f ON f.id = p.footballer_id
-    WHERE ps.match_id = m.id AND f.team_id = m.away_team_id
+    WHERE ps.match_id = m.id AND ps.team_id = m.away_team_id
 ) ag ON true
 GROUP BY t.id, t.name
 ORDER BY points DESC, t.name

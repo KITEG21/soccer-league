@@ -92,6 +92,10 @@ func (h *PlayerHandler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.svc.DeletePlayer(r.Context(), id); err != nil {
+		if _, ok := err.(*service.EntityInUseError); ok {
+			handleEntityInUseError(w, err)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

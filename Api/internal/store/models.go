@@ -43,6 +43,7 @@ type Playerstat struct {
 	ID              int64
 	PlayerID        sql.NullInt64
 	MatchID         sql.NullInt64
+	TeamID          int64
 	GoalsScored     sql.NullInt32
 	Assists         sql.NullInt32
 	ShotsOnGoal     sql.NullInt32

@@ -53,8 +53,9 @@ CREATE TABLE IF NOT EXISTS Match (
 
 CREATE TABLE IF NOT EXISTS PlayerStats (
     id BIGSERIAL PRIMARY KEY,
-    player_id BIGINT REFERENCES Player(footballer_id) ON DELETE CASCADE,
+    player_id BIGINT REFERENCES Player(footballer_id) ON DELETE RESTRICT,
     match_id BIGINT REFERENCES Match(id) ON DELETE CASCADE,
+    team_id BIGINT NOT NULL REFERENCES Team(id) ON DELETE RESTRICT,
     goals_scored INT DEFAULT 0,
     assists INT DEFAULT 0,
     shots_on_goal INT DEFAULT 0,
