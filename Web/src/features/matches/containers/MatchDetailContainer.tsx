@@ -88,7 +88,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
   });
 
   const getErrorMessage = (error: unknown) => {
-    if (error instanceof ApiError) return error.message;
+    if (error instanceof ApiError) return Object.values(error.errors).join(" · ") || error.message;
     if (error instanceof Error) return error.message;
     return null;
   };
@@ -244,20 +244,24 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
                   <TableHead className="text-center font-bold">{common("shots")}</TableHead>
                   <TableHead className="text-center font-bold">{common("passes")}</TableHead>
                   <TableHead className="text-center font-bold">{common("tackles")}</TableHead>
+                  <TableHead className="text-center font-bold">{t("interceptions")}</TableHead>
+                  <TableHead className="text-center font-bold">{t("blocks")}</TableHead>
+                  <TableHead className="text-center font-bold">{t("saves")}</TableHead>
+                  <TableHead className="text-center font-bold">{t("goalsConceded")}</TableHead>
                   <TableHead className="text-right font-bold">{common("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {matchStats.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground italic">
+                    <TableCell colSpan={12} className="text-center py-12 text-muted-foreground italic">
                       {match.disputed ? t("statsEmpty") : t("statsUnavailable")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   matchStats.map((stat) => {
                     const player = allPlayers.find(p => p.id === stat.player_id);
-                    const playerTeam = teams.find(t => t.id === player?.team_id);
+                    const playerTeam = teams.find(t => t.id === stat.team_id);
                     return (
                       <TableRow key={stat.id} className="hover:bg-muted/30 transition-colors">
                         <TableCell>
@@ -283,6 +287,10 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
                         <TableCell className="text-center font-mono">{stat.shots_on_goal}</TableCell>
                         <TableCell className="text-center font-mono">{stat.passes_completed}</TableCell>
                         <TableCell className="text-center font-mono">{stat.tackles}</TableCell>
+                        <TableCell className="text-center font-mono">{stat.interceptions}</TableCell>
+                        <TableCell className="text-center font-mono">{stat.blocks}</TableCell>
+                        <TableCell className="text-center font-mono">{stat.saves}</TableCell>
+                        <TableCell className="text-center font-mono">{stat.goals_conceded}</TableCell>
                         <TableCell className="text-right">
                           <RowActions
                             onEdit={canEdit ? () => handleEditStat(stat) : undefined}
@@ -305,7 +313,7 @@ export const MatchDetailContainer = ({ matchId }: MatchDetailContainerProps) => 
         key={`${isStatDialogOpen}-${editingStat?.id ?? "new"}`}
         isOpen={isStatDialogOpen}
         onClose={() => setIsStatDialogOpen(false)}
-        players={allMatchPlayers}
+        players={editingStat ? allPlayers.filter(p => p.id === editingStat.player_id) : allMatchPlayers}
         teams={teams}
         stat={editingStat}
         onSubmit={(data: CreatePlayerStatRequest) => {
@@ -390,7 +398,7 @@ const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, exist
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{stat ? t("editStat") : t("addStat")}</DialogTitle>
         </DialogHeader>
@@ -442,6 +450,18 @@ const StatFormDialog = ({ isOpen, onClose, players, teams, stat, onSubmit, exist
             <div className="space-y-2">
               <Label>{t("interceptions")}</Label>
               <Input type="number" min="0" placeholder="0" value={formData.interceptions} onChange={(e) => setFormData({ ...formData, interceptions: parseInt(e.target.value) || 0 })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stat-blocks">{t("blocks")}</Label>
+              <Input id="stat-blocks" type="number" min="0" step="1" placeholder="0" value={formData.blocks} onChange={(e) => setFormData({ ...formData, blocks: parseInt(e.target.value) || 0 })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stat-saves">{t("saves")}</Label>
+              <Input id="stat-saves" type="number" min="0" step="1" placeholder="0" value={formData.saves} onChange={(e) => setFormData({ ...formData, saves: parseInt(e.target.value) || 0 })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stat-goals-conceded">{t("goalsConceded")}</Label>
+              <Input id="stat-goals-conceded" type="number" min="0" step="1" placeholder="0" value={formData.goals_conceded} onChange={(e) => setFormData({ ...formData, goals_conceded: parseInt(e.target.value) || 0 })} />
             </div>
           </div>
 

@@ -2,6 +2,7 @@ export interface PlayerStat {
   id: number;
   player_id: number;
   match_id: number;
+  team_id: number;
   goals_scored: number;
   assists: number;
   shots_on_goal: number;
