@@ -72,9 +72,15 @@ Los IDs del ejemplo deben existir y la fecha debe pertenecer a la temporada:
 }
 ```
 
+## Datos de usuario
+
+Las respuestas de usuarios incluyen `first_name` y `last_name`. La creación requiere ambos campos, además de correo, contraseña y rol. `PUT /users/{id}` admite nombres, apellidos y rol; los campos omitidos mantienen su valor. El superadministrador puede corregir sus propios nombres omitiendo `role`, pero no cambiar su propio rol.
+
+`GET /auth/me` requiere autenticación y devuelve únicamente los datos públicos de la cuenta actual, incluidos los nombres. Está disponible para todos los roles y alimenta el menú de sesión.
+
 ## Ejemplo de estadística
 
-Debe existir el jugador y el partido debe estar disputado:
+Debe existir el jugador, pertenecer a uno de los equipos del encuentro y el partido debe estar disputado. La respuesta incluye `team_id`, asignado por el servidor para conservar el equipo de la participación; no se envía para crear o corregir métricas. Las correcciones mantienen jugador y partido:
 
 ```json
 {

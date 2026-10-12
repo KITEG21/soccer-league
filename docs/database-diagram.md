@@ -15,11 +15,12 @@ El modelo vigente contiene diez tablas: ocho deportivas y dos de seguridad. Las 
 | Match.away_team_id → Team.id | Muchos encuentros como visitante por equipo | RESTRICT |
 | Match.season_id → Season.id | Muchos encuentros por temporada | RESTRICT; trigger exige temporada válida |
 | Match.stadium_id → Stadium.id | Muchos encuentros por estadio | RESTRICT |
-| PlayerStats.player_id → Player.footballer_id | Muchas participaciones por jugador | CASCADE |
+| PlayerStats.player_id → Player.footballer_id | Muchas participaciones por jugador | RESTRICT; conserva las estadísticas al intentar una baja |
+| PlayerStats.team_id → Team.id | Equipo conservado por participación | RESTRICT |
 | PlayerStats.match_id → Match.id | Muchas participaciones por partido | CASCADE definido; trigger bloquea borrar partido con estadísticas |
 | RefreshToken.user_id → Users.id | Muchos tokens de renovación por cuenta | CASCADE |
 
-La combinación jugador/partido es única; equipo/dorsal también es única. No existe una tabla de afiliación histórica ni una relación directa de equipo inscrito en temporada.
+La combinación jugador/partido es única; equipo/dorsal también es única. La afiliación de cada participación se conserva en PlayerStats.team_id. No existe una relación directa de equipo inscrito en temporada.
 
 Player y Coach no tienen una exclusión mutua impuesta por SQL. Las FK nullable y las reglas de aplicación se distinguen en el [diccionario](./datos/modelo.md).
 

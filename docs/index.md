@@ -14,6 +14,9 @@ hero:
     - theme: alt
       text: Explorar módulos
       link: /modulos/
+    - theme: alt
+      text: Probar la aplicación
+      link: https://soccer-league-orcin.vercel.app/
 features:
   - title: Negocio y procesos
     details: Alcance de la liga, actores, ciclo del partido, reglas y requisitos originales.
@@ -40,3 +43,9 @@ features:
     link: /identidad-visual
     linkText: Consultar diseño
 ---
+
+## Acceso de consulta
+
+La aplicación está publicada en [soccer-league-orcin.vercel.app](https://soccer-league-orcin.vercel.app/) y esta documentación en [soccer-league.br4vo-code.workers.dev](https://soccer-league.br4vo-code.workers.dev/).
+
+Para probar las consultas, inicia sesión con **visitor@soccerleague.com** y la contraseña **Visitor1234**. La cuenta tiene rol visitante y no dispone de permisos de edición. Consulta el [recorrido de prueba](./guia/acceso-publicado.md).

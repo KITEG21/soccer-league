@@ -16,6 +16,9 @@ La aplicación distribuye la validación entre formularios del frontend, servici
 | Local y visitante diferentes | Formulario y restricción de base de datos | Impide jugar contra el mismo equipo |
 | Estadísticas solo en partido disputado | Servicio y trigger | No admite captura en un partido pendiente |
 | Una estadística por jugador y partido | `UNIQUE(player_id, match_id)` | Evita participaciones duplicadas |
+| Jugador participante y equipo histórico | Trigger de PlayerStats | Captura el equipo del encuentro y lo conserva en las correcciones |
+| Jugador con estadísticas conserva su registro | Servicio y FK RESTRICT | La baja devuelve un conflicto y preserva las participaciones |
+| Equipos del partido con estadísticas | Trigger de Match | Mantiene los participantes del historial |
 | Partido con estadísticas no vuelve a pendiente | Trigger | Protege el estado del encuentro |
 | Bajas de entidades referenciadas | Servicio y, según entidad, FK o trigger | Conflicto de eliminación |
 | Correo de usuario único y rol conocido | Servicio y PostgreSQL | Cuenta válida y no duplicada |
@@ -31,7 +34,6 @@ Los nombres de equipo y estadio se limitan a 100 caracteres. Los esquemas de jug
 
 - PostgreSQL no impone un máximo de asistencia igual a la capacidad del estadio. El porcentaje de audiencia puede superar el 100 %.
 - No existe una restricción general que haga todos los contadores y métricas no negativos en la API y en la base de datos.
-- La selección de jugadores participantes se limita en la UI; el servicio estadístico comprueba el estado del partido, pero no que el jugador pertenezca a uno de los equipos.
 - Player y Coach comparten Footballer, pero no hay una restricción de exclusión que impida ambas especializaciones para el mismo ID mediante escrituras directas.
 - El backend no aplica automáticamente todas las anotaciones `validate:"required"` de las estructuras Go. Debe comprobarse la validación explícita de cada servicio.
 - Algunas validaciones consultan otros registros antes de escribir. No todas están protegidas frente a concurrencia por una transacción o una restricción SQL equivalente.
@@ -40,4 +42,4 @@ Los nombres de equipo y estadio se limitan a 100 caracteres. Los esquemas de jug
 
 Los goles se calculan a partir de PlayerStats, no se editan como columnas de Match. La victoria suma tres puntos, el empate uno y la derrota cero. La clasificación y el estado de equipo actuales no filtran `disputed`; un partido pendiente sin goles puede computar como empate. Consulte [reportes](../reportes-explicacion.md) y [límites conocidos](../referencia/estado.md).
 
-Fuentes: `Api/internal/service/validators.go`, `errors.go`, servicios de dominio, `Api/sql/schema.sql` y migraciones `000003` a `000008`.
+Fuentes: `Api/internal/service/validators.go`, `errors.go`, servicios de dominio, `Api/sql/schema.sql` y migraciones `000003` a `000009`.

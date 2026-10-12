@@ -4,17 +4,17 @@ Las consultas nombradas de `Api/sql/queries.sql` definen los cálculos. `Reports
 
 ## Marcador común
 
-Para un encuentro se suman los goles de PlayerStats al unir Player y Footballer y comparar el equipo actual con local o visitante:
+Para un encuentro se suman los goles de PlayerStats comparando el equipo registrado en la participación con local o visitante:
 
 ```text
-goles_local = SUM(goals_scored de jugadores con team_id = home_team_id)
-goles_visitante = SUM(goals_scored de jugadores con team_id = away_team_id)
+goles_local = SUM(goals_scored de participaciones con team_id = home_team_id)
+goles_visitante = SUM(goals_scored de participaciones con team_id = away_team_id)
 ```
 
 `COALESCE` convierte una suma sin filas en cero. No se guarda marcador en Match. Los goles encajados del portero son una métrica de rendimiento; no son la fuente del marcador del rival.
 
 ::: warning Histórico y estado
-La afiliación utilizada es la actual de Footballer. Una transferencia puede cambiar el reparto histórico. Las consultas de clasificación, estado, agenda, enfrentamientos y audiencia no exigen `disputed = true`; un encuentro pendiente sin estadísticas puede representar un 0–0 en los reportes.
+La afiliación utilizada es `PlayerStats.team_id`, conservada al registrar cada participación. Las transferencias mantienen el reparto histórico. Las consultas de clasificación, estado, agenda, enfrentamientos y audiencia no exigen `disputed = true`; un encuentro pendiente sin estadísticas puede representar un 0–0 en los reportes.
 :::
 
 ## Clasificación
@@ -35,7 +35,7 @@ Respuesta: `team_id`, `name`, `points`. No hay asignación automática de campeo
 
 Consultas `ListMatchesBetweenTeams` y `ListMatchesBetweenTeamsAllSeasons`. Aceptan ambos sentidos local/visitante entre `team1` y `team2`; una temporada limita el conjunto y su ausencia consulta todas.
 
-El marcador usa la suma común; las asistencias se agregan con el mismo criterio de equipo actual. Orden por fecha y después ID.
+El marcador usa la suma común; las asistencias se agregan con el mismo criterio de equipo registrado en la participación. Orden por fecha y después ID.
 
 Respuesta: `id`, `match_date`, IDs de equipos/estadio, nombres correspondientes, `home_goals`, `away_goals`, `home_assists`, `away_assists`.
 

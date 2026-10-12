@@ -9,6 +9,7 @@ Las rutas corresponden a `Api/cmd/api/main.go`. `{id}` y `{teamId}` son identifi
 | POST | `/auth/login` | `email`, `password` | 200: tokens, correo, rol y permisos |
 | POST | `/auth/refresh` | `refresh_token` | 200: nuevo par de tokens y sesión |
 | POST | `/auth/logout` | `refresh_token` | 204 |
+| GET | `/auth/me` | Sesión autenticada | 200: perfil actual con nombres, apellidos, correo y rol |
 | GET | `/docs` | Ninguna | 200: interfaz Scalar |
 | GET | `/openapi.json` | Ninguna | 200: OpenAPI escrito en el handler |
 
@@ -40,7 +41,7 @@ Cada fila de la siguiente tabla representa cinco rutas: GET y POST sobre la cole
 | Entrenador | 200: paginado | 201: `{ "id": 10 }` | 200: objeto | 204 | 204 |
 | Partido | 200: paginado | 201: objeto | 200: objeto | 200: objeto | 204 |
 | Estadística | 200: array o null | 201: objeto | 200: objeto | 204 | 204 |
-| Usuario | 200: paginado | 201: objeto sin hash | 200: objeto sin hash | 200: objeto; solo cambia rol | 204 |
+| Usuario | 200: paginado | 201: objeto sin hash | 200: objeto sin hash | 200: objeto; nombres, apellidos y rol | 204 |
 
 Las estadísticas admiten `match_id` para obtener todas las filas de un encuentro; sin él admiten paginación simple. Otros listados admiten los filtros de la [referencia](./filtros.md).
 

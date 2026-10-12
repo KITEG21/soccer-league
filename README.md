@@ -27,6 +27,14 @@
 
 ## El proyecto
 
+### Aplicación publicada y acceso de visitante
+
+- **Web:** [soccer-league-orcin.vercel.app](https://soccer-league-orcin.vercel.app/).
+- **Documentación:** [soccer-league.br4vo-code.workers.dev](https://soccer-league.br4vo-code.workers.dev/), con información funcional y técnica adicional.
+- **Cuenta de demostración:** `visitor@soccerleague.com` · contraseña `Visitor1234`.
+
+La cuenta tiene rol `visitante`: permite realizar pruebas de consulta de los módulos y reportes, incluida la exportación PDF, **sin permisos de edición ni administración de usuarios**. Consulta el [recorrido de prueba](docs/guia/acceso-publicado.md).
+
 SoccerLeague centraliza la información de una liga de fútbol y facilita su administración y consulta. La aplicación combina una interfaz en español e inglés, temas claro y oscuro y acceso por roles con una API Go y persistencia en PostgreSQL.
 
 El sistema parte de las necesidades de la Liga Nacional de Fútbol descritas en el [enunciado original](docs/Project%20Specifications.md). La documentación distingue esos requisitos del [comportamiento implementado](docs/negocio/requisitos.md).

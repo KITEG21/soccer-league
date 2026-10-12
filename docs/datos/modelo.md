@@ -27,7 +27,7 @@ Player y Coach reutilizan el identificador de Footballer. No hay tabla Position 
 | Tabla | Campos | Restricciones |
 | --- | --- | --- |
 | Match | `id BIGSERIAL`, `home_team_id BIGINT`, `away_team_id BIGINT`, `season_id BIGINT`, `stadium_id BIGINT`, `match_date DATE`, `attendance INT`, `disputed BOOLEAN` | PK id; cuatro FK con RESTRICT; fecha NOT NULL; asistencia DEFAULT 0; disputed NOT NULL DEFAULT false |
-| PlayerStats | `id BIGSERIAL`, `player_id BIGINT`, `match_id BIGINT`, nueve métricas INT | PK id; FK a Player y Match con CASCADE; UNIQUE jugador/partido; métricas DEFAULT 0 |
+| PlayerStats | `id BIGSERIAL`, `player_id BIGINT`, `match_id BIGINT`, `team_id BIGINT NOT NULL`, nueve métricas INT | PK id; FK a Player y Team con RESTRICT; FK a Match con CASCADE y trigger de baja; UNIQUE jugador/partido; métricas DEFAULT 0 |
 
 Las métricas son `goals_scored`, `assists`, `shots_on_goal`, `passes_completed`, `interceptions`, `tackles`, `blocks`, `saves` y `goals_conceded`.
 
@@ -37,7 +37,7 @@ Las FK deportivas admiten SQL NULL salvo restricciones adicionales del trigger. 
 
 | Tabla | Campos | Restricciones |
 | --- | --- | --- |
-| Users | `id BIGSERIAL`, `email TEXT`, `password_hash TEXT`, `role TEXT`, `created_at TIMESTAMPTZ` | PK; correo UNIQUE; datos NOT NULL; role CHECK; creación DEFAULT now() |
+| Users | `id BIGSERIAL`, `email TEXT`, `password_hash TEXT`, `role TEXT`, `created_at TIMESTAMPTZ`, `first_name TEXT`, `last_name TEXT` | PK; correo UNIQUE; datos NOT NULL; role CHECK; creación DEFAULT now(); nombres y apellidos DEFAULT vacío y máximo 100 caracteres |
 | RefreshToken | `id BIGSERIAL`, `user_id BIGINT`, `token_hash TEXT`, `expires_at TIMESTAMPTZ`, `rotated_at TIMESTAMPTZ`, `revoked_at TIMESTAMPTZ`, `created_at TIMESTAMPTZ` | PK; FK usuario NOT NULL CASCADE; hash UNIQUE; expiración NOT NULL; fechas de rotación/revocación nullable |
 
 La migración de seguridad añade un índice de `RefreshToken.user_id`. Los hashes de contraseña y renovación no se exponen en los DTO de usuarios.
@@ -46,7 +46,7 @@ La migración de seguridad añade un índice de `RefreshToken.user_id`. Los hash
 
 No se almacenan `home_goals` ni `away_goals` en Match. Tampoco se mantienen contadores persistidos de jugadores/entrenadores en Team ni agregados de partidos/promedio en Player. Se calculan resultados al consultar o se agregan estadísticas en reportes.
 
-Los nombres de entidades no se duplican en Match; se enriquecen al construir respuestas. Los cambios de nombre, capacidad, equipo o estadísticas afectan consultas históricas porque no hay instantáneas de esos valores.
+Los nombres de entidades no se duplican en Match; se enriquecen al construir respuestas. PlayerStats conserva el equipo de cada participación y protege la atribución de goles y asistencias ante transferencias. Los nombres y la capacidad se consultan desde los catálogos actuales; las correcciones estadísticas actualizan los resultados derivados.
 
 ## Esquema y migraciones
 

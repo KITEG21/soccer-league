@@ -4,6 +4,10 @@ Sitio VitePress para documentación funcional y técnica. El contenido se mantie
 
 ## Inicio
 
+La documentación publicada está en [soccer-league.br4vo-code.workers.dev](https://soccer-league.br4vo-code.workers.dev/) y la aplicación en [soccer-league-orcin.vercel.app](https://soccer-league-orcin.vercel.app/).
+
+Para pruebas de consulta, usa `visitor@soccerleague.com` con contraseña `Visitor1234`. El rol visitante no tiene permisos de edición ni administración. La [guía de acceso](guia/acceso-publicado.md) describe el recorrido.
+
 Desde la raíz del repositorio:
 
 ```sh

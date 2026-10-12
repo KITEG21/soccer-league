@@ -14,6 +14,8 @@ Las migraciones numeradas de `Api/sql/migrations/` tienen pares `.up.sql` y `.do
 | `000006` | Triggers para mantener contadores de plantilla del equipo |
 | `000007` | Retira contadores y sus triggers; los servicios calculan las cantidades |
 | `000008` | Users, RefreshToken e índice de usuario para renovaciones |
+| `000009` | Equipo histórico por participación, validación de afiliación y protección de bajas de jugadores y equipos de partidos con estadísticas |
+| `000010` | Nombres y apellidos de usuarios; conserva cuentas existentes con valores vacíos hasta completar su perfil |
 
 El esquema vigente resulta de toda la secuencia. Las versiones 000004/000006 no describen por sí solas el modelo final.
 
@@ -25,10 +27,14 @@ El esquema vigente resulta de toda la secuencia. Las versiones 000004/000006 no 
 | `trigger_validate_match_disputed` | PlayerStats, BEFORE INSERT/UPDATE | Partido existente y disputado |
 | `trigger_prevent_match_disputed_change` | Match, BEFORE UPDATE OF disputed | No pasar de true a false con estadísticas |
 | `trigger_prevent_match_delete_with_stats` | Match, BEFORE DELETE | No borrar si tiene estadísticas |
+| `trigger_preserve_player_stats_team` | PlayerStats, BEFORE INSERT/UPDATE | Registra el equipo participante, lo conserva al corregir métricas y mantiene jugador/partido |
+| `trigger_preserve_match_participants` | Match, BEFORE UPDATE OF home_team_id/away_team_id | Conserva los equipos si existen estadísticas |
 
 Las reglas operan también ante escrituras SQL directas. La restricción UNIQUE de dorsales y la de jugador/partido complementan los triggers. La validación de temporadas no solapadas reside en el servicio, no en un trigger de Season.
 
 ## Ejecución y archivos necesarios
+
+La migración 000009 inicializa `PlayerStats.team_id` con la afiliación disponible de cada jugador cuando coincide con uno de los participantes. Si una fila no permite identificar ese equipo, la transacción se revierte para que se revise explícitamente su afiliación antes de reintentar. La migración conserva la información disponible; no reconstruye transferencias anteriores que no estuvieran registradas. Después de aplicarla, las nuevas participaciones conservan su equipo frente a futuras transferencias.
 
 El arranque busca `sql/migrations` o `Api/sql/migrations` recorriendo directorios candidatos. Ejecutar desde `Api/` mantiene una ubicación predecible. Un despliegue del binario necesita esos archivos; compilar el ejecutable no los incorpora automáticamente.
 

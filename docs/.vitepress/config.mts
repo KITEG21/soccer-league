@@ -17,10 +17,12 @@ export default defineConfig({
       { text: "Arquitectura", link: "/arquitectura/general" },
       { text: "API", link: "/api/contratos" },
       { text: "Operación", link: "/guia/instalacion" },
+      { text: "Aplicación", link: "https://soccer-league-orcin.vercel.app/" },
     ],
     sidebar: [
       { text: "Empezar", items: [
         { text: "Introducción", link: "/guia/introduccion" },
+        { text: "Aplicación publicada y visitante", link: "/guia/acceso-publicado" },
         { text: "Instalación", link: "/guia/instalacion" },
         { text: "Mapa y fuentes", link: "/referencia/mapa" },
       ] },

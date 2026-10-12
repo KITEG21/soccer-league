@@ -12,11 +12,11 @@ Las estadísticas viven en el detalle del partido. La API tiene un recurso indep
 | `passes_completed` | Pases completados | Mediocampo; control visible para cualquier jugador |
 | `interceptions` | Intercepciones | Mediocampo; control visible para cualquier jugador |
 | `tackles` | Entradas | Defensa; control visible para cualquier jugador |
-| `blocks` | Bloqueos | Defensa; sin control de captura en UI |
-| `saves` | Paradas | Portero; sin control de captura en UI |
-| `goals_conceded` | Goles encajados | Portero; sin control de captura en UI |
+| `blocks` | Bloqueos | Defensa; control visible |
+| `saves` | Paradas | Portero; control visible |
+| `goals_conceded` | Goles encajados | Portero; control visible |
 
-La fila incluye `id`, `player_id` y `match_id`. Todas las métricas están disponibles en el contrato y la tabla. El diálogo actual expone seis de las nueve, sin adaptar los controles a la posición. Las otras tres se conservan en el estado de edición, pero no pueden introducirse mediante un control visible.
+La fila incluye `id`, `player_id`, `match_id` y `team_id`. El equipo se asigna al registrar la participación y se conserva en las correcciones. El diálogo y la tabla muestran las nueve métricas, con etiquetas en español e inglés.
 
 ## Captura y corrección
 
@@ -31,12 +31,12 @@ Solo puede haber una fila por jugador y partido. La captura requiere `player-sta
 
 El marcador, los enfrentamientos, la clasificación y el equipo de estrellas se basan en estas filas. Modificar o borrar goles altera resultados derivados. El detalle invalida sus consultas de estadísticas y partido tras una mutación.
 
-El servicio no valida que el jugador pertenezca a los equipos del encuentro, ni aplica una comprobación general de métricas no negativas. La restricción visual de selección no sustituye esa validación en una petición directa.
+El trigger comprueba que el jugador pertenezca a uno de los equipos del encuentro al registrar una participación. Las correcciones conservan el jugador, el partido y el equipo original, incluso después de una transferencia. La tabla utiliza el equipo registrado para mostrar su afiliación histórica. El formulario utiliza controles numéricos con mínimo cero.
 
 ## Contrato de listado
 
-`GET /player-stats/?match_id=42` devuelve las filas del partido sin paginación. Sin `match_id`, admite `limit` y `offset` y devuelve un array, sin `total`. Algunas consultas vacías pueden producir `null` porque el servicio usa un slice no inicializado; no se garantiza uniformemente `[]`.
+`GET /player-stats/?match_id=42` devuelve las filas del partido sin paginación. Sin `match_id`, admite `limit` y `offset` y devuelve un array, sin `total`. Las consultas vacías de estadísticas devuelven un array vacío.
 
 ## Código y datos
 
-`Web/src/features/matches/services/playerStatsApi.ts`, `types/playerStats.ts`, `containers/MatchDetailContainer.tsx`; `Api/internal/service/player_stats.go`, `handler/player_stats.go`, tabla PlayerStats y migraciones `000003` y `000005`.
+`Web/src/features/matches/services/playerStatsApi.ts`, `types/playerStats.ts`, `containers/MatchDetailContainer.tsx`; `Api/internal/service/player_stats.go`, `handler/player_stats.go`, tabla PlayerStats y migraciones `000003`, `000005` y `000009`.

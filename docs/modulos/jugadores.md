@@ -17,7 +17,7 @@ La UI usa `Portero`, `Defensa`, `Mediocampo` y `Delantero`. La API almacena posi
 
 ## Operaciones
 
-La alta inserta Footballer y Player. La edición cambia identidad, equipo y posición. La eliminación retira Player y Footballer; PlayerStats se elimina por cascada al borrar Player.
+La alta inserta Footballer y Player. La edición cambia identidad, equipo y posición. La eliminación retira Player y Footballer cuando el jugador no tiene estadísticas. Si existen participaciones, el servicio devuelve un conflicto y la clave foránea impide la eliminación.
 
 No hay pantalla individual de perfil ni edición de goles acumulados en el formulario del jugador. El rendimiento se registra por partido en [estadísticas](./estadisticas.md).
 
@@ -25,7 +25,7 @@ No hay pantalla individual de perfil ni edición de goles acumulados en el formu
 
 El dorsal no puede repetirse dentro del equipo, incluso si pertenece a un entrenador. Al cambiar de equipo se comprueba la disponibilidad en el destino. El formulario valida nombre y valores no negativos.
 
-Una transferencia cambia la afiliación actual y puede afectar el reparto de goles de partidos anteriores. La eliminación elimina la historia estadística del jugador y puede alterar marcadores y reportes. No se guarda una afiliación por temporada ni se da de baja lógica al jugador.
+Una transferencia cambia la afiliación actual. Las estadísticas conservan el equipo de cada participación en `PlayerStats.team_id`, de modo que goles y asistencias anteriores mantienen su atribución. Los jugadores con estadísticas tienen la baja protegida; sus métricas pueden corregirse desde el detalle del partido.
 
 ## Consulta y permisos
 

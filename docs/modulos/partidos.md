@@ -25,7 +25,7 @@ Un partido pendiente no admite estadísticas. Para capturar rendimiento debe mar
 
 ## Marcador
 
-Las consultas suman `goals_scored` de las estadísticas cuyos jugadores pertenecen actualmente al local o visitante. No hay edición manual de `home_goals` o `away_goals`, ni ajuste separado por autogoles.
+Las consultas suman `goals_scored` según el equipo registrado en `PlayerStats.team_id` para cada participación. No hay edición manual de `home_goals` o `away_goals`, ni ajuste separado por autogoles.
 
 Un partido sin estadísticas tiene marcador calculado 0–0. Ese marcador no demuestra que haya sido disputado: debe interpretarse junto con `disputed`. Los reportes actuales no filtran siempre ese estado.
 

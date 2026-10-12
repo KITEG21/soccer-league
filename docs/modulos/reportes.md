@@ -26,7 +26,7 @@ Los filtros determinan la clave de consulta y los parámetros de exportación. N
 - Estado: victorias, empates y derrotas, como local, visitante y total.
 - Estrellas: hasta once jugadores en formación 1–4–3–3, con métricas por posición.
 
-Las [fórmulas y casos límite](../reportes-explicacion.md) detallan cada consulta. Los pendientes afectan actualmente algunos resultados y la afiliación actual del jugador afecta el histórico.
+Las [fórmulas y casos límite](../reportes-explicacion.md) detallan cada consulta. Los pendientes afectan actualmente algunos resultados. Los marcadores y asistencias por equipo utilizan la afiliación conservada en cada participación para mantener su atribución tras transferencias.
 
 ## PDF
 

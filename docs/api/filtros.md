@@ -24,7 +24,7 @@ Un parámetro distinto de los cinco comunes se considera filtro. Un filtro desco
 | Jugadores | Nombre, posición, equipo | `name`, `number`, `years_in_team`, `position`, `team_name` |
 | Entrenadores | Nombre, equipo | `name`, `number`, `years_in_team`, `experience_years`, `championships_won`, `team_name` |
 | Partidos | Nombres de local, visitante y estadio | `match_date`, `attendance`, `home_goals`, `away_goals`, `disputed`, `home_team_name`, `away_team_name`, `stadium_name`, `result` |
-| Usuarios | Correo | `email`, `role`, `created_at` |
+| Usuarios | Nombres, apellidos y correo | `first_name`, `last_name`, `email`, `role`, `created_at` |
 
 `title` de temporada compara la fecha inicial. `result` compara diferencia de goles y después goles del local; no es un filtro semántico de ganado/empatado/perdido. Sin campo sort, se conserva el orden de la consulta de origen.
 

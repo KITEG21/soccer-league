@@ -14,7 +14,21 @@ Esta página distingue los comandos existentes de los escenarios que deben compr
 | Documentación | Raíz | `pnpm --dir docs build` | Compilación estática y enlaces internos |
 | Documentación | Raíz | `pnpm --dir docs preview` | Revisión del artefacto generado |
 
-Los scripts Web no incluyen un runner de tests unitarios o de navegador. Los tests Go presentes se concentran en `internal/pdf/report_test.go`: estructura de PDF, tablas largas y paginación, conjunto vacío y rechazo de documento sin columnas. `go test ./...` no sustituye una prueba de integración de reglas SQL o sesión.
+Los scripts Web no incluyen un runner de tests unitarios o de navegador. Los tests Go incluyen `internal/pdf/report_test.go` para estructura de PDF, tablas largas y paginación, conjunto vacío y rechazo de documento sin columnas, y `internal/service/player_history_test.go` para integración del historial con PostgreSQL. La prueba de historial se activa con la configuración descrita a continuación; los escenarios de sesión requieren sus propias comprobaciones funcionales.
+
+## Prueba de integración del historial
+
+Desde `Api/`, con una base PostgreSQL de prueba y todas las migraciones aplicadas:
+
+```sh
+$env:HISTORY_TEST_DATABASE_URL = "postgres://usuario:clave@localhost:5432/base_de_prueba?sslmode=disable"
+go test ./... -count=1
+go vet ./...
+```
+
+`Api/internal/service/player_history_test.go` comprueba conservación de marcadores y reportes después de transferir un jugador al rival o a un tercer equipo, corrección de métricas, persistencia de bloqueos/paradas/encajados, equipo de nuevas participaciones y protección de bajas y cambios de participantes. También verifica que se puede eliminar un jugador sin estadísticas. Para ejecutarlo por separado, define `HISTORY_TEST_DATABASE_URL` con una base aislada que tenga todas las migraciones; el test revierte sus datos al terminar. Sin esa variable, la prueba de integración se omite.
+
+`Api/internal/service/user_test.go` comprueba validación de nombres, caracteres Unicode, creación, búsqueda, edición, cuentas existentes sin nombres y conservación de los permisos al editar la cuenta propia. La prueba de integración utiliza la misma variable de conexión y revierte sus datos al terminar.
 
 ## Escenarios funcionales
 
